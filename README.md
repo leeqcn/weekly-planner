@@ -28,7 +28,28 @@ npm run dev
 1. 打开 Supabase 控制台 → SQL Editor，把 `db/0001_init.sql` 贴进去跑一次
    （脚本可重复执行）。它建 5 张表并打开 RLS。
 2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
-3. 重启 `npm run dev`。这时会先要求邮箱登录（magic link）。
+3. 重启 `npm run dev`。这时会先要求登录。
+
+### 登录 / Redirect URL（重要）
+
+登录方式是 **Google 登录**，邮箱 magic link 作为兜底。Google provider 在共用的
+Supabase 实例里已经开好了（日记 App 在用），本项目不用再配。
+
+但有个坑：**Supabase 只接受白名单里的回跳地址**。不在白名单里的 `redirectTo`
+会被静默忽略，直接退回 Site URL —— 而 Site URL 是日记 App 的地址，
+所以登录链接会把你送到日记 App 去。
+
+去 Supabase → Authentication → URL Configuration → **Redirect URLs**，
+把本项目的地址都加进去（Site URL 保持日记 App 的不动）：
+
+```
+http://localhost:5173/**
+https://<本项目的 Vercel 域名>/**
+https://<本项目>-*.vercel.app/**    # 预览部署，可选
+```
+
+两个 App 共用同一份 `auth.users`，用同一个 Google 账号登录，两边就是同一个
+`user_id`；各自的表靠 RLS 隔离，互相看不到对方的数据。
 
 想在已经配好 `.env.local` 的情况下继续用假数据调 UI，
 在 `.env.local` 里加一行 `VITE_USE_MOCK=1` 即可。
