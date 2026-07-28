@@ -27,6 +27,8 @@ npm run dev
 
 1. 打开 Supabase 控制台 → SQL Editor，把 `db/0001_init.sql` 贴进去跑一次
    （脚本可重复执行）。它建 5 张表并打开 RLS。
+   已经跑过旧版 0001 的，再跑一次 `db/0002_entry_unique_constraint.sql`
+   把唯一约束收拾干净（可选，不跑也能正常用）。
 2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
 3. 重启 `npm run dev`。这时会先要求登录。
 
@@ -58,6 +60,7 @@ https://<本项目>-*.vercel.app/**    # 预览部署，可选
 
 ```
 db/0001_init.sql                    建表 + RLS（贴进 Supabase SQL Editor 跑）
+db/0002_entry_unique_constraint.sql 把部分唯一索引换成普通唯一约束
 src/lib/
   dates.js        日期 / 周 / 时间换算，date-fns 封装
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）

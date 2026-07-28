@@ -48,15 +48,27 @@ export function createSupabaseRepo(userId) {
 
     async createEntries(rows) {
       if (!rows.length) return []
-      // (template_id, date) 上有唯一索引 —— 重复生成时忽略冲突，天然幂等。
-      return unwrap(
-        await from('schedule_entries')
-          .upsert(rows.map(own), {
-            onConflict: 'template_id,date',
-            ignoreDuplicates: true,
-          })
-          .select(),
-      )
+      const payload = rows.map(own)
+
+      // 用普通 insert 而不是 upsert：0001 里的唯一索引是部分索引
+      // （where template_id is not null），Postgres 的 ON CONFLICT 推断不了部分索引，
+      // upsert 会直接报 42P10。调用方已经过滤掉存在的条目，幂等性由那里保证。
+      const batch = await from('schedule_entries').insert(payload).select()
+      if (!batch.error) return batch.data ?? []
+      if (batch.error.code !== '23505') throw batch.error
+
+      // 23505 = 撞上唯一索引。整批插入只要冲突一条就全部回滚，
+      // 所以退回逐条插入，只跳过已经生成过的那几条。
+      const inserted = []
+      for (const row of payload) {
+        const one = await from('schedule_entries').insert(row).select().single()
+        if (one.error) {
+          if (one.error.code !== '23505') throw one.error
+          continue
+        }
+        inserted.push(one.data)
+      }
+      return inserted
     },
 
     async updateEntry(id, patch) {

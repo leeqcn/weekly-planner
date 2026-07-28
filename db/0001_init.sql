@@ -45,9 +45,13 @@ create index if not exists schedule_entries_user_date_idx
   on public.schedule_entries (user_id, date);
 
 -- 同一个 template 在同一天只生成一条，保证重复生成是幂等的。
-create unique index if not exists schedule_entries_template_date_uniq
-  on public.schedule_entries (template_id, date)
-  where template_id is not null;
+-- 用普通唯一约束而不是 where template_id is not null 的部分索引：
+-- 部分索引 ON CONFLICT 推断不了。template_id 为 null 的临时条目不受影响，
+-- Postgres 里 NULL 彼此不相等，同一天可以加任意多条。
+alter table public.schedule_entries
+  drop constraint if exists schedule_entries_template_date_key;
+alter table public.schedule_entries
+  add constraint schedule_entries_template_date_key unique (template_id, date);
 
 -- --------------------------------------------------------------- habits_log
 -- 流水数据，只保留最近 4 周。

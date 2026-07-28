@@ -61,13 +61,18 @@ export function usePlanner(repo) {
     let cancelled = false
     setLoading(true)
     ;(async () => {
-      const loaded = await load()
-      if (cancelled || !loaded) return
-      if (toKey < dateKey(new Date())) return // 过去的周不回填，避免凭空造历史
-      const rows = buildEntriesFor(loaded.templates, days, loaded.entries)
-      if (!rows.length) return
-      await repo.createEntries(rows)
-      if (!cancelled) await load()
+      try {
+        const loaded = await load()
+        if (cancelled || !loaded) return
+        if (toKey < dateKey(new Date())) return // 过去的周不回填，避免凭空造历史
+        const rows = buildEntriesFor(loaded.templates, days, loaded.entries)
+        if (!rows.length) return
+        await repo.createEntries(rows)
+        if (!cancelled) await load()
+      } catch (e) {
+        // 这里以前没有 catch：生成失败是静默的，界面只是一片空白，没有任何提示。
+        if (!cancelled) setError(`生成日程失败：${e.message ?? e}`)
+      }
     })()
     return () => {
       cancelled = true
@@ -78,10 +83,15 @@ export function usePlanner(repo) {
 
   /** 手动补齐当周日程（新建模板后、或想给过去的周补数据时用）。 */
   const generateWeek = useCallback(async () => {
-    const rows = buildEntriesFor(templates, days, entries)
-    if (rows.length) await repo.createEntries(rows)
-    await load()
-    return rows.length
+    try {
+      const rows = buildEntriesFor(templates, days, entries)
+      if (rows.length) await repo.createEntries(rows)
+      await load()
+      return rows.length
+    } catch (e) {
+      setError(`生成日程失败：${e.message ?? e}`)
+      return 0
+    }
   }, [repo, templates, entries, days, load])
 
   const wrap = useCallback(

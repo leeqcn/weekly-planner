@@ -73,6 +73,7 @@ export default function Settings({ planner, onBack }) {
         {planner.templates.length === 0 ? (
           <p className="muted">还没有模板。建一个之后，每周的日程就会自动生成。</p>
         ) : (
+          <div className="table-scroll">
           <table className="tpl-table">
             <thead>
               <tr>
@@ -124,6 +125,7 @@ export default function Settings({ planner, onBack }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
         <p className="muted small">
           停用只是不再生成新日程，历史记录会保留。

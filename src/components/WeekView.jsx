@@ -70,6 +70,14 @@ export default function WeekView({ planner, onOpenDay }) {
         <MiniCalendar monday={monday} onPick={goToDate} />
       </div>
 
+      {templates.length > 0 && entries.length === 0 && (
+        <p className="muted small notice">
+          这周有 {templates.filter((t) => t.is_active).length} 个启用中的模板，
+          但一条日程都没生成。点右上角「补齐这周的安排」试一下；
+          还是空的话页面上方会显示具体错误。
+        </p>
+      )}
+
       <WeekTimeline
         days={days}
         entries={entries}

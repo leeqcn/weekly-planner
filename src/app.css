@@ -773,11 +773,41 @@ th.cl-name {
 }
 
 /* -------------------------------------------------------------------- 表格 */
+/* 窄屏下横向滚动，而不是把每一列压到一个字一行 */
+.table-scroll {
+  overflow-x: auto;
+}
+
 .habits-table,
 .tpl-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
+}
+
+.tpl-table {
+  min-width: 620px;
+}
+
+.habits-table {
+  min-width: 460px;
+}
+
+.tpl-table td,
+.tpl-table th {
+  white-space: nowrap;
+}
+
+.tpl-table .row-gap {
+  flex-wrap: nowrap;
+}
+
+.notice {
+  background: var(--accent-soft);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.8rem;
+  margin: 0;
 }
 
 .habits-table th,
@@ -966,10 +996,6 @@ th.cl-name {
 
   .special-input {
     width: 100%;
-  }
-
-  .habits-table {
-    font-size: 0.8rem;
   }
 
   .pct-cell input[type='range'] {

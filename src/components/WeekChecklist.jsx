@@ -15,8 +15,9 @@ export default function WeekChecklist({ rows, days, onSetHabit, onToggleTask }) 
       <section className="card">
         <h2>本周清单</h2>
         <p className="muted">
-          还没有打卡项或待办。在「设置」里建一个 habit 模板，或者建一个时长很短的
-          任务（比如量血压、交房租）—— 短事项不占时间轴，直接落到这张表里。
+          这周还没有打卡项或短事项。<b>habit</b> 模板、以及时长不到 20 分钟或者
+          没定时间的安排（量血压、交房租这种）会落到这张表里；
+          有明确起止时间的安排在上面的时间轴上。
         </p>
       </section>
     )

@@ -41,6 +41,7 @@ export default function HabitsPanel({ habits, logs, date, onSave }) {
   return (
     <section className="card">
       <h2>打卡</h2>
+      <div className="table-scroll">
       <table className="habits-table">
         <thead>
           <tr>
@@ -92,6 +93,7 @@ export default function HabitsPanel({ habits, logs, date, onSave }) {
           })}
         </tbody>
       </table>
+      </div>
     </section>
   )
 }
