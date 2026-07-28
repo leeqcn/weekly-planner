@@ -100,6 +100,25 @@ src/components/           WeekView / DayView / Settings / …
   `templates` / `weekly_focus` / `special_days` 是配置，永久保留。
   以后加统计功能时，统计结果单独落表，不受这个清理影响。
 
+## PWA
+
+可以直接「添加到主屏幕 / 安装」，装完是独立窗口，断网也能打开（数据仍需联网）。
+
+- `public/manifest.webmanifest` — 名称、图标、独立窗口、主题色
+- `public/sw.js` — 手写的 service worker，没引 vite-plugin-pwa
+- `vite.config.js` 里的 `precacheServiceWorker` 插件在打包后把产物清单写进
+  `dist/sw.js`。**这一步不能省**：service worker 要到页面 load 之后才注册，
+  首次访问的那批 JS/CSS 不经过它，只靠运行时缓存的话装完当场断网就是白屏。
+  清单的哈希同时当缓存版本号，资源一变旧缓存自动清掉。
+- Supabase 的请求（跨域）一律不拦截不缓存 —— 缓存登录态和接口数据只会出怪问题。
+- 查缓存用 `caches.match(..., { ignoreVary: true })`：静态服务器会回
+  `Vary: Origin`，而预缓存请求不带 Origin、页面上 crossorigin 的请求带，
+  不加这个参数缓存明明有也读不到。
+
+图标是「一张纸 + 七根等高的列」（其中一天绿色 = 已完成），
+和日记类常见的本子 / 钢笔意象刻意区分开。
+改图标改 `scripts/gen-icons.mjs` 后重新生成即可。
+
 ## 部署
 
 Vercel 新建一个 Project 指向本仓库，framework 选 Vite，

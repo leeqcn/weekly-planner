@@ -2,7 +2,9 @@
 .app {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 1rem 1.25rem 4rem;
+  /* 装成 PWA 全屏运行时，避开刘海和底部 home 条 */
+  padding: 1rem calc(1.25rem + env(safe-area-inset-right)) calc(4rem + env(safe-area-inset-bottom))
+    calc(1.25rem + env(safe-area-inset-left));
 }
 
 .app-bar {
@@ -949,7 +951,8 @@ th.cl-name {
 /* ------------------------------------------------------------------ 窄屏 */
 @media (max-width: 820px) {
   .app {
-    padding: 0.75rem 0.75rem 3rem;
+    padding: 0.75rem calc(0.75rem + env(safe-area-inset-right))
+      calc(3rem + env(safe-area-inset-bottom)) calc(0.75rem + env(safe-area-inset-left));
   }
 
   .week-top {
