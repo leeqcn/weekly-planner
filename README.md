@@ -16,15 +16,27 @@ npm run dev
 
 ## 接 Supabase
 
-1. 在日记 App 那个 Supabase 项目里执行 `supabase/migrations/0001_init.sql`
-   （SQL Editor 里贴进去跑一次就行，脚本可重复执行）。它会建 5 张表并打开 RLS。
-2. 复制 `.env.local.example` 为 `.env.local`，填上同一个项目的 URL 和 anon key。
+和日记 App 是**两个独立的 project**（独立仓库、独立 Vercel Project），
+只是共用同一个 Supabase 实例。所以：
+
+- 建表 SQL 归本仓库管（`db/0001_init.sql`），**不要放进日记 App 的仓库或它的 migrations 目录**。
+- 表名都是本项目自己的（`templates` / `schedule_entries` / `habits_log` /
+  `weekly_focus` / `special_days`），不碰日记 App 的任何表。
+
+步骤：
+
+1. 打开 Supabase 控制台 → SQL Editor，把 `db/0001_init.sql` 贴进去跑一次
+   （脚本可重复执行）。它建 5 张表并打开 RLS。
+2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
 3. 重启 `npm run dev`。这时会先要求邮箱登录（magic link）。
+
+想在已经配好 `.env.local` 的情况下继续用假数据调 UI，
+在 `.env.local` 里加一行 `VITE_USE_MOCK=1` 即可。
 
 ## 结构
 
 ```
-supabase/migrations/0001_init.sql   建表 + RLS
+db/0001_init.sql                    建表 + RLS（贴进 Supabase SQL Editor 跑）
 src/lib/
   dates.js        日期 / 周 / 时间换算，date-fns 封装
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）
