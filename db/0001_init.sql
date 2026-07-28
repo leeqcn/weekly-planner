@@ -24,7 +24,7 @@ create index if not exists templates_user_active_idx
   on public.templates (user_id, is_active);
 
 -- -------------------------------------------------------- schedule_entries
--- 流水数据，只保留最近 21 天。
+-- 流水数据，只保留最近 4 周。
 create table if not exists public.schedule_entries (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -50,7 +50,7 @@ create unique index if not exists schedule_entries_template_date_uniq
   where template_id is not null;
 
 -- --------------------------------------------------------------- habits_log
--- 流水数据，只保留最近 21 天。
+-- 流水数据，只保留最近 4 周。
 create table if not exists public.habits_log (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,

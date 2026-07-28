@@ -53,6 +53,18 @@ export function buildSeed() {
       start_time: '10:00',
       end_time: '10:15',
     }),
+    // 只要几分钟的事：不画在时间轴上，落到周清单里当待办
+    t({
+      title: '量血压',
+      type: 'task',
+      priority: 'high',
+      min_duration_minutes: 5,
+      max_duration_minutes: 5,
+      recurrence: 'weekly',
+      recurrence_days: [1, 2, 3, 4, 5, 6, 7],
+      start_time: '07:00',
+      end_time: '07:05',
+    }),
     t({
       title: '运动',
       type: 'habit',

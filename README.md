@@ -42,6 +42,7 @@ src/lib/
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）
   generate.js     模板 -> 某天的 schedule_entries
   layout.js       时间轴上重叠块的并排排布
+  schedule.js     短事项判定 + 周清单 n x 8 的行
   mockSeed.js     本地模式的示例数据
   supabaseClient.js
   repo/mock.js      localStorage 实现
@@ -50,16 +51,30 @@ src/state/usePlanner.js   数据加载 / 写入，组件只管渲染
 src/components/           WeekView / DayView / Settings / …
 ```
 
+## 界面
+
+- **Week View**：上半部分是 7 个并排的时间轴（完整 24 小时，默认从 6 点开始看，
+  往上滑是 0–6 点的睡眠时段）；下半部分是一张 n × 8 的周清单，
+  左边一列是项目，右边七列是周一到周日的完成情况，一眼看完整周状态。
+- **Day View**：左 Plan / 中 24 小时刻度 / 右 Actually，下面是当天的打卡区。
+- 窄屏（手机）下：时间块缩成色条只看分布，点日期进 Day View 看内容；
+  周清单第一列吸边，横向滑动看后面几天。
+
 ## 几个约定
 
 - **自动生成日程**：切到当前或未来的某一周时，按启用中的模板补齐这周的
   `schedule_entries`。`(template_id, date)` 上有唯一约束，重复生成是幂等的。
-  过去的周不自动回填，需要的话点「生成本周安排」。
-- **habit 不进时间轴**，只出现在 Day View 的打卡区，写入 `habits_log`。
+  过去的周不自动回填，需要的话点「补齐这周的安排」。
+  订下周的计划就是切到下一周，模板会自动铺好，再手动调。
+- **habit 不进时间轴**：出现在周清单和 Day View 的打卡区，写入 `habits_log`。
 - **改时间就是 reschedule**：原计划时间记进 `rescheduled_from`，状态置 `rescheduled`。
 - **完成不删计划**：左栏计划块变淡，右栏出现实际块，保留计划 vs 实际的对比。
-- **21 天保留**：App 挂载时清理一次 `schedule_entries` / `habits_log` 的过期数据，
-  没有用 cron 或 Edge Function。`templates` / `weekly_focus` / `special_days` 永久保留。
+- **短事项不上时间轴**：计划时长短于 20 分钟（`MIN_TIMELINE_MINUTES`）或者没定时间的
+  安排，不画成时间块，落到周清单里当待办打勾 —— 比如量血压、交房租。
+- **4 周保留**：App 挂载时清理一次 `schedule_entries` / `habits_log` 的过期数据
+  （`RETENTION_DAYS = 28`），没有用 cron 或 Edge Function。
+  `templates` / `weekly_focus` / `special_days` 是配置，永久保留。
+  以后加统计功能时，统计结果单独落表，不受这个清理影响。
 
 ## 部署
 

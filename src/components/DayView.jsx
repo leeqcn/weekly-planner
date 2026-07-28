@@ -3,11 +3,14 @@ import { format, isSameDay } from 'date-fns'
 import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { habitsForDay } from '../lib/generate'
 import { layoutBlocks } from '../lib/layout'
+import { isTimelineEntry } from '../lib/schedule'
 import EntryEditor from './EntryEditor'
 import HabitsPanel from './HabitsPanel'
 
 const HOUR_PX = 46
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
+// 完整 24 小时保留（跨夜睡眠要记），只是默认从 6 点开始看，往上滑是 0–6 点。
+const DEFAULT_HOUR = 6
 
 export default function DayView({ planner, date, onBack }) {
   const key = dateKey(date)
@@ -17,9 +20,10 @@ export default function DayView({ planner, date, onBack }) {
   const [editing, setEditing] = useState(null) // {entry} | {entry: null} | null
 
   const dayEntries = planner.entries.filter((e) => e.date === key)
-  const planned = dayEntries.filter((e) => e.planned_start && e.planned_end)
-  const untimed = dayEntries.filter((e) => !e.planned_start || !e.planned_end)
-  const actual = dayEntries.filter((e) => e.actual_start && e.actual_end)
+  // 太短的事项（量血压之类）不画在时间轴上，收到上面的一行里点一下就完事。
+  const planned = dayEntries.filter(isTimelineEntry)
+  const untimed = dayEntries.filter((e) => !isTimelineEntry(e))
+  const actual = planned.filter((e) => e.actual_start && e.actual_end)
   const plannedLayout = layoutBlocks(
     planned.map((e) => ({ entry: e, start: e.planned_start, end: e.planned_end })),
   )
@@ -30,9 +34,8 @@ export default function DayView({ planner, date, onBack }) {
   const special = planner.specialDays.find((s) => s.date === key)
   const selected = dayEntries.find((e) => e.id === selectedId) ?? null
 
-  // 默认滚到早上 7 点，省得每次手动往下拖。
   useEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = 7 * HOUR_PX
+    if (scroller.current) scroller.current.scrollTop = DEFAULT_HOUR * HOUR_PX
   }, [key])
 
   function markDone(entry) {
@@ -129,13 +132,14 @@ export default function DayView({ planner, date, onBack }) {
 
       {untimed.length > 0 && (
         <div className="untimed">
-          <span className="untimed-label">待安排</span>
+          <span className="untimed-label">短事项 / 待安排</span>
           {untimed.map((e) => (
             <button
               key={e.id}
               className={`chip status-${e.status}${selectedId === e.id ? ' selected' : ''}`}
               onClick={() => setSelectedId(e.id)}
             >
+              {e.status === 'done' ? '✓ ' : ''}
               {e.title}
             </button>
           ))}

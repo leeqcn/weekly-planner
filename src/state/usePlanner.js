@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildEntriesFor } from '../lib/generate'
 import { dateKey, retentionCutoff, weekDays, weekStart } from '../lib/dates'
 
+/** 流水数据保留 4 周，超期删除，数据库不会一直变大。 */
+export const RETENTION_DAYS = 28
+
 /**
  * 全部数据加载 / 写入都收在这里，组件只管渲染。
  * 一次只加载当前显示这一周的流水数据，页面轻量。
@@ -45,11 +48,12 @@ export function usePlanner(repo) {
     }
   }, [repo, fromKey, toKey])
 
-  // 21 天保留策略：App 挂载时清理一次，不用 cron / Edge Function。
+  // 保留 4 周流水：App 挂载时清理一次，不用 cron / Edge Function。
+  // 以后加统计功能时，统计结果单独落表，不受这里影响。
   useEffect(() => {
     if (purged.current) return
     purged.current = true
-    repo.purgeOlderThan(retentionCutoff(21)).catch(() => {})
+    repo.purgeOlderThan(retentionCutoff(RETENTION_DAYS)).catch(() => {})
   }, [repo])
 
   // 切周 / 首次进入：加载数据，并按模板补齐当周（及未来周）的日程。
@@ -101,6 +105,7 @@ export function usePlanner(repo) {
     clearError: () => setError(null),
     monday,
     days,
+    isCurrentWeek: fromKey === dateKey(weekStart(new Date())),
     goToDate: (date) => setMonday(weekStart(date)),
     shiftWeek: (delta) => setMonday((m) => addWeeks(m, delta)),
     templates,
