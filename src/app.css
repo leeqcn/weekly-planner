@@ -1,0 +1,700 @@
+/* ---------------------------------------------------------------- 布局骨架 */
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 4rem;
+}
+
+.app-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.25rem;
+}
+
+.brand {
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.row-gap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.grow {
+  flex: 1;
+}
+
+.badge {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.small {
+  font-size: 0.78rem;
+}
+
+.error-text {
+  color: var(--bad);
+}
+
+.error-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8e6e2;
+  border: 1px solid var(--bad);
+  color: #8a3527;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.boot {
+  padding: 4rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+}
+
+.card + .card {
+  margin-top: 1rem;
+}
+
+.card h2 {
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.7rem;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-head h2 {
+  margin-bottom: 0.7rem;
+}
+
+/* -------------------------------------------------------------------- 登录 */
+.auth {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.auth-card {
+  width: min(380px, 100%);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.auth-card h1 {
+  font-size: 1.4rem;
+}
+
+/* ---------------------------------------------------------------- Week View */
+.week-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.week-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+
+.week-head h1 {
+  font-size: 1.15rem;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-height: 168px;
+  padding: 0.6rem 0.55rem;
+  text-align: left;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.day-cell:hover {
+  background: var(--paper-2);
+  border-color: var(--accent);
+}
+
+.day-cell.today {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-soft), var(--shadow);
+}
+
+.day-cell.special {
+  border-left: 4px solid var(--special);
+}
+
+.day-cell-wd {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+
+.day-cell-date {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.day-cell-special {
+  font-size: 0.7rem;
+  color: var(--special);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 0.35rem;
+}
+
+.day-cell-count {
+  margin-top: auto;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  display: inline-block;
+}
+
+.dot.empty {
+  background: transparent;
+  border: 1px dashed var(--rule-strong);
+}
+
+/* ------------------------------------------------------------ 侧栏 / 小月历 */
+.week-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.mini-cal {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.7rem;
+}
+
+.mini-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.mini-cal-head button {
+  padding: 0 0.4rem;
+}
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.mini-cal-wd {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding-bottom: 0.2rem;
+}
+
+.mini-cal-day {
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  padding: 0.22rem 0;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.mini-cal-day.out {
+  color: var(--ink-faint);
+}
+
+.mini-cal-day.in-week {
+  background: var(--accent-soft);
+}
+
+.mini-cal-day.today {
+  box-shadow: inset 0 0 0 1px var(--accent);
+  font-weight: 700;
+}
+
+.focus-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.focus-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.focus-list input {
+  flex: 1;
+}
+
+.focus-rank {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.focus-title {
+  font-size: 0.95rem;
+}
+
+/* ----------------------------------------------------------------- Day View */
+.day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.day-head h1 {
+  font-size: 1.2rem;
+}
+
+.special-badge {
+  color: var(--special);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.special-input {
+  width: 200px;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: var(--accent-soft);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.8rem;
+}
+
+.selected-title {
+  font-weight: 600;
+}
+
+.untimed {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+.untimed-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.chip {
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.chip.selected,
+.entry-block.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+/* ------------------------------------------------------------------ 时间轴 */
+.timeline-card {
+  padding: 0.8rem 0.9rem;
+}
+
+.timeline-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+
+.timeline-scroll {
+  max-height: 58vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* 给 00 点那行的刻度文字留出上浮空间 */
+  padding-top: 0.55rem;
+}
+
+.timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
+}
+
+.timeline-col {
+  position: relative;
+}
+
+.timeline-axis {
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+}
+
+.hour {
+  position: relative;
+  border-top: 1px solid var(--rule);
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+  font-family: system-ui, -apple-system, sans-serif;
+  text-align: center;
+}
+
+.hour span {
+  position: relative;
+  top: -0.45rem;
+  background: var(--paper-2);
+  padding: 0 0.2rem;
+}
+
+/* 时间轴上的横线延伸到左右两栏，纸质格纹的感觉。
+   --hour-px 由 DayView 通过内联样式写入，和 JS 的 HOUR_PX 保持一致。 */
+.timeline-col::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--rule) 0 1px,
+    transparent 1px var(--hour-px)
+  );
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px solid var(--bad);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.now-line::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bad);
+}
+
+.entry-block {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1px;
+  overflow: hidden;
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  border-radius: 6px;
+  border: 1px solid var(--rule-strong);
+  background: var(--accent-soft);
+  line-height: 1.15;
+}
+
+.entry-block.faded {
+  opacity: 0.42;
+}
+
+.entry-block.status-skipped {
+  background: repeating-linear-gradient(
+    45deg,
+    #f0eae0 0 6px,
+    #e6ded1 6px 12px
+  );
+  text-decoration: line-through;
+}
+
+.entry-block.status-rescheduled {
+  border-style: dashed;
+}
+
+.timeline-col.actually .entry-block {
+  background: #e3efe4;
+  border-color: #b9d6bd;
+}
+
+.entry-title {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.entry-time {
+  font-size: 0.66rem;
+  color: var(--ink-soft);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* -------------------------------------------------------------------- 表格 */
+.habits-table,
+.tpl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.habits-table th,
+.tpl-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.habits-table td,
+.tpl-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+
+.tpl-table tr.inactive td {
+  opacity: 0.5;
+}
+
+.habit-name {
+  white-space: nowrap;
+}
+
+.pct-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pct-cell input[type='range'] {
+  width: 120px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--accent);
+}
+
+.pct-value {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  width: 2.6rem;
+}
+
+.status-pill {
+  display: inline-block;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.72rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.note-input {
+  width: 100%;
+}
+
+/* -------------------------------------------------------------- 弹窗 / 设置 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 42, 36, 0.35);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 10;
+}
+
+.modal {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 0.45rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal.wide {
+  width: min(560px, 100%);
+}
+
+.modal h2 {
+  margin-bottom: 0.3rem;
+}
+
+.field-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
+.day-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.toggle {
+  min-width: 2rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+}
+
+.toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.sd-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.sd-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.25rem;
+}
+
+/* ------------------------------------------------------------------ 窄屏 */
+@media (max-width: 900px) {
+  .week-view {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .week-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .day-cell {
+    min-height: 120px;
+  }
+
+  .week-side {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
