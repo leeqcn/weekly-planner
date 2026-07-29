@@ -4,16 +4,46 @@
 import { chromium } from 'playwright'
 import { writeFileSync } from 'node:fs'
 
-const BROWN = '#6b4f34', PAGE = '#fbf8f2', BLOCK = '#a98a63', RULE = '#ddd3c0', OK = '#4f9d5d'
+const BROWN = '#6b4f34'
+const PAPER = '#fbf8f2'
+const INK = '#7a5c3e'
+const OK = '#4f9d5d'
 
-/** 一张纸 + 七根等高的列 = 一周七天，其中一天是绿色（已完成）。 */
+// 故意画歪一点，要的就是儿童画那种手抖的味道
+const wob = (n, amp) => Math.sin(n * 12.9898) * amp
+
+/** 一条待办：左边一个点，右边一根手画的横线。做完了就变成对勾 + 划掉的线。 */
+function row(i, y, x0, len, done) {
+  const cx = x0 + 17
+  const cy = y + wob(i + 1, 4)
+  const lx = x0 + 44
+  const ly = y + wob(i + 2, 4)
+  const end = lx + len
+  const sag = wob(i + 3, 7)
+  const curve = `M${lx} ${ly} Q ${(lx + end) / 2} ${ly + sag} ${end} ${ly + wob(i + 4, 4)}`
+
+  if (done) {
+    return (
+      `<path d="M${cx - 15} ${cy - 1} l 10 13 l 19 -25" fill="none" stroke="${OK}"
+        stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="${curve}" fill="none" stroke="${OK}" stroke-width="12"
+        stroke-linecap="round" opacity="0.5"/>`
+    )
+  }
+  return (
+    `<circle cx="${cx}" cy="${cy}" r="12" fill="${INK}"/>` +
+    `<path d="${curve}" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>`
+  )
+}
+
+/** 一张纸上三条待办，第一条已经打勾。 */
 function mark() {
-  const W = 32, GAP = 14, X0 = 26
-  let s = `<rect width="360" height="360" rx="44" fill="${PAGE}"/>`
-  s += `<path d="M30 70 H330" stroke="${RULE}" stroke-width="11" stroke-linecap="round"/>`
-  for (let i = 0; i < 7; i++)
-    s += `<rect x="${X0 + i * (W + GAP)}" y="116" width="${W}" height="202" rx="13" fill="${i === 3 ? OK : BLOCK}"/>`
-  return s
+  return (
+    `<rect width="360" height="360" rx="46" fill="${PAPER}"/>` +
+    row(0, 100, 44, 176, true) +
+    row(1, 180, 44, 122, false) +
+    row(2, 260, 44, 152, false)
+  )
 }
 
 /** page = 内页边长（512 画布内）；radius = 外框圆角，0 = 满幅 */

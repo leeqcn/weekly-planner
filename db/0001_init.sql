@@ -39,6 +39,9 @@ create table if not exists public.schedule_entries (
   status text not null default 'planned'
     check (status in ('planned', 'in_progress', 'done', 'skipped', 'rescheduled')),
   rescheduled_from timestamptz,
+  -- 待办用：完成度和当天备注，和 habits_log 一个意思
+  completion_pct int check (completion_pct is null or completion_pct between 0 and 100),
+  note text,
   created_at timestamptz not null default now()
 );
 

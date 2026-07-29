@@ -31,6 +31,8 @@ npm run dev
    - `0003_task_types.sql` — **必须跑**。类型从 `fixed_event/task/habit`
      改成 `event/todo/habit`，同时按「有没有填时间」修正存量数据。
      不跑的话新建模板会被数据库的 check 约束挡下来。
+   - `0004_todo_progress.sql` — **必须跑**。给 `schedule_entries` 加
+     `completion_pct` 和 `note`，待办才有完成度和备注。
 2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
 3. 重启 `npm run dev`。这时会先要求登录。
 
@@ -64,6 +66,7 @@ https://<本项目>-*.vercel.app/**    # 预览部署，可选
 db/0001_init.sql                    建表 + RLS（贴进 Supabase SQL Editor 跑）
 db/0002_entry_unique_constraint.sql 把部分唯一索引换成普通唯一约束
 db/0003_task_types.sql              类型改成 event / todo / habit（必须跑）
+db/0004_todo_progress.sql           待办加完成度和备注（必须跑）
 src/lib/
   dates.js        日期 / 周 / 时间换算，date-fns 封装
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）
@@ -95,7 +98,11 @@ src/components/           WeekView / DayView / Settings / …
 > 被判成待办、habit 该出现的地方不出现。类型自己说清楚是什么，就不用猜了。
 
 - **Week View**：To do 的 n×8 表格 → 7 个并排时间轴 → Habits 的 n×8 表格。
-- **Day View**：当天待办列表 → 左 Plan / 中刻度 / 右 Actually → 当天打卡区。
+- **Day View**：当天待办表格 → 左 Plan / 中刻度 / 右 Actually → 当天打卡表格。
+- **To do 和 Habits 用同一套组件**（`WeekProgressGrid` / `ProgressTable`），
+  长得一样、操作一样，不用记两套。都是完成度 + 备注，点一格在 100 / 50 / 0 之间循环。
+- 两者只有「还没打分时长什么样」不同：
+  **待办按 0 显示成红色**（一眼看出任务落在哪天），**习惯留空白**（不然满屏红）。
 - **时间轴完整 24 小时**，卡片里不再套一层滚动 —— 套滚动会看不到全天，还老滚错层。
 - 表格的行按「模板创建顺序 → 标题」稳定排序。之前跟着数据返回顺序走，
   数据一变行就跳位置，正要点的那行换到别处去了。
@@ -149,14 +156,16 @@ src/components/           WeekView / DayView / Settings / …
   `Vary: Origin`，而预缓存请求不带 Origin、页面上 crossorigin 的请求带，
   不加这个参数缓存明明有也读不到。
 
-图标是「一张纸 + 七根等高的列」（其中一天绿色 = 已完成），
-和日记类常见的本子 / 钢笔意象刻意区分开。
-改图标改 `scripts/gen-icons.mjs` 后重新生成即可。
+图标是一张手画风格的 to-do list —— 点 + 横线，第一条打了绿勾，
+线条故意画歪（`wob()`），儿童画的味道。缩到 32px 仍然认得出。
+改图标改 `scripts/gen-icons.mjs` 后重新生成即可
+（要先 `npm i -D playwright`，它不在项目依赖里）。
 
 ## 下一步
 
 - 拖拽调整时间：在 Plan 区拖一个方块到合适的位置，而不是填数字。
 - 每周统计（Step 2）。
+- 视图状态放进 URL：现在刷新会回到周视图。
 
 ## 部署
 

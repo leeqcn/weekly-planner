@@ -63,7 +63,12 @@ export function buildTodoRows(templates, entries, days) {
     key: g.key,
     title: g.title,
     templateId: g.templateId,
-    cells: keys.map((k) => (g.byDate.has(k) ? { date: k, entry: g.byDate.get(k) } : null)),
+    cells: keys.map((k) => {
+      const entry = g.byDate.get(k)
+      if (!entry) return null
+      // 待办没打分时算 0（红），这样一眼能看出任务落在哪天
+      return { date: k, pct: entry.completion_pct ?? 0, entry }
+    }),
   }))
   return sortRows(rows, templates)
 }
@@ -77,18 +82,24 @@ export function buildHabitRows(templates, habitLogs, days) {
       key: `habit:${t.id}`,
       title: t.title,
       templateId: t.id,
-      cells: days.map((day, i) =>
-        templateOccursOn(t, day)
-          ? {
-              date: keys[i],
-              log:
-                habitLogs.find((l) => l.template_id === t.id && l.date === keys[i]) ??
-                null,
-            }
-          : null,
-      ),
+      cells: days.map((day, i) => {
+        if (!templateOccursOn(t, day)) return null
+        const log =
+          habitLogs.find((l) => l.template_id === t.id && l.date === keys[i]) ?? null
+        // 习惯没打卡就留空白 —— 默认全红看着太吓人
+        return { date: keys[i], pct: log ? log.completion_pct : null, log }
+      }),
     }))
   return sortRows(rows, templates)
+}
+
+/** 点一下在这三档之间循环，第一下就是「做完了」。 */
+export const PCT_CYCLE = [100, 50, 0]
+
+export function nextPct(current) {
+  if (current === null || current === undefined) return PCT_CYCLE[0]
+  const i = PCT_CYCLE.indexOf(current)
+  return i === -1 ? PCT_CYCLE[0] : PCT_CYCLE[(i + 1) % PCT_CYCLE.length]
 }
 
 /** 某天的待办，Day View 用。 */

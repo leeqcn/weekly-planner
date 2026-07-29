@@ -4,7 +4,7 @@ import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { habitsOfDay, isScheduled, todosOfDay } from '../lib/schedule'
 import EntryEditor from './EntryEditor'
-import HabitsPanel from './HabitsPanel'
+import ProgressTable from './ProgressTable'
 
 // 完整 24 小时一次画完，不在卡片里再套滚动
 const HOUR_PX = 44
@@ -50,10 +50,20 @@ export default function DayView({ planner, date, onBack }) {
     })
   }
 
-  function toggleTodo(entry) {
-    if (entry.status === 'done') undo(entry)
-    else markDone(entry)
-  }
+  const saveTodo = (id, { pct, note }) =>
+    planner.updateEntry(id, {
+      completion_pct: pct,
+      note,
+      status: pct >= 100 ? 'done' : 'planned',
+    })
+
+  const saveHabit = (templateId, { pct, note }) =>
+    planner.saveHabitLog({
+      template_id: templateId,
+      date: key,
+      completion_pct: pct,
+      note,
+    })
 
   async function saveEditor(payload) {
     if (editing?.entry) await planner.updateEntry(editing.entry.id, payload)
@@ -126,32 +136,18 @@ export default function DayView({ planner, date, onBack }) {
       )}
 
       {/* 顺序：待办 -> 时间轴 -> 习惯 */}
-      <section className="card">
-        <h2>To do</h2>
-        {todos.length === 0 ? (
-          <p className="muted">今天没有待办。</p>
-        ) : (
-          <ul className="todo-list">
-            {todos.map((e) => (
-              <li key={e.id}>
-                <button
-                  className={`todo-check${e.status === 'done' ? ' done' : ''}`}
-                  onClick={() => toggleTodo(e)}
-                  title={e.status === 'done' ? '点一下取消完成' : '点一下标记完成'}
-                >
-                  {e.status === 'done' ? '✓' : ''}
-                </button>
-                <button
-                  className={`todo-title${e.status === 'done' ? ' done' : ''}`}
-                  onClick={() => setSelectedId(e.id)}
-                >
-                  {e.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <ProgressTable
+        title="To do"
+        rows={todos.map((e) => ({
+          id: e.id,
+          title: e.title,
+          pct: e.completion_pct ?? 0,
+          note: e.note,
+        }))}
+        onSave={saveTodo}
+        onOpen={(id) => setEditing({ entry: todos.find((e) => e.id === id) })}
+        emptyText="今天没有待办。"
+      />
 
       <section className="card timeline-card">
         <h2>Time schedule</h2>
@@ -211,11 +207,16 @@ export default function DayView({ planner, date, onBack }) {
         </p>
       </section>
 
-      <HabitsPanel
-        habits={habits}
-        logs={planner.habitLogs}
-        date={key}
-        onSave={planner.saveHabitLog}
+      <ProgressTable
+        title="Habits"
+        rows={habits.map((h) => {
+          const log = planner.habitLogs.find(
+            (l) => l.template_id === h.id && l.date === key,
+          )
+          return { id: h.id, title: h.title, pct: log?.completion_pct ?? 0, note: log?.note }
+        })}
+        onSave={saveHabit}
+        emptyText="今天没有需要打卡的习惯。"
       />
 
       {editing && (

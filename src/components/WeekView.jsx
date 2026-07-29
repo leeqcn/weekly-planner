@@ -2,9 +2,8 @@ import { format } from 'date-fns'
 import { buildHabitRows, buildTodoRows } from '../lib/schedule'
 import MiniCalendar from './MiniCalendar'
 import WeeklyFocusPanel from './WeeklyFocusPanel'
-import TodoGrid from './TodoGrid'
+import WeekProgressGrid from './WeekProgressGrid'
 import WeekTimeline from './WeekTimeline'
-import HabitGrid from './HabitGrid'
 
 export default function WeekView({ planner, onOpenDay }) {
   const {
@@ -15,15 +14,19 @@ export default function WeekView({ planner, onOpenDay }) {
   const todoRows = buildTodoRows(templates, entries, days)
   const habitRows = buildHabitRows(templates, habitLogs, days)
 
-  function toggleTodo(entry) {
-    const stamp = new Date().toISOString()
-    updateEntry(
-      entry.id,
-      entry.status === 'done'
-        ? { status: 'planned', actual_start: null, actual_end: null }
-        : { status: 'done', actual_start: stamp, actual_end: stamp },
-    )
-  }
+  const setTodoPct = (row, cell, pct) =>
+    updateEntry(cell.entry.id, {
+      completion_pct: pct,
+      status: pct >= 100 ? 'done' : 'planned',
+    })
+
+  const setHabitPct = (row, cell, pct) =>
+    saveHabitLog({
+      template_id: row.templateId,
+      date: cell.date,
+      completion_pct: pct,
+      note: cell.log?.note ?? null,
+    })
 
   return (
     <div className="week-view">
@@ -49,7 +52,15 @@ export default function WeekView({ planner, onOpenDay }) {
       </div>
 
       {/* 顺序：待办 -> 时间轴 -> 习惯 */}
-      <TodoGrid rows={todoRows} days={days} onToggle={toggleTodo} />
+      <WeekProgressGrid
+        title="To do"
+        rows={todoRows}
+        days={days}
+        emptyStyle="zero"
+        onSetPct={setTodoPct}
+        hint="点一下在 100 / 50 / 0 之间循环。红色 = 那天有任务还没做。"
+        emptyText="这周没有待办。在「设置」里建一个待办模板，或者在某一天里加一条不填时间的安排。"
+      />
 
       <WeekTimeline
         days={days}
@@ -58,7 +69,15 @@ export default function WeekView({ planner, onOpenDay }) {
         onOpenDay={onOpenDay}
       />
 
-      <HabitGrid rows={habitRows} days={days} onSetHabit={saveHabitLog} />
+      <WeekProgressGrid
+        title="Habits"
+        rows={habitRows}
+        days={days}
+        emptyStyle="blank"
+        onSetPct={setHabitPct}
+        hint="点一下在 100 / 50 / 0 之间循环。空白 = 还没打卡。"
+        emptyText="还没有习惯。在「设置」里建一个习惯模板（比如运动、早睡），它会每天重复。"
+      />
     </div>
   )
 }

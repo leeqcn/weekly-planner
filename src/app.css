@@ -998,6 +998,22 @@ th.gt-name {
 }
 
 /* ---------------------------------------------------- Day View 的待办列表 */
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 3px;
+}
+
+.link-btn:hover:not(:disabled) {
+  background: none;
+  text-decoration-color: var(--accent);
+  color: var(--accent);
+}
+
 .todo-list {
   list-style: none;
   margin: 0;
