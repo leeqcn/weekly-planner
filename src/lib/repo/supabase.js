@@ -96,6 +96,12 @@ export function createSupabaseRepo(userId) {
       )
     },
 
+    async deleteHabitLog(templateId, date) {
+      unwrap(
+        await from('habits_log').delete().eq('template_id', templateId).eq('date', date),
+      )
+    },
+
     async listWeeklyFocus(weekStartDate) {
       return unwrap(
         await from('weekly_focus')

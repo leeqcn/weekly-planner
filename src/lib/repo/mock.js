@@ -47,7 +47,8 @@ export function createMockRepo(seed) {
 
     async createTemplate(data) {
       return mutate((db) => {
-        const row = { ...data, id: uid(), created_at: new Date().toISOString() }
+        // 带 id 就沿用 —— 撤销「删除」时要把原来那一行原样放回去
+        const row = { created_at: new Date().toISOString(), ...data, id: data.id ?? uid() }
         db.templates.push(row)
         return row
       })
@@ -88,7 +89,7 @@ export function createMockRepo(seed) {
           const k = `${row.template_id}|${row.date}`
           if (row.template_id && seen.has(k)) continue
           seen.add(k)
-          const entry = { ...row, id: uid(), created_at: new Date().toISOString() }
+          const entry = { created_at: new Date().toISOString(), ...row, id: row.id ?? uid() }
           db.schedule_entries.push(entry)
           added.push(entry)
         }
@@ -126,6 +127,14 @@ export function createMockRepo(seed) {
         row.completion_pct = completion_pct
         row.note = note ?? null
         return row
+      })
+    },
+
+    async deleteHabitLog(templateId, date) {
+      mutate((db) => {
+        db.habits_log = db.habits_log.filter(
+          (h) => !(h.template_id === templateId && h.date === date),
+        )
       })
     },
 

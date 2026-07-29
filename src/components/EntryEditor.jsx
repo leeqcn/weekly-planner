@@ -26,6 +26,7 @@ const toIso = (date, minutes) =>
  */
 export default function EntryEditor({
   entry,
+  actualOnly,
   date,
   dayEntries,
   onSave,
@@ -34,6 +35,8 @@ export default function EntryEditor({
 }) {
   const isNew = !entry
   const [title, setTitle] = useState(entry?.title ?? '')
+  const [minDur, setMinDur] = useState(entry?.min_duration_minutes ?? '')
+  const [maxDur, setMaxDur] = useState(entry?.max_duration_minutes ?? '')
   const [plan, setPlan] = useState(() => toGroup(entry?.planned_start, entry?.planned_end))
   const [actual, setActual] = useState(() =>
     toGroup(entry?.actual_start, entry?.actual_end),
@@ -49,6 +52,12 @@ export default function EntryEditor({
     const actual_end = toIso(date, actual.end)
     const didIt = Boolean(actual_start && actual_end)
 
+    const num = (v) => (v === '' || v === null ? null : Number(v))
+    const durations = {
+      min_duration_minutes: num(minDur),
+      max_duration_minutes: num(maxDur),
+    }
+
     if (isNew) {
       onSave({
         template_id: null,
@@ -58,6 +67,7 @@ export default function EntryEditor({
         planned_end,
         actual_start,
         actual_end,
+        ...durations,
         status: didIt ? 'done' : 'planned',
         rescheduled_from: null,
       })
@@ -71,6 +81,7 @@ export default function EntryEditor({
       planned_end,
       actual_start,
       actual_end,
+      ...durations,
       status: didIt
         ? 'done'
         : entry.status === 'skipped'
@@ -85,7 +96,12 @@ export default function EntryEditor({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form className="card modal wide" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{isNew ? '新增一条安排' : '修改安排'}</h2>
+        <h2>{actualOnly ? '记录实际做了什么' : isNew ? '新增一条安排' : '修改安排'}</h2>
+        {actualOnly && (
+          <p className="muted small">
+            没排过计划、但确实做了的事 —— 只填「实际」就行，左边计划栏会留空。
+          </p>
+        )}
 
         <label htmlFor="entry-title">标题</label>
         <input
@@ -98,13 +114,45 @@ export default function EntryEditor({
 
         <div className="editor-body">
           <div className="editor-fields">
-            <TimeFields
-              id="plan"
-              label="计划"
-              value={plan}
-              onChange={setPlan}
-              hint="三个都留空就是一条待办，不占时间轴。"
-            />
+            {!actualOnly && (
+              <TimeFields
+                id="plan"
+                label="计划"
+                value={plan}
+                onChange={setPlan}
+                hint="三个都留空就是一条待办，可以之后再「排入」时间轴。"
+              />
+            )}
+
+            <fieldset className="time-fields">
+              <legend>预计时长</legend>
+              <div className="time-row">
+                <div>
+                  <label htmlFor="dur-min">最短（分钟）</label>
+                  <input
+                    id="dur-min"
+                    inputMode="numeric"
+                    value={minDur}
+                    placeholder="30"
+                    onChange={(e) => setMinDur(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="dur-max">最长（分钟）</label>
+                  <input
+                    id="dur-max"
+                    inputMode="numeric"
+                    value={maxDur}
+                    placeholder="60"
+                    onChange={(e) => setMaxDur(e.target.value)}
+                  />
+                </div>
+              </div>
+              <p className="muted small">
+                「排入」按上限找空档。两个填不一样（比如购物 30–60）时，
+                块会画成半透明，表示还没定死。
+              </p>
+            </fieldset>
             <TimeFields id="actual" label="实际" value={actual} onChange={setActual} />
             {(plan.start !== null || actual.start !== null) && (
               <button

@@ -44,8 +44,8 @@ export default function Settings({ planner, onBack }) {
       title: draft.title.trim(),
       type: draft.type,
       priority: isTodo ? (draft.priority ?? 'optional') : null,
-      min_duration_minutes: null,
-      max_duration_minutes: null,
+      min_duration_minutes: isTodo ? numOrNull(draft.min_duration_minutes) : null,
+      max_duration_minutes: isTodo ? numOrNull(draft.max_duration_minutes) : null,
       recurrence: draft.type === 'habit' ? 'weekly' : draft.recurrence,
       // habit 每天重复，不给选周几
       recurrence_days: draft.type === 'habit' ? EVERY_DAY : draft.recurrence_days,
@@ -241,6 +241,30 @@ export default function Settings({ planner, onBack }) {
             {draft.type === 'todo' && (
               <div className="field-row">
                 <div>
+                  <label htmlFor="tpl-min">最短（分钟）</label>
+                  <input
+                    id="tpl-min"
+                    inputMode="numeric"
+                    value={draft.min_duration_minutes ?? ''}
+                    placeholder="30"
+                    onChange={(e) =>
+                      setDraft({ ...draft, min_duration_minutes: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label htmlFor="tpl-max">最长（分钟）</label>
+                  <input
+                    id="tpl-max"
+                    inputMode="numeric"
+                    value={draft.max_duration_minutes ?? ''}
+                    placeholder="60"
+                    onChange={(e) =>
+                      setDraft({ ...draft, max_duration_minutes: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
                   <label htmlFor="tpl-prio">优先级</label>
                   <select
                     id="tpl-prio"
@@ -354,6 +378,12 @@ function TemplateTime({ draft, setDraft }) {
       hint="填两个就行。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。"
     />
   )
+}
+
+function numOrNull(v) {
+  if (v === '' || v === null || v === undefined) return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
 }
 
 function describeRecurrence(t) {

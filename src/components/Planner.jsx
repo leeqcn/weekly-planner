@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePlanner } from '../state/usePlanner'
 import WeekView from './WeekView'
 import DayView from './DayView'
@@ -7,6 +7,18 @@ import Settings from './Settings'
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
   const [view, setView] = useState({ name: 'week' })
+
+  // Ctrl/Cmd + Z 也能撤销
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        planner.undo()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [planner])
 
   return (
     <div className="app">
@@ -19,6 +31,14 @@ export default function Planner({ repo, onSignOut }) {
         )}
         <span className="spacer" />
         {planner.loading && <span className="muted small">载入中…</span>}
+        <button
+          className="ghost"
+          disabled={!planner.canUndo}
+          onClick={planner.undo}
+          title={planner.canUndo ? `撤销：${planner.undoLabel}` : '没有可撤销的操作'}
+        >
+          ↩ 撤销
+        </button>
         <button className="ghost" onClick={() => setView({ name: 'settings' })}>
           设置
         </button>

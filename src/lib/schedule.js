@@ -47,6 +47,7 @@ export function buildTodoRows(templates, entries, days) {
 
   for (const entry of entries) {
     if (isScheduled(entry)) continue
+    if (entry.actual_start && entry.actual_end) continue // 只记实际的，不算待办
     const key = entry.template_id ? `tpl:${entry.template_id}` : `adhoc:${entry.title}`
     if (!groups.has(key)) {
       groups.set(key, {
@@ -102,12 +103,56 @@ export function nextPct(current) {
   return i === -1 ? PCT_CYCLE[0] : PCT_CYCLE[(i + 1) % PCT_CYCLE.length]
 }
 
-/** 某天的待办，Day View 用。 */
+/**
+ * 某天的待办：没有计划时间、也没记过实际的条目。
+ *
+ * 「只记实际」的条目同样没有计划时间，但它是已经做完的记录，
+ * 不该再出现在待办里 —— 它只出现在 Actually 栏。
+ */
 export function todosOfDay(entries, key) {
-  return entries.filter((e) => e.date === key && !isScheduled(e))
+  return entries.filter(
+    (e) => e.date === key && !isScheduled(e) && !(e.actual_start && e.actual_end),
+  )
 }
 
 /** 某天该打卡的习惯。 */
 export function habitsOfDay(templates, day) {
   return templates.filter((t) => t.type === 'habit' && templateOccursOn(t, day))
+}
+
+/**
+ * 时间块画成什么样 —— 全部算出来，不存状态。
+ *
+ *   conflict 和别的块撞了            -> 半透明 + 红
+ *   loose    时长还是个区间，没定死  -> 半透明
+ *   solid    起止都定死且不冲突      -> 实心
+ *
+ * 撞车不阻止你排，只是显眼地告诉你，自己拖开就行。
+ */
+export function blockState(entry, dayEntries) {
+  const from = new Date(entry.planned_start).getTime()
+  const to = new Date(entry.planned_end).getTime()
+
+  const clashes = dayEntries.some((other) => {
+    if (other.id === entry.id || !isScheduled(other)) return false
+    return (
+      from < new Date(other.planned_end).getTime() &&
+      to > new Date(other.planned_start).getTime()
+    )
+  })
+  if (clashes) return 'conflict'
+
+  const { min_duration_minutes: min, max_duration_minutes: max } = entry
+  if (min !== null && min !== undefined && max !== null && max !== undefined && min !== max) {
+    return 'loose'
+  }
+  return 'solid'
+}
+
+/** '30–60 分钟' / '1 小时'，块上和待办表里都用。 */
+export function describeRange(entry) {
+  const { min_duration_minutes: min, max_duration_minutes: max } = entry
+  if (min == null && max == null) return ''
+  if (min != null && max != null && min !== max) return `${min}–${max}′`
+  return `${max ?? min}′`
 }

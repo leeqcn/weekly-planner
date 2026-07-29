@@ -8,12 +8,26 @@ import { habitStatus } from '../lib/habits'
  * rows: [{ id, title, pct, note }]
  * onOpen: 传了的话，标题可以点开去编辑（待办用）
  */
-export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }) {
+export default function ProgressTable({
+  title,
+  rows,
+  onSave,
+  onOpen,
+  onPlace,
+  emptyText,
+}) {
   const [draft, setDraft] = useState({})
 
   useEffect(() => {
     setDraft(
-      Object.fromEntries(rows.map((r) => [r.id, { pct: r.pct ?? 0, note: r.note ?? '' }])),
+      Object.fromEntries(
+        // pct 为 null = 还没打过卡。滑杆得有个数值，所以显示 0，
+        // 但状态列留「—」而不是红色的 keep going —— 没打卡不等于没做好。
+        rows.map((r) => [
+          r.id,
+          { pct: r.pct ?? 0, note: r.note ?? '', unlogged: r.pct === null },
+        ]),
+      ),
     )
   }, [rows])
 
@@ -26,7 +40,8 @@ export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }
     )
   }
 
-  const set = (id, patch) => setDraft((d) => ({ ...d, [id]: { ...d[id], ...patch } }))
+  const set = (id, patch) =>
+    setDraft((d) => ({ ...d, [id]: { ...d[id], ...patch, unlogged: false } }))
 
   const commit = (id) => {
     const row = draft[id]
@@ -45,15 +60,17 @@ export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }
           <thead>
             <tr>
               <th>名称</th>
+              {onPlace && <th>时长</th>}
               <th>完成度</th>
               <th>状态</th>
               <th>备注</th>
+              {onPlace && <th />}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => {
               const row = draft[r.id] ?? { pct: 0, note: '' }
-              const status = habitStatus(row.pct)
+              const status = row.unlogged ? null : habitStatus(row.pct)
               return (
                 <tr key={r.id}>
                   <td className="habit-name">
@@ -65,6 +82,7 @@ export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }
                       r.title
                     )}
                   </td>
+                  {onPlace && <td className="small dur-cell">{r.duration || '—'}</td>}
                   <td>
                     <div className="pct-cell">
                       <input
@@ -82,9 +100,13 @@ export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }
                     </div>
                   </td>
                   <td>
-                    <span className="status-pill" style={{ background: status.color }}>
-                      {status.label}
-                    </span>
+                    {status ? (
+                      <span className="status-pill" style={{ background: status.color }}>
+                        {status.label}
+                      </span>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
                   </td>
                   <td>
                     <input
@@ -95,13 +117,29 @@ export default function ProgressTable({ title, rows, onSave, onOpen, emptyText }
                       onBlur={() => commit(r.id)}
                     />
                   </td>
+                  {onPlace && (
+                    <td>
+                      <button
+                        className="place-btn"
+                        onClick={() => onPlace(r.id)}
+                        title="排进时间轴：自动找第一个装得下的空档"
+                      >
+                        排入 →
+                      </button>
+                    </td>
+                  )}
                 </tr>
               )
             })}
           </tbody>
         </table>
       </div>
-      {onOpen && <p className="muted small">点名称可以改标题、加时间或删除。</p>}
+      {onOpen && (
+        <p className="muted small">
+          点名称可以改标题、时长或删除。
+          {onPlace && '「排入」会自动找第一个装得下的空档，排不下也会排上去并标红。'}
+        </p>
+      )}
     </section>
   )
 }

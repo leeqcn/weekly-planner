@@ -12,11 +12,17 @@ import { join, relative, resolve, sep } from 'node:path'
  * 清单的哈希同时当版本号用：资源一变，缓存名就变，旧缓存在 activate 里被清掉。
  */
 function precacheServiceWorker() {
+  let outDir = 'dist'
   return {
     name: 'precache-service-worker',
     apply: 'build',
+    configResolved(config) {
+      // 用真实的 outDir，不要写死 'dist' —— 临时的 --ssr 小打包输出到别处，
+      // 写死的话会去处理上一次残留的 dist/sw.js，占位行早被替换过就报错
+      outDir = config.build.outDir
+    },
     closeBundle() {
-      const dist = resolve('dist')
+      const dist = resolve(outDir)
       const swPath = join(dist, 'sw.js')
       // 只对正经的应用打包生效；临时的 --ssr 小打包没有 sw.js，跳过
       if (!existsSync(swPath)) return

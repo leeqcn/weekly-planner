@@ -30,6 +30,8 @@ export function buildEntriesFor(templates, days, existingEntries) {
         planned_end: combineDateTime(key, template.end_time),
         actual_start: null,
         actual_end: null,
+        min_duration_minutes: template.min_duration_minutes ?? null,
+        max_duration_minutes: template.max_duration_minutes ?? null,
         status: 'planned',
         rescheduled_from: null,
       })
