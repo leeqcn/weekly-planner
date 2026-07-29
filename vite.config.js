@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { createHash } from 'node:crypto'
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
 
 /**
@@ -18,6 +18,8 @@ function precacheServiceWorker() {
     closeBundle() {
       const dist = resolve('dist')
       const swPath = join(dist, 'sw.js')
+      // 只对正经的应用打包生效；临时的 --ssr 小打包没有 sw.js，跳过
+      if (!existsSync(swPath)) return
 
       const files = []
       const walk = (dir) => {

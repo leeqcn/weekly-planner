@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { dateKey, fromDateKey } from '../lib/dates'
+import { TYPES } from '../lib/schedule'
+import { formatClock, parseClock } from '../lib/time'
+import TimeFields from './TimeFields'
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
-const TYPE_LABELS = {
-  fixed_event: '固定事件',
-  task: '任务',
-  habit: '习惯打卡',
-}
+const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
+const TYPE_LABELS = Object.fromEntries(
+  Object.entries(TYPES).map(([k, v]) => [k, v.label]),
+)
 const PRIORITY_LABELS = { must: '必须', high: '重要', optional: '可选' }
 
 const BLANK = {
   title: '',
-  type: 'fixed_event',
+  type: 'event',
   priority: null,
   min_duration_minutes: null,
   max_duration_minutes: null,
@@ -36,20 +38,23 @@ export default function Settings({ planner, onBack }) {
 
   async function save(e) {
     e.preventDefault()
-    const isTask = draft.type === 'task'
+    const isTodo = draft.type === 'todo'
+    const isEvent = draft.type === 'event'
     const payload = {
       title: draft.title.trim(),
       type: draft.type,
-      priority: isTask ? (draft.priority ?? 'optional') : null,
-      min_duration_minutes: isTask ? numOrNull(draft.min_duration_minutes) : null,
-      max_duration_minutes: isTask ? numOrNull(draft.max_duration_minutes) : null,
-      recurrence: draft.recurrence,
-      recurrence_days: draft.recurrence_days,
-      start_time: draft.start_time || null,
-      end_time: draft.end_time || null,
+      priority: isTodo ? (draft.priority ?? 'optional') : null,
+      min_duration_minutes: null,
+      max_duration_minutes: null,
+      recurrence: draft.type === 'habit' ? 'weekly' : draft.recurrence,
+      // habit 每天重复，不给选周几
+      recurrence_days: draft.type === 'habit' ? EVERY_DAY : draft.recurrence_days,
+      start_time: isEvent ? draft.start_time || null : null,
+      end_time: isEvent ? draft.end_time || null : null,
       is_active: draft.is_active,
     }
     if (!payload.title || !payload.recurrence_days.length) return
+    if (isEvent && !(payload.start_time && payload.end_time)) return
     if (draft.id) await planner.updateTemplate(draft.id, payload)
     else await planner.createTemplate(payload)
     setDraft(null)
@@ -99,7 +104,7 @@ export default function Settings({ planner, onBack }) {
                   <td className="small">
                     {t.start_time
                       ? `${t.start_time.slice(0, 5)}–${(t.end_time ?? '').slice(0, 5)}`
-                      : '弹性'}
+                      : '—'}
                   </td>
                   <td className="small">{t.is_active ? '启用' : '停用'}</td>
                   <td className="row-gap">
@@ -157,7 +162,17 @@ export default function Settings({ planner, onBack }) {
                 <select
                   id="tpl-type"
                   value={draft.type}
-                  onChange={(e) => setDraft({ ...draft, type: e.target.value })}
+                  onChange={(e) => {
+                    const type = e.target.value
+                    setDraft({
+                      ...draft,
+                      type,
+                      recurrence_days:
+                        type === 'habit' ? EVERY_DAY : draft.recurrence_days,
+                      start_time: type === 'event' ? draft.start_time : '',
+                      end_time: type === 'event' ? draft.end_time : '',
+                    })
+                  }}
                 >
                   {Object.entries(TYPE_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>
@@ -166,6 +181,7 @@ export default function Settings({ planner, onBack }) {
                   ))}
                 </select>
               </div>
+              {draft.type !== 'habit' && (
               <div>
                 <label htmlFor="tpl-rec">重复方式</label>
                 <select
@@ -183,8 +199,15 @@ export default function Settings({ planner, onBack }) {
                   <option value="monthly">每月</option>
                 </select>
               </div>
+              )}
             </div>
 
+            <p className="muted small">{TYPES[draft.type].hint}</p>
+
+            {draft.type === 'habit' ? (
+              <p className="muted small">习惯每天重复，不用选周几。</p>
+            ) : (
+            <>
             <label>{draft.recurrence === 'weekly' ? '周几' : '每月几号'}</label>
             <div className="day-toggles">
               {(draft.recurrence === 'weekly'
@@ -208,31 +231,14 @@ export default function Settings({ planner, onBack }) {
                 </button>
               ))}
             </div>
-
-            {draft.type !== 'habit' && (
-              <div className="field-row">
-                <div>
-                  <label htmlFor="tpl-start">开始时间</label>
-                  <input
-                    id="tpl-start"
-                    type="time"
-                    value={draft.start_time}
-                    onChange={(e) => setDraft({ ...draft, start_time: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="tpl-end">结束时间</label>
-                  <input
-                    id="tpl-end"
-                    type="time"
-                    value={draft.end_time}
-                    onChange={(e) => setDraft({ ...draft, end_time: e.target.value })}
-                  />
-                </div>
-              </div>
+            </>
             )}
 
-            {draft.type === 'task' && (
+            {draft.type === 'event' && (
+              <TemplateTime draft={draft} setDraft={setDraft} />
+            )}
+
+            {draft.type === 'todo' && (
               <div className="field-row">
                 <div>
                   <label htmlFor="tpl-prio">优先级</label>
@@ -242,42 +248,12 @@ export default function Settings({ planner, onBack }) {
                     onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
                   >
                     {Object.entries(PRIORITY_LABELS).map(([v, l]) => (
-                      <option key={v} value={v}>
-                        {l}
-                      </option>
+                      <option key={v} value={v}>{l}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label htmlFor="tpl-min">最短（分钟）</label>
-                  <input
-                    id="tpl-min"
-                    type="number"
-                    min="0"
-                    value={draft.min_duration_minutes ?? ''}
-                    onChange={(e) =>
-                      setDraft({ ...draft, min_duration_minutes: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label htmlFor="tpl-max">最长（分钟）</label>
-                  <input
-                    id="tpl-max"
-                    type="number"
-                    min="0"
-                    value={draft.max_duration_minutes ?? ''}
-                    onChange={(e) =>
-                      setDraft({ ...draft, max_duration_minutes: e.target.value })
-                    }
-                  />
-                </div>
               </div>
             )}
-
-            <p className="muted small">
-              habit 不进时间轴，只在 Day View 的打卡区出现；task / fixed_event 留空时间就是「待安排」。
-            </p>
 
             <div className="modal-actions">
               <span className="spacer" />
@@ -352,6 +328,34 @@ function SpecialDays({ planner }) {
   )
 }
 
+/** 模板上的时间也用手打 + 时长联动，跟条目编辑保持一致。 */
+function TemplateTime({ draft, setDraft }) {
+  const value = {
+    start: parseClock(draft.start_time),
+    end: parseClock(draft.end_time),
+    duration:
+      parseClock(draft.start_time) !== null && parseClock(draft.end_time) !== null
+        ? parseClock(draft.end_time) - parseClock(draft.start_time)
+        : null,
+  }
+  const apply = (next) =>
+    setDraft({
+      ...draft,
+      start_time: next.start === null ? '' : formatClock(next.start),
+      end_time: next.end === null ? '' : formatClock(next.end),
+    })
+
+  return (
+    <TimeFields
+      id="tpl"
+      label="时间"
+      value={value}
+      onChange={apply}
+      hint="填两个就行。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。"
+    />
+  )
+}
+
 function describeRecurrence(t) {
   const days = t.recurrence_days ?? []
   if (!days.length) return '—'
@@ -360,8 +364,3 @@ function describeRecurrence(t) {
     : days.map((d) => `${d} 号`).join(' ')
 }
 
-function numOrNull(v) {
-  if (v === '' || v === null || v === undefined) return null
-  const n = Number(v)
-  return Number.isFinite(n) ? n : null
-}

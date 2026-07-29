@@ -1,22 +1,53 @@
 import { useState } from 'react'
-import { combineDateTime, formatTime } from '../lib/dates'
+import { combineDateTime, minutesOfDay } from '../lib/dates'
+import { formatClock } from '../lib/time'
+import TimeFields from './TimeFields'
+import DayStrip from './DayStrip'
+
+const empty = { start: null, end: null, duration: null }
+
+function toGroup(startIso, endIso) {
+  if (!startIso || !endIso) return { ...empty }
+  const start = minutesOfDay(startIso)
+  const endRaw = minutesOfDay(endIso)
+  // 结束落到第二天 0 点时按 24:00 算
+  const end = endRaw === 0 && start > 0 ? 1440 : endRaw
+  return { start, end, duration: Math.max(0, end - start) }
+}
+
+const toIso = (date, minutes) =>
+  minutes === null || minutes === undefined
+    ? null
+    : combineDateTime(date, formatClock(minutes === 1440 ? 1439 : minutes))
 
 /**
- * 新建 / 改一条日程。改时间就是 reschedule：
- * 记下原计划时间到 rescheduled_from，状态置为 rescheduled。
+ * 新建 / 修改一条安排。计划和实际分成两块单独填 ——
+ * 之前只有一组时间输入，在「实际」那栏点开改时间，改的其实是计划。
  */
-export default function EntryEditor({ entry, date, onSave, onDelete, onClose }) {
+export default function EntryEditor({
+  entry,
+  date,
+  dayEntries,
+  onSave,
+  onDelete,
+  onClose,
+}) {
   const isNew = !entry
   const [title, setTitle] = useState(entry?.title ?? '')
-  const [start, setStart] = useState(formatTime(entry?.planned_start))
-  const [end, setEnd] = useState(formatTime(entry?.planned_end))
+  const [plan, setPlan] = useState(() => toGroup(entry?.planned_start, entry?.planned_end))
+  const [actual, setActual] = useState(() =>
+    toGroup(entry?.actual_start, entry?.actual_end),
+  )
 
-  function submit(e) {
-    e.preventDefault()
+  function submit(event) {
+    event.preventDefault()
     if (!title.trim()) return
 
-    const planned_start = combineDateTime(date, start)
-    const planned_end = combineDateTime(date, end)
+    const planned_start = toIso(date, plan.start)
+    const planned_end = toIso(date, plan.end)
+    const actual_start = toIso(date, actual.start)
+    const actual_end = toIso(date, actual.end)
+    const didIt = Boolean(actual_start && actual_end)
 
     if (isNew) {
       onSave({
@@ -25,31 +56,35 @@ export default function EntryEditor({ entry, date, onSave, onDelete, onClose }) 
         title: title.trim(),
         planned_start,
         planned_end,
-        actual_start: null,
-        actual_end: null,
-        status: 'planned',
+        actual_start,
+        actual_end,
+        status: didIt ? 'done' : 'planned',
         rescheduled_from: null,
       })
       return
     }
 
-    const moved = planned_start !== entry.planned_start
+    const moved = planned_start !== entry.planned_start && entry.planned_start
     onSave({
       title: title.trim(),
       planned_start,
       planned_end,
-      ...(moved && entry.planned_start
-        ? {
-            rescheduled_from: entry.rescheduled_from ?? entry.planned_start,
-            status: entry.status === 'done' ? entry.status : 'rescheduled',
-          }
-        : {}),
+      actual_start,
+      actual_end,
+      status: didIt
+        ? 'done'
+        : entry.status === 'skipped'
+          ? 'skipped'
+          : moved
+            ? 'rescheduled'
+            : 'planned',
+      ...(moved ? { rescheduled_from: entry.rescheduled_from ?? entry.planned_start } : {}),
     })
   }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+      <form className="card modal wide" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{isNew ? '新增一条安排' : '修改安排'}</h2>
 
         <label htmlFor="entry-title">标题</label>
@@ -61,33 +96,41 @@ export default function EntryEditor({ entry, date, onSave, onDelete, onClose }) 
           placeholder="做什么"
         />
 
-        <div className="field-row">
-          <div>
-            <label htmlFor="entry-start">开始</label>
-            <input
-              id="entry-start"
-              type="time"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
+        <div className="editor-body">
+          <div className="editor-fields">
+            <TimeFields
+              id="plan"
+              label="计划"
+              value={plan}
+              onChange={setPlan}
+              hint="三个都留空就是一条待办，不占时间轴。"
             />
+            <TimeFields id="actual" label="实际" value={actual} onChange={setActual} />
+            {(plan.start !== null || actual.start !== null) && (
+              <button
+                type="button"
+                className="ghost small-btn"
+                onClick={() => {
+                  setPlan({ ...empty })
+                  setActual({ ...empty })
+                }}
+              >
+                清空时间（变成待办）
+              </button>
+            )}
+            {entry?.rescheduled_from && (
+              <p className="muted small">
+                原计划 {formatClock(minutesOfDay(entry.rescheduled_from))}，已改期。
+              </p>
+            )}
           </div>
-          <div>
-            <label htmlFor="entry-end">结束</label>
-            <input
-              id="entry-end"
-              type="time"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </div>
-        </div>
-        <p className="muted small">留空表示时间灵活，会放在时间轴上方的「待安排」里。</p>
 
-        {entry?.rescheduled_from && (
-          <p className="muted small">
-            原计划 {formatTime(entry.rescheduled_from)}，已改期。
-          </p>
-        )}
+          <DayStrip
+            entries={dayEntries ?? []}
+            editingId={entry?.id}
+            draft={{ start: plan.start, end: plan.end }}
+          />
+        </div>
 
         <div className="modal-actions">
           {!isNew && (

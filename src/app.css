@@ -268,10 +268,11 @@
 }
 
 .wt-scroll {
-  max-height: 366px;
-  overflow-y: auto;
-  overflow-x: hidden;
   padding-top: 0.45rem;
+  /* 当前时间线那个小圆点会溢出几像素；横向滚动的父元素会因此
+     被浏览器算成纵向也可滚（overflow-x:auto 会把 visible 提成 auto），
+     补一点内边距把它吃掉，免得冒出一根多余的竖滚动条 */
+  padding-bottom: 6px;
 }
 
 .wt-body {
@@ -346,37 +347,37 @@
   border-style: dashed;
 }
 
-/* ---------------------------------------------- 周视图：n x 8 清单表格 */
-.checklist-scroll {
+/* ------------------------------------ 周视图：To do / Habits 的 n x 8 表格 */
+.grid-scroll {
   overflow-x: auto;
 }
 
-.checklist {
+.week-grid-table {
   width: 100%;
   min-width: 320px;
   border-collapse: collapse;
   font-size: 0.85rem;
 }
 
-.checklist th,
-.checklist td {
+.week-grid-table th,
+.week-grid-table td {
   border-bottom: 1px solid var(--rule);
   padding: 0.3rem 0.2rem;
   text-align: center;
 }
 
-.checklist thead th {
+.week-grid-table thead th {
   font-weight: 500;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--rule-strong);
 }
 
-.checklist thead th.today .cl-date {
+.week-grid-table thead th.today .gt-date {
   color: var(--accent);
   font-weight: 700;
 }
 
-.cl-wd {
+.gt-wd {
   display: block;
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 0.6rem;
@@ -384,12 +385,12 @@
   color: var(--ink-faint);
 }
 
-.cl-date {
+.gt-date {
   display: block;
   font-size: 0.85rem;
 }
 
-th.cl-name {
+th.gt-name {
   text-align: left;
   font-weight: 500;
   white-space: nowrap;
@@ -400,17 +401,17 @@ th.cl-name {
   background: var(--paper-2);
 }
 
-.cl-row-task th.cl-name {
+.cl-row-task th.gt-name {
   color: var(--ink-soft);
 }
 
-.checklist thead th:not(.cl-name),
-.cl-cell {
+.week-grid-table thead th:not(.gt-name),
+.gt-cell {
   width: 11%;
 }
 
-.cl-mark,
-.cl-check {
+.gt-mark,
+.gt-check {
   width: 1.7rem;
   height: 1.7rem;
   padding: 0;
@@ -423,42 +424,42 @@ th.cl-name {
   place-items: center;
 }
 
-.cl-mark:hover:not(:disabled) {
+.gt-mark:hover:not(:disabled) {
   border-color: var(--ink);
   background: inherit;
 }
 
-.cl-mark.empty {
+.gt-mark.empty {
   background: transparent;
   border: 1px dashed var(--rule-strong);
   color: transparent;
 }
 
-.cl-check {
+.gt-check {
   background: transparent;
   border: 1px solid var(--rule-strong);
   color: var(--ink);
   font-size: 0.85rem;
 }
 
-.checklist .cl-check:hover {
+.week-grid-table .gt-check:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
 }
 
-.checklist .cl-check.done,
-.checklist .cl-check.done:hover {
+.week-grid-table .gt-check.done,
+.week-grid-table .gt-check.done:hover {
   background: var(--ok);
   border-color: var(--ok);
   color: #fff;
 }
 
-.cl-check.skipped {
+.gt-check.skipped {
   color: var(--ink-faint);
   border-style: dashed;
 }
 
-.cl-cell.na::before {
+.gt-cell.na::before {
   content: '·';
   color: var(--ink-faint);
   opacity: 0.6;
@@ -647,16 +648,10 @@ th.cl-name {
   text-align: center;
 }
 
-.timeline-scroll {
-  max-height: 58vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* 给 00 点那行的刻度文字留出上浮空间 */
-  padding-top: 0.55rem;
-}
-
 .timeline {
   position: relative;
+  /* 给 00 点那行的刻度文字留出上浮空间 */
+  margin-top: 0.55rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
 }
@@ -965,10 +960,6 @@ th.cl-name {
     padding: 0;
   }
 
-  .wt-scroll {
-    max-height: 300px;
-  }
-
   .week-head {
     gap: 0.4rem;
   }
@@ -977,7 +968,7 @@ th.cl-name {
     font-size: 1rem;
   }
 
-  th.cl-name {
+  th.gt-name {
     min-width: 4.5rem;
     font-size: 0.8rem;
   }
@@ -1003,5 +994,162 @@ th.cl-name {
 
   .pct-cell input[type='range'] {
     width: 80px;
+  }
+}
+
+/* ---------------------------------------------------- Day View 的待办列表 */
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.todo-check {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.todo-check.done {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+
+.todo-title {
+  border: none;
+  background: none;
+  padding: 0.1rem 0;
+  text-align: left;
+  flex: 1;
+}
+
+.todo-title:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
+}
+
+.todo-title.done {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+}
+
+/* -------------------------------------------- 编辑器：时间输入 + 缩略时间轴 */
+.editor-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.editor-fields {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.time-fields {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.7rem 0.4rem;
+  margin: 0;
+}
+
+.time-fields legend {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  padding: 0 0.3rem;
+}
+
+.time-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.time-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.time-row input {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-fields p {
+  margin: 0.35rem 0 0;
+}
+
+.small-btn {
+  justify-self: start;
+  font-size: 0.8rem;
+}
+
+.day-strip {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.day-strip-body {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.day-strip-hour {
+  border-top: 1px solid var(--rule);
+  font-size: 0.55rem;
+  color: var(--ink-faint);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding-left: 2px;
+  line-height: 1;
+}
+
+.day-strip-block {
+  position: absolute;
+  left: 22px;
+  right: 3px;
+  border-radius: 3px;
+  background: var(--rule-strong);
+}
+
+.day-strip-block.draft {
+  background: var(--accent);
+  left: 18px;
+}
+
+.day-strip-block.clash {
+  background: var(--bad);
+}
+
+.strip-note {
+  text-align: center;
+  line-height: 1.3;
+}
+
+@media (max-width: 820px) {
+  .editor-body {
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 0.6rem;
+  }
+
+  .time-row {
+    gap: 0.35rem;
   }
 }

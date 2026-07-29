@@ -1,67 +1,58 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { format, isSameDay } from 'date-fns'
 import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
-import { habitsForDay } from '../lib/generate'
 import { layoutBlocks } from '../lib/layout'
-import { isTimelineEntry } from '../lib/schedule'
+import { habitsOfDay, isScheduled, todosOfDay } from '../lib/schedule'
 import EntryEditor from './EntryEditor'
 import HabitsPanel from './HabitsPanel'
 
-const HOUR_PX = 46
+// 完整 24 小时一次画完，不在卡片里再套滚动
+const HOUR_PX = 44
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
-// 完整 24 小时保留（跨夜睡眠要记），只是默认从 6 点开始看，往上滑是 0–6 点。
-const DEFAULT_HOUR = 6
 
 export default function DayView({ planner, date, onBack }) {
   const key = dateKey(date)
   const now = new Date()
-  const scroller = useRef(null)
   const [selectedId, setSelectedId] = useState(null)
-  const [editing, setEditing] = useState(null) // {entry} | {entry: null} | null
+  const [editing, setEditing] = useState(null)
 
   const dayEntries = planner.entries.filter((e) => e.date === key)
-  // 太短的事项（量血压之类）不画在时间轴上，收到上面的一行里点一下就完事。
-  const planned = dayEntries.filter(isTimelineEntry)
-  const untimed = dayEntries.filter((e) => !isTimelineEntry(e))
+  const planned = dayEntries.filter(isScheduled)
+  const todos = todosOfDay(dayEntries, key)
   const actual = planned.filter((e) => e.actual_start && e.actual_end)
+  const habits = habitsOfDay(planner.templates, date)
+  const special = planner.specialDays.find((s) => s.date === key)
+  const selected = dayEntries.find((e) => e.id === selectedId) ?? null
+
   const plannedLayout = layoutBlocks(
     planned.map((e) => ({ entry: e, start: e.planned_start, end: e.planned_end })),
   )
   const actualLayout = layoutBlocks(
     actual.map((e) => ({ entry: e, start: e.actual_start, end: e.actual_end })),
   )
-  const habits = habitsForDay(planner.templates, date)
-  const special = planner.specialDays.find((s) => s.date === key)
-  const selected = dayEntries.find((e) => e.id === selectedId) ?? null
 
-  useEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = DEFAULT_HOUR * HOUR_PX
-  }, [key])
-
+  /** 双击计划块 = 做完了，实际时间照抄计划。 */
   function markDone(entry) {
-    // 没有计划时间的任务（弹性 task），完成时就按当前时间记一小段。
     const stamp = new Date().toISOString()
     planner.updateEntry(entry.id, {
       status: 'done',
-      actual_start: entry.actual_start ?? entry.planned_start ?? stamp,
-      actual_end: entry.actual_end ?? entry.planned_end ?? stamp,
+      actual_start: entry.planned_start ?? stamp,
+      actual_end: entry.planned_end ?? stamp,
     })
   }
 
-  function markSkipped(entry) {
-    planner.updateEntry(entry.id, {
-      status: 'skipped',
-      actual_start: null,
-      actual_end: null,
-    })
-  }
-
-  function reopen(entry) {
+  /** 双击实际块 = 撤销完成。 */
+  function undo(entry) {
     planner.updateEntry(entry.id, {
       status: 'planned',
       actual_start: null,
       actual_end: null,
     })
+  }
+
+  function toggleTodo(entry) {
+    if (entry.status === 'done') undo(entry)
+    else markDone(entry)
   }
 
   async function saveEditor(payload) {
@@ -80,9 +71,7 @@ export default function DayView({ planner, date, onBack }) {
     <div className="day-view">
       <div className="day-head">
         <div className="row-gap">
-          <button className="ghost" onClick={onBack}>
-            ‹ 回到周视图
-          </button>
+          <button className="ghost" onClick={onBack}>‹ 回到周视图</button>
           <h1>
             {format(date, 'M 月 d 日')} <span className="muted">{weekdayLabel(date)}</span>
           </h1>
@@ -109,104 +98,118 @@ export default function DayView({ planner, date, onBack }) {
         <div className="action-bar">
           <span className="selected-title">{selected.title}</span>
           <span className="muted small">
-            {selected.planned_start
+            {isScheduled(selected)
               ? `${formatTime(selected.planned_start)}–${formatTime(selected.planned_end)}`
-              : '待安排'}
+              : '待办'}
           </span>
           <span className="spacer" />
           {selected.status === 'done' ? (
-            <button onClick={() => reopen(selected)}>撤销完成</button>
+            <button onClick={() => undo(selected)}>撤销完成</button>
           ) : (
             <button onClick={() => markDone(selected)}>标记完成</button>
           )}
-          <button onClick={() => markSkipped(selected)}>跳过</button>
+          <button
+            onClick={() =>
+              planner.updateEntry(selected.id, {
+                status: 'skipped',
+                actual_start: null,
+                actual_end: null,
+              })
+            }
+          >
+            跳过
+          </button>
           <button onClick={() => setEditing({ entry: selected })}>改时间</button>
-          <button className="danger" onClick={() => removeEntry(selected)}>
-            删除
-          </button>
-          <button className="ghost" onClick={() => setSelectedId(null)}>
-            ✕
-          </button>
+          <button className="danger" onClick={() => removeEntry(selected)}>删除</button>
+          <button className="ghost" onClick={() => setSelectedId(null)}>✕</button>
         </div>
       )}
 
-      {untimed.length > 0 && (
-        <div className="untimed">
-          <span className="untimed-label">短事项 / 待安排</span>
-          {untimed.map((e) => (
-            <button
-              key={e.id}
-              className={`chip status-${e.status}${selectedId === e.id ? ' selected' : ''}`}
-              onClick={() => setSelectedId(e.id)}
-            >
-              {e.status === 'done' ? '✓ ' : ''}
-              {e.title}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* 顺序：待办 -> 时间轴 -> 习惯 */}
+      <section className="card">
+        <h2>To do</h2>
+        {todos.length === 0 ? (
+          <p className="muted">今天没有待办。</p>
+        ) : (
+          <ul className="todo-list">
+            {todos.map((e) => (
+              <li key={e.id}>
+                <button
+                  className={`todo-check${e.status === 'done' ? ' done' : ''}`}
+                  onClick={() => toggleTodo(e)}
+                  title={e.status === 'done' ? '点一下取消完成' : '点一下标记完成'}
+                >
+                  {e.status === 'done' ? '✓' : ''}
+                </button>
+                <button
+                  className={`todo-title${e.status === 'done' ? ' done' : ''}`}
+                  onClick={() => setSelectedId(e.id)}
+                >
+                  {e.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-      <div className="card timeline-card">
+      <section className="card timeline-card">
+        <h2>Time schedule</h2>
         <div className="timeline-head">
           <span>Plan</span>
           <span />
           <span>Actually</span>
         </div>
-        <div className="timeline-scroll" ref={scroller}>
-          <div
-            className="timeline"
-            style={{ height: 24 * HOUR_PX, '--hour-px': `${HOUR_PX}px` }}
-          >
-            {isSameDay(date, now) && (
-              <div
-                className="now-line"
-                style={{ top: (minutesOfDay(now.toISOString()) / 60) * HOUR_PX }}
+        <div
+          className="timeline"
+          style={{ height: 24 * HOUR_PX, '--hour-px': `${HOUR_PX}px` }}
+        >
+          {isSameDay(date, now) && (
+            <div
+              className="now-line"
+              style={{ top: (minutesOfDay(now.toISOString()) / 60) * HOUR_PX }}
+            />
+          )}
+
+          <div className="timeline-col plan">
+            {plannedLayout.map((b) => (
+              <EntryBlock
+                key={b.entry.id}
+                block={b}
+                faded={b.entry.status === 'done' || b.entry.status === 'skipped'}
+                selected={selectedId === b.entry.id}
+                onClick={() => setSelectedId(b.entry.id)}
+                onDoubleClick={() => markDone(b.entry)}
+                hint="双击 = 完成"
               />
-            )}
+            ))}
+          </div>
 
-            <div className="timeline-col plan">
-              {plannedLayout.map((b) => (
-                <EntryBlock
-                  key={b.entry.id}
-                  entry={b.entry}
-                  start={b.start}
-                  end={b.end}
-                  lane={b.lane}
-                  lanes={b.lanes}
-                  faded={
-                    b.entry.status === 'done' || b.entry.status === 'skipped'
-                  }
-                  selected={selectedId === b.entry.id}
-                  onClick={() => setSelectedId(b.entry.id)}
-                />
-              ))}
-            </div>
+          <div className="timeline-axis">
+            {HOURS.map((h) => (
+              <div className="hour" key={h} style={{ height: HOUR_PX }}>
+                <span>{String(h).padStart(2, '0')}</span>
+              </div>
+            ))}
+          </div>
 
-            <div className="timeline-axis">
-              {HOURS.map((h) => (
-                <div className="hour" key={h} style={{ height: HOUR_PX }}>
-                  <span>{String(h).padStart(2, '0')}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="timeline-col actually">
-              {actualLayout.map((b) => (
-                <EntryBlock
-                  key={b.entry.id}
-                  entry={b.entry}
-                  start={b.start}
-                  end={b.end}
-                  lane={b.lane}
-                  lanes={b.lanes}
-                  selected={selectedId === b.entry.id}
-                  onClick={() => setSelectedId(b.entry.id)}
-                />
-              ))}
-            </div>
+          <div className="timeline-col actually">
+            {actualLayout.map((b) => (
+              <EntryBlock
+                key={b.entry.id}
+                block={b}
+                selected={selectedId === b.entry.id}
+                onClick={() => setSelectedId(b.entry.id)}
+                onDoubleClick={() => undo(b.entry)}
+                hint="双击 = 撤销完成"
+              />
+            ))}
           </div>
         </div>
-      </div>
+        <p className="muted small">
+          双击左边的计划块就搬到右边（完成），双击右边的块撤销。单击是选中，可以改时间。
+        </p>
+      </section>
 
       <HabitsPanel
         habits={habits}
@@ -219,6 +222,7 @@ export default function DayView({ planner, date, onBack }) {
         <EntryEditor
           entry={editing.entry}
           date={key}
+          dayEntries={dayEntries}
           onSave={saveEditor}
           onDelete={() => removeEntry(editing.entry)}
           onClose={() => setEditing(null)}
@@ -228,11 +232,10 @@ export default function DayView({ planner, date, onBack }) {
   )
 }
 
-function EntryBlock({ entry, start, end, lane, lanes, faded, selected, onClick }) {
+function EntryBlock({ block, faded, selected, onClick, onDoubleClick, hint }) {
+  const { entry, start, end, lane, lanes } = block
   const top = (minutesOfDay(start) / 60) * HOUR_PX
   const minutes = Math.max(15, (new Date(end) - new Date(start)) / 60000)
-  const height = Math.max(26, (minutes / 60) * HOUR_PX)
-  // 同一时段重叠的块并排放
   const width = 100 / lanes
 
   return (
@@ -247,11 +250,13 @@ function EntryBlock({ entry, start, end, lane, lanes, faded, selected, onClick }
         .join(' ')}
       style={{
         top,
-        height,
+        height: Math.max(26, (minutes / 60) * HOUR_PX),
         left: `calc(${lane * width}% + 4px)`,
         width: `calc(${width}% - 8px)`,
       }}
+      title={`${entry.title}（${hint}）`}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       <span className="entry-title">{entry.title}</span>
       <span className="entry-time">

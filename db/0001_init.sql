@@ -6,7 +6,8 @@ create table if not exists public.templates (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   title text not null,
-  type text not null check (type in ('fixed_event', 'task', 'habit')),
+  -- event：有起止时间，上时间轴；todo：只有事没时间；habit：每天重复的打卡项
+  type text not null check (type in ('event', 'todo', 'habit')),
   priority text check (priority in ('must', 'high', 'optional')),
   min_duration_minutes int,
   max_duration_minutes int,
@@ -16,8 +17,8 @@ create table if not exists public.templates (
   end_time time,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  -- priority 仅 task 使用
-  constraint templates_priority_only_for_task check (type = 'task' or priority is null)
+  -- priority 仅 todo 使用
+  constraint templates_priority_only_for_todo check (type = 'todo' or priority is null)
 );
 
 create index if not exists templates_user_active_idx

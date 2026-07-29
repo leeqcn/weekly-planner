@@ -17,7 +17,7 @@ export function buildSeed() {
   const templates = [
     t({
       title: '上班',
-      type: 'fixed_event',
+      type: 'event',
       recurrence: 'weekly',
       recurrence_days: [1, 2, 3, 4, 5],
       start_time: '09:30',
@@ -25,10 +25,7 @@ export function buildSeed() {
     }),
     t({
       title: '写周报',
-      type: 'task',
-      priority: 'must',
-      min_duration_minutes: 30,
-      max_duration_minutes: 60,
+      type: 'event',
       recurrence: 'weekly',
       recurrence_days: [5],
       start_time: '17:00',
@@ -36,10 +33,7 @@ export function buildSeed() {
     }),
     t({
       title: '读书',
-      type: 'task',
-      priority: 'optional',
-      min_duration_minutes: 30,
-      max_duration_minutes: 90,
+      type: 'event',
       recurrence: 'weekly',
       recurrence_days: [2, 4, 6],
       start_time: '21:00',
@@ -47,29 +41,24 @@ export function buildSeed() {
     }),
     t({
       title: '交房租',
-      type: 'fixed_event',
+      type: 'todo',
+      priority: 'must',
       recurrence: 'monthly',
       recurrence_days: [1],
-      start_time: '10:00',
-      end_time: '10:15',
     }),
-    // 只要几分钟的事：不画在时间轴上，落到周清单里当待办
     t({
-      title: '量血压',
-      type: 'task',
-      priority: 'high',
-      min_duration_minutes: 5,
-      max_duration_minutes: 5,
+      title: '倒垃圾',
+      type: 'todo',
+      priority: 'optional',
       recurrence: 'weekly',
-      recurrence_days: [1, 2, 3, 4, 5, 6, 7],
-      start_time: '07:00',
-      end_time: '07:05',
+      recurrence_days: [2, 5],
     }),
+    // 习惯每天重复
     t({
       title: '运动',
       type: 'habit',
       recurrence: 'weekly',
-      recurrence_days: [1, 3, 5, 6],
+      recurrence_days: [1, 2, 3, 4, 5, 6, 7],
     }),
     t({
       title: '早睡',

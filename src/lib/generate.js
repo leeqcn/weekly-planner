@@ -1,10 +1,10 @@
 import { combineDateTime, dateKey, templateOccursOn } from './dates'
 
 /**
- * 根据模板生成某几天的 schedule_entries —— Step1 最优先解决的痛点：
- * 不用每周手动重新输入重复安排。
+ * 根据模板生成某几天的 schedule_entries —— 不用每周手动重新输入重复安排。
  *
- * habit 类型不进 schedule_entries，它走 habits_log 打卡。
+ * event 生成带时间的条目（上时间轴），todo 生成不带时间的条目（进待办）。
+ * habit 不进这张表，它走 habits_log 打卡。
  * 已经存在的 (template_id, date) 会被跳过，所以可以放心重复调用。
  */
 export function buildEntriesFor(templates, days, existingEntries) {
@@ -38,7 +38,3 @@ export function buildEntriesFor(templates, days, existingEntries) {
   return rows
 }
 
-/** 某天生效的 habit 模板，Day View 的打卡区按它渲染。 */
-export function habitsForDay(templates, day) {
-  return templates.filter((t) => t.type === 'habit' && templateOccursOn(t, day))
-}

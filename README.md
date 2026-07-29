@@ -25,10 +25,12 @@ npm run dev
 
 步骤：
 
-1. 打开 Supabase 控制台 → SQL Editor，把 `db/0001_init.sql` 贴进去跑一次
-   （脚本可重复执行）。它建 5 张表并打开 RLS。
-   已经跑过旧版 0001 的，再跑一次 `db/0002_entry_unique_constraint.sql`
-   把唯一约束收拾干净（可选，不跑也能正常用）。
+1. 打开 Supabase 控制台 → SQL Editor，按顺序跑 `db/` 下的脚本（都可重复执行）：
+   - `0001_init.sql` — 建 5 张表并打开 RLS
+   - `0002_entry_unique_constraint.sql` — 唯一约束修正（可选）
+   - `0003_task_types.sql` — **必须跑**。类型从 `fixed_event/task/habit`
+     改成 `event/todo/habit`，同时按「有没有填时间」修正存量数据。
+     不跑的话新建模板会被数据库的 check 约束挡下来。
 2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
 3. 重启 `npm run dev`。这时会先要求登录。
 
@@ -61,12 +63,14 @@ https://<本项目>-*.vercel.app/**    # 预览部署，可选
 ```
 db/0001_init.sql                    建表 + RLS（贴进 Supabase SQL Editor 跑）
 db/0002_entry_unique_constraint.sql 把部分唯一索引换成普通唯一约束
+db/0003_task_types.sql              类型改成 event / todo / habit（必须跑）
 src/lib/
   dates.js        日期 / 周 / 时间换算，date-fns 封装
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）
   generate.js     模板 -> 某天的 schedule_entries
   layout.js       时间轴上重叠块的并排排布
-  schedule.js     短事项判定 + 周清单 n x 8 的行
+  schedule.js     三种类型 + To do / Habits 的 n x 8 行
+  time.js         时刻/时长解析，开始-结束-时长三者联动
   mockSeed.js     本地模式的示例数据
   supabaseClient.js
   repo/mock.js      localStorage 实现
@@ -75,14 +79,45 @@ src/state/usePlanner.js   数据加载 / 写入，组件只管渲染
 src/components/           WeekView / DayView / Settings / …
 ```
 
-## 界面
+## 三个模块
 
-- **Week View**：上半部分是 7 个并排的时间轴（完整 24 小时，默认从 6 点开始看，
-  往上滑是 0–6 点的睡眠时段）；下半部分是一张 n × 8 的周清单，
-  左边一列是项目，右边七列是周一到周日的完成情况，一眼看完整周状态。
-- **Day View**：左 Plan / 中 24 小时刻度 / 右 Actually，下面是当天的打卡区。
-- 窄屏（手机）下：时间块缩成色条只看分布，点日期进 Day View 看内容；
-  周清单第一列吸边，横向滑动看后面几天。
+界面就是三块，互不混淆，两个视图里顺序都一样：**To do → Time schedule → Habits**。
+
+模板的 `type` 决定它归哪一块，不靠猜：
+
+| type | 含义 | 出现在 |
+|---|---|---|
+| `event` | 有起止时间 | Time schedule（时间轴） |
+| `todo` | 只有事，没有时间 | To do |
+| `habit` | 只有事，没有时间，每天重复 | Habits |
+
+> 早先的版本是按「时长短于 20 分钟就算待办」来分流的。结果是没填时间的固定事件
+> 被判成待办、habit 该出现的地方不出现。类型自己说清楚是什么，就不用猜了。
+
+- **Week View**：To do 的 n×8 表格 → 7 个并排时间轴 → Habits 的 n×8 表格。
+- **Day View**：当天待办列表 → 左 Plan / 中刻度 / 右 Actually → 当天打卡区。
+- **时间轴完整 24 小时**，卡片里不再套一层滚动 —— 套滚动会看不到全天，还老滚错层。
+- 表格的行按「模板创建顺序 → 标题」稳定排序。之前跟着数据返回顺序走，
+  数据一变行就跳位置，正要点的那行换到别处去了。
+- 窄屏（手机）下：时间块缩成色条只看分布，点日期进 Day View 看内容。
+
+## 时间输入
+
+不用 `<input type="time">` 那个时钟控件，全部手打（手机上点转盘太慢）。
+
+- **开始 / 结束 / 时长填两个，第三个自动算**（`src/lib/time.js` 的 `reconcile`）。
+- 写法很宽松：`9` / `930` / `0930` / `9:30` 都认；时长可以写 `90` / `1:30` / `1.5h` / `45m`。
+- 输入框里存的是原文，只在失焦时规范成 `09:30`。不然打「930」在打完「9」的
+  瞬间就被改写成「09:00」，光标也跟着跳。
+- 编辑时右边有一条当天的**缩略时间轴**，能看到哪些时段是空的、有没有撞车。
+- **计划和实际是两组独立的输入**。之前只有一组，在 Actually 那栏点「改时间」，
+  改的其实是计划。
+
+## 交互
+
+- **双击**左边的计划块 = 完成，实际时间照抄计划，块出现在右边、左边变淡。
+- **双击**右边的实际块 = 撤销完成。
+- 单击是选中，选中后可以改时间 / 跳过 / 删除。
 
 ## 几个约定
 
@@ -90,11 +125,10 @@ src/components/           WeekView / DayView / Settings / …
   `schedule_entries`。`(template_id, date)` 上有唯一约束，重复生成是幂等的。
   过去的周不自动回填，需要的话点「补齐这周的安排」。
   订下周的计划就是切到下一周，模板会自动铺好，再手动调。
-- **habit 不进时间轴**：出现在周清单和 Day View 的打卡区，写入 `habits_log`。
+- **habit 不进时间轴**：出现在 Habits 模块和 Day View 的打卡区，写入 `habits_log`。
 - **改时间就是 reschedule**：原计划时间记进 `rescheduled_from`，状态置 `rescheduled`。
 - **完成不删计划**：左栏计划块变淡，右栏出现实际块，保留计划 vs 实际的对比。
-- **短事项不上时间轴**：计划时长短于 20 分钟（`MIN_TIMELINE_MINUTES`）或者没定时间的
-  安排，不画成时间块，落到周清单里当待办打勾 —— 比如量血压、交房租。
+- **有没有计划时间决定去哪**：有时间的条目上时间轴，没时间的进 To do。
 - **4 周保留**：App 挂载时清理一次 `schedule_entries` / `habits_log` 的过期数据
   （`RETENTION_DAYS = 28`），没有用 cron 或 Edge Function。
   `templates` / `weekly_focus` / `special_days` 是配置，永久保留。
@@ -118,6 +152,11 @@ src/components/           WeekView / DayView / Settings / …
 图标是「一张纸 + 七根等高的列」（其中一天绿色 = 已完成），
 和日记类常见的本子 / 钢笔意象刻意区分开。
 改图标改 `scripts/gen-icons.mjs` 后重新生成即可。
+
+## 下一步
+
+- 拖拽调整时间：在 Plan 区拖一个方块到合适的位置，而不是填数字。
+- 每周统计（Step 2）。
 
 ## 部署
 
