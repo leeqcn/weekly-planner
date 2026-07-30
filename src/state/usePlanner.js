@@ -159,10 +159,30 @@ export function usePlanner(repo) {
 
     updateTemplate: (id, patch) => {
       const before = templates.find((t) => t.id === id)
+
+      // 标题和「留」这两样是数据，已经生成的条目里存的是当时的副本，
+      // 改模板必须把它们一起改掉，否则周视图还显示旧标题。
+      // （颜色不在这里 —— 它渲染时直接从模板取，不存副本。）
+      const spread = Object.fromEntries(
+        ['title', 'keep_in_todo'].filter((k) => k in patch).map((k) => [k, patch[k]]),
+      )
+      const today = dateKey(new Date())
+      const affected = Object.keys(spread).length
+        ? entries.filter((e) => e.template_id === id && e.date >= today)
+        : []
+
       return act(
         `修改「${before?.title ?? ''}」`,
-        () => repo.updateTemplate(id, patch),
-        () => repo.updateTemplate(id, pick(before, Object.keys(patch))),
+        async () => {
+          await repo.updateTemplate(id, patch)
+          if (affected.length) await repo.updateEntriesByTemplate(id, spread, today)
+        },
+        async () => {
+          await repo.updateTemplate(id, pick(before, Object.keys(patch)))
+          for (const e of affected) {
+            await repo.updateEntry(e.id, pick(e, Object.keys(spread)))
+          }
+        },
       )
     },
 

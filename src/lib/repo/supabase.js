@@ -71,6 +71,16 @@ export function createSupabaseRepo(userId) {
       return inserted
     },
 
+    /** 改模板时把已经生成的条目一起改（只动 fromDate 之后的）。 */
+    async updateEntriesByTemplate(templateId, patch, fromDate) {
+      unwrap(
+        await from('schedule_entries')
+          .update(patch)
+          .eq('template_id', templateId)
+          .gte('date', fromDate),
+      )
+    },
+
     async updateEntry(id, patch) {
       return unwrap(
         await from('schedule_entries').update(patch).eq('id', id).select().single(),

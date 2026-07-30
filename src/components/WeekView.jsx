@@ -71,6 +71,7 @@ export default function WeekView({ planner, onOpenDay }) {
       <WeekTimeline
         days={days}
         entries={entries}
+        templates={templates}
         specialDays={specialDays}
         onOpenDay={onOpenDay}
       />

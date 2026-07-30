@@ -97,6 +97,15 @@ export function createMockRepo(seed) {
       })
     },
 
+    /** 改模板时把已经生成的条目一起改（只动 fromDate 之后的）。 */
+    async updateEntriesByTemplate(templateId, patch, fromDate) {
+      mutate((db) => {
+        db.schedule_entries.forEach((e) => {
+          if (e.template_id === templateId && e.date >= fromDate) Object.assign(e, patch)
+        })
+      })
+    },
+
     async updateEntry(id, patch) {
       return mutate((db) => {
         const row = db.schedule_entries.find((e) => e.id === id)

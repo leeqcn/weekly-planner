@@ -61,3 +61,38 @@ export function minutesToIso(key, minutes) {
   d.setDate(d.getDate() + Math.floor(minutes / 1440))
   return d.toISOString()
 }
+
+/**
+ * 「装不装得下」—— 纸质 planner 唯一做不到的事就是加减法。
+ *
+ * 空闲时间从 anchor（今天就是「现在」）算到当天结束，扣掉已排的时段；
+ * 需要的时间是还没排进时间轴的待办的时长合计（区间就给出上下限）。
+ */
+export function capacityOf(dayEntries, todos, { anchor = DEFAULT_ANCHOR } = {}) {
+  const busy = dayEntries
+    .filter(isScheduled)
+    .map((e) => ({
+      from: minutesOfDay(e.planned_start),
+      to: minutesOfDay(e.planned_end) || DAY_END,
+    }))
+    .sort((a, b) => a.from - b.from)
+
+  let free = 0
+  let cursor = Math.max(0, Math.min(anchor, DAY_END))
+  for (const b of busy) {
+    if (b.to <= cursor) continue
+    if (b.from > cursor) free += Math.min(b.from, DAY_END) - cursor
+    cursor = Math.max(cursor, b.to)
+    if (cursor >= DAY_END) break
+  }
+  free += Math.max(0, DAY_END - cursor)
+
+  const pending = todos.filter((t) => !isScheduled(t))
+  const min = pending.reduce(
+    (sum, t) => sum + (t.min_duration_minutes ?? t.max_duration_minutes ?? 60),
+    0,
+  )
+  const max = pending.reduce((sum, t) => sum + placementMinutes(t), 0)
+
+  return { free, min, max, count: pending.length, fits: max <= free, short: max - free }
+}

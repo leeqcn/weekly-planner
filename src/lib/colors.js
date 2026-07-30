@@ -18,3 +18,17 @@ export const COLORS = {
 export const COLOR_KEYS = Object.keys(COLORS)
 
 export const colorOf = (key) => COLORS[key] ?? COLORS.default
+
+/**
+ * 一条日程该用什么颜色。
+ *
+ * 颜色是表现层的东西，**不往条目上复制** —— 复制过就成了快照，
+ * 之后改模板不会回头更新已经生成的条目（这正是之前那个 bug）。
+ * 所以：条目自己填了颜色算「单独改过这一条」，优先；否则跟着模板走。
+ *
+ * @returns 传给 colorOf 的 key
+ */
+export function makeColorResolver(templates) {
+  const byId = new Map(templates.map((t) => [t.id, t]))
+  return (entry) => entry?.color ?? byId.get(entry?.template_id)?.color ?? null
+}

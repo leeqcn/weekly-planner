@@ -1369,3 +1369,64 @@ th.gt-name {
   background: var(--accent-soft);
   border-color: var(--accent);
 }
+
+/* --------------------------------------------- 正在计时 / 装不装得下的提示 */
+.running-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: #e3efe4;
+  border: 1px solid #b9d6bd;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.running-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+  animation: running-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes running-pulse {
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .running-dot { animation: none; }
+}
+
+.timer-btn {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.timer-btn.on {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+
+.capacity {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.7rem;
+  line-height: 1.6;
+}
+
+.capacity.over {
+  background: #f7e6e2;
+  color: #8a3527;
+}
+
+/* 正在计时的块：还没结束，画成虚线 */
+.entry-block.status-in_progress {
+  border-style: dashed;
+}

@@ -1,11 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { format, isSameDay } from 'date-fns'
 import { dateKey, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { blockState, describeRange, habitsOfDay, isScheduled, todosOfDay } from '../lib/schedule'
-import { anchorFor, findSlot, minutesToIso, placementMinutes } from '../lib/place'
-import { formatClock } from '../lib/time'
-import { colorOf } from '../lib/colors'
+import { anchorFor, capacityOf, findSlot, minutesToIso, placementMinutes } from '../lib/place'
+import { describeDuration, formatClock } from '../lib/time'
+import { colorOf, makeColorResolver } from '../lib/colors'
 import EntryEditor from './EntryEditor'
 import ProgressTable from './ProgressTable'
 import { useDragBlock } from './useDragBlock'
@@ -18,6 +18,13 @@ const TIME_VISIBLE_PX = 34
 
 export default function DayView({ planner, date, onBack }) {
   const key = dateKey(date)
+  // 正在计时的块要一直长到「现在」，所以每 30 秒重画一次
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 30_000)
+    return () => clearInterval(t)
+  }, [])
+  void tick // 只是为了让计时中的块每 30 秒重画一次
   const now = new Date()
   const [picked, setPicked] = useState([]) // 选中的块，可多选
   const [editing, setEditing] = useState(null)
@@ -26,9 +33,15 @@ export default function DayView({ planner, date, onBack }) {
   const dayEntries = planner.entries.filter((e) => e.date === key)
   const planned = dayEntries.filter(isScheduled)
   const todos = todosOfDay(dayEntries, key)
+  const running = dayEntries.find((e) => e.status === 'in_progress' && e.actual_start)
   const actual = dayEntries.filter((e) => e.actual_start && e.actual_end)
+  // 正在计时的那条还没有结束时间，临时按「现在」画出来
+  const actualShown = running
+    ? [...actual, { ...running, actual_end: now.toISOString() }]
+    : actual
   const habits = habitsOfDay(planner.templates, date)
   const special = planner.specialDays.find((s) => s.date === key)
+  const resolveColor = makeColorResolver(planner.templates)
 
   const isPicked = (id) => picked.includes(id)
   const togglePick = (id) =>
@@ -77,7 +90,7 @@ export default function DayView({ planner, date, onBack }) {
 
   /** 一次拖动要带动哪些块。 */
   function membersFor(entry, field, mode) {
-    const source = field === 'actual' ? actual : planned
+    const source = field === 'actual' ? actualShown : planned
     const at = (e) => ({
       id: e.id,
       field,
@@ -111,6 +124,23 @@ export default function DayView({ planner, date, onBack }) {
       actual_start: entry.actual_start ?? entry.planned_start ?? stamp,
       actual_end: entry.actual_end ?? entry.planned_end ?? stamp,
     })
+  }
+
+  /** 开始计时 —— 出去玩这类事本来就猜不准时长，不如直接记。 */
+  function startTimer(entry) {
+    planner.updateEntry(
+      entry.id,
+      { status: 'in_progress', actual_start: new Date().toISOString(), actual_end: null },
+      `开始「${entry.title}」`,
+    )
+  }
+
+  function stopTimer(entry) {
+    planner.updateEntry(
+      entry.id,
+      { status: 'done', actual_end: new Date().toISOString() },
+      `结束「${entry.title}」`,
+    )
   }
 
   function undoDone(entry) {
@@ -171,12 +201,13 @@ export default function DayView({ planner, date, onBack }) {
           }
     })
   const livePlanned = live(planned, 'planned')
+  const capacity = capacityOf(planned, todos, { anchor: anchorFor(key) })
 
   const plannedLayout = layoutBlocks(
     planned.map((e) => ({ entry: e, start: e.planned_start, end: e.planned_end })),
   )
   const actualLayout = layoutBlocks(
-    actual.map((e) => ({ entry: e, start: e.actual_start, end: e.actual_end })),
+    actualShown.map((e) => ({ entry: e, start: e.actual_start, end: e.actual_end })),
   )
 
   const renderBlock = (b, field) => {
@@ -196,6 +227,7 @@ export default function DayView({ planner, date, onBack }) {
         picked={isPicked(entry.id)}
         onClick={() => togglePick(entry.id)}
         onDoubleClick={() => (field === 'actual' ? undoDone(entry) : markDone(entry))}
+        color={resolveColor(entry)}
         onGrip={(event, mode) =>
           drag.begin(event, { mode, members: membersFor(entry, field, mode) })
         }
@@ -229,6 +261,16 @@ export default function DayView({ planner, date, onBack }) {
           </button>
         </div>
       </div>
+
+      {running && (
+        <div className="running-bar">
+          <span className="running-dot" />
+          <b>{running.title}</b>
+          <span className="muted small">{elapsedText(running.actual_start, now)}</span>
+          <span className="spacer" />
+          <button className="primary" onClick={() => stopTimer(running)}>结束</button>
+        </div>
+      )}
 
       {picked.length > 0 && (
         <div className="action-bar">
@@ -267,7 +309,7 @@ export default function DayView({ planner, date, onBack }) {
           duration: describeRange(e),
           keep: e.keep_in_todo,
           scheduled: isScheduled(e),
-          color: e.color,
+          color: resolveColor(e),
         }))}
         onSave={saveTodo}
         onOpen={(id) => setEditing({ entry: todos.find((e) => e.id === id) })}
@@ -275,6 +317,10 @@ export default function DayView({ planner, date, onBack }) {
         onToggleKeep={(id, keep) =>
           planner.updateEntry(id, { keep_in_todo: keep }, keep ? '保留在待办' : '排入后移出待办')
         }
+        onStart={(id) => startTimer(todos.find((e) => e.id === id))}
+        onStop={(id) => stopTimer(todos.find((e) => e.id === id))}
+        runningId={running?.id}
+        footer={capacity.count > 0 ? <Capacity capacity={capacity} /> : null}
         emptyText="今天没有待办。"
       />
 
@@ -372,6 +418,7 @@ export default function DayView({ planner, date, onBack }) {
 
 function EntryBlock({
   block,
+  color,
   state = 'solid',
   overlay,
   faded,
@@ -389,7 +436,7 @@ function EntryBlock({
   const height = Math.max(26, ((endMin - startMin) / 60) * HOUR_PX)
   const width = 100 / block.lanes
   const range = describeRange(entry)
-  const tint = colorOf(entry.color)
+  const tint = colorOf(color)
 
   return (
     <div
@@ -434,4 +481,27 @@ function EntryBlock({
       />
     </div>
   )
+}
+
+/**
+ * 「装不装得下」—— 纸质 planner 做不到的就是这个加减法。
+ * 我觉得这比替你排程更有用：知道差多少，人自己两秒就决定砍哪个。
+ */
+function Capacity({ capacity }) {
+  const { free, min, max, count, fits, short } = capacity
+  return (
+    <p className={`capacity${fits ? '' : ' over'}`}>
+      剩下的时间还空着 <b>{describeDuration(free)}</b>；
+      还没排的 {count} 件待办需要{' '}
+      <b>{min === max ? describeDuration(max) : `${describeDuration(min)} – ${describeDuration(max)}`}</b>
+      {' — '}
+      {fits ? '装得下。' : <b>差 {describeDuration(short)}，得砍一件或者压缩一下。</b>}
+    </p>
+  )
+}
+
+/** 刚点开始的时候别说「已经 1 分钟」。 */
+function elapsedText(startIso, now) {
+  const mins = Math.floor((now - new Date(startIso)) / 60000)
+  return mins < 1 ? '刚开始' : `已经 ${describeDuration(mins)}`
 }

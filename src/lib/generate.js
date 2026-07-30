@@ -32,7 +32,6 @@ export function buildEntriesFor(templates, days, existingEntries) {
         actual_end: null,
         min_duration_minutes: template.min_duration_minutes ?? null,
         max_duration_minutes: template.max_duration_minutes ?? null,
-        color: template.color ?? null,
         keep_in_todo: template.keep_in_todo ?? false,
         status: 'planned',
         rescheduled_from: null,

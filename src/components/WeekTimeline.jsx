@@ -2,7 +2,7 @@ import { format, isSameDay } from 'date-fns'
 import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { isScheduled } from '../lib/schedule'
-import { colorOf } from '../lib/colors'
+import { colorOf, makeColorResolver } from '../lib/colors'
 
 // 完整 24 小时一次画完，不在卡片里再套一层滚动 ——
 // 里面套滚动会看不到全天，还老是滚错那一层。页面自己滚就够了。
@@ -10,8 +10,9 @@ const HOUR_PX = 26
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
 /** 7 个并排的时间轴。保留完整 24 小时，往上滑能看到 0–6 点的睡眠。 */
-export default function WeekTimeline({ days, entries, specialDays, onOpenDay }) {
+export default function WeekTimeline({ days, entries, templates, specialDays, onOpenDay }) {
   const now = new Date()
+  const resolveColor = makeColorResolver(templates)
   const specialByDate = new Map(specialDays.map((s) => [s.date, s]))
 
   return (
@@ -79,7 +80,7 @@ export default function WeekTimeline({ days, entries, specialDays, onOpenDay }) 
                     {blocks.map((b) => {
                       const width = 100 / b.lanes
                       const minutes = Math.max(15, (b.to - b.from) / 60000)
-                      const tint = colorOf(b.entry.color)
+                      const tint = colorOf(resolveColor(b.entry))
                       return (
                         <button
                           key={b.entry.id}

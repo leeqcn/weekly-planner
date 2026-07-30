@@ -1,4 +1,5 @@
 import { dateKey, templateOccursOn } from './dates'
+import { makeColorResolver } from './colors'
 
 /**
  * 三个模块，靠类型分，不靠猜：
@@ -43,6 +44,7 @@ function sortRows(rows, templates) {
  */
 export function buildTodoRows(templates, entries, days) {
   const keys = days.map(dateKey)
+  const resolveColor = makeColorResolver(templates)
   const groups = new Map()
 
   for (const entry of entries) {
@@ -53,7 +55,7 @@ export function buildTodoRows(templates, entries, days) {
         key,
         title: entry.title,
         templateId: entry.template_id ?? null,
-        color: entry.color ?? null,
+        color: resolveColor(entry),
         byDate: new Map(),
       })
     }

@@ -16,6 +16,10 @@ export default function ProgressTable({
   onOpen,
   onPlace,
   onToggleKeep,
+  onStart,
+  onStop,
+  runningId,
+  footer,
   emptyText,
 }) {
   const [draft, setDraft] = useState({})
@@ -69,6 +73,7 @@ export default function ProgressTable({
               <th>完成度</th>
               <th>状态</th>
               <th>备注</th>
+              {onStart && <th />}
               {onPlace && <th />}
             </tr>
           </thead>
@@ -137,6 +142,24 @@ export default function ProgressTable({
                       onBlur={() => commit(r.id)}
                     />
                   </td>
+                  {onStart && (
+                    <td>
+                      {runningId === r.id ? (
+                        <button className="timer-btn on" onClick={() => onStop(r.id)}>
+                          ■ 结束
+                        </button>
+                      ) : (
+                        <button
+                          className="timer-btn"
+                          onClick={() => onStart(r.id)}
+                          title="现在开始做，结束时再点一下 —— 猜不准时长就别猜"
+                          disabled={Boolean(runningId)}
+                        >
+                          ▶ 开始
+                        </button>
+                      )}
+                    </td>
+                  )}
                   {onPlace && (
                     <td>
                       {r.scheduled ? (
@@ -158,6 +181,7 @@ export default function ProgressTable({
           </tbody>
         </table>
       </div>
+      {footer}
       {onOpen && (
         <p className="muted small">
           点名称可以改标题、时长或删除。
