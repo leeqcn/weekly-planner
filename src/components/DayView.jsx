@@ -106,8 +106,9 @@ export default function DayView({ planner, date, onBack }) {
     if (multi.length > 1 && isPicked(entry.id)) {
       return [self, ...multi.filter((e) => e.id !== entry.id).map(at)]
     }
-    // 顺延：只拖一个的时候，它之后的块跟着挪同样的量
-    if (cascade && mode === 'move') {
+    // 顺延只对计划生效：Actually 是「实际发生了什么」的记录，
+    // 改一条不该顺手改掉后面几条已经发生的事。
+    if (cascade && mode === 'move' && field === 'planned') {
       const later = source
         .map(at)
         .filter((m) => m.id !== self.id && m.startMin >= self.startMin)
@@ -186,7 +187,7 @@ export default function DayView({ planner, date, onBack }) {
   // 拖动中的块按临时位置参与冲突判断，松手之前就能看到变红
   const live = (list, field) =>
     list.map((e) => {
-      const o = drag.overlay(e.id)
+      const o = drag.overlay(e.id, field)
       if (!o) return e
       return field === 'actual'
         ? {
@@ -222,7 +223,7 @@ export default function DayView({ planner, date, onBack }) {
             ? 'solid'
             : blockState(livePlanned.find((e) => e.id === entry.id) ?? entry, livePlanned)
         }
-        overlay={drag.overlay(entry.id)}
+        overlay={drag.overlay(entry.id, field)}
         faded={field === 'planned' && (entry.status === 'done' || entry.status === 'skipped')}
         picked={isPicked(entry.id)}
         onClick={() => togglePick(entry.id)}

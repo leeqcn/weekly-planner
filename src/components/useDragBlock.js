@@ -100,9 +100,15 @@ export function useDragBlock({ hourPx, onCommit, onLongPress }) {
     if (changed.length) onCommit(changed, from.mode)
   }, [drag, onCommit])
 
-  /** 拖动中的块用这个覆盖它的时间，其它块原样。 */
+  /**
+   * 拖动中的块用这个覆盖它的时间，其它块原样。
+   *
+   * 必须按 (id, 哪一栏) 一起找，光按 id 不行 ——
+   * 同一条日程在 Plan 和 Actually 两栏各有一个块、id 相同，
+   * 只按 id 匹配的话拖右边那个，左边的计划块会跟着一起动。
+   */
   const overlay = useCallback(
-    (id) => drag?.members.find((m) => m.id === id) ?? null,
+    (id, field) => drag?.members.find((m) => m.id === id && m.field === field) ?? null,
     [drag],
   )
 
