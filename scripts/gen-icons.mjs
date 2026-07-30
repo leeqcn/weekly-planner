@@ -4,10 +4,11 @@
 import { chromium } from 'playwright'
 import { writeFileSync } from 'node:fs'
 
-const BROWN = '#6b4f34'
-const PAPER = '#fbf8f2'
-const INK = '#7a5c3e'
-const OK = '#4f9d5d'
+// 莫兰迪橙（陶土色）+ 米白纸 + 鼠尾草绿的勾
+const ORANGE = '#c2764a'
+const PAPER = '#fdf9f4'
+const INK = '#a2603a'
+const OK = '#6f9377'
 
 // 故意画歪一点，要的就是儿童画那种手抖的味道
 const wob = (n, amp) => Math.sin(n * 12.9898) * amp
@@ -50,7 +51,7 @@ function mark() {
 const svg = ({ page, radius }) => {
   const off = (512 - page) / 2
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="${radius}" fill="${BROWN}"/>
+  <rect width="512" height="512" rx="${radius}" fill="${ORANGE}"/>
   <g transform="translate(${off} ${off}) scale(${(page / 360).toFixed(4)})">${mark()}</g>
 </svg>`
 }

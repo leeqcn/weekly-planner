@@ -63,9 +63,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f8e6e2;
+  background: var(--bad-bg);
   border: 1px solid var(--bad);
-  color: #8a3527;
+  color: var(--bad-ink);
   border-radius: var(--radius);
   padding: 0.5rem 0.75rem;
   margin-bottom: 1rem;
@@ -334,8 +334,8 @@
 }
 
 .wt-block.status-done {
-  background: #e3efe4;
-  border-color: #b9d6bd;
+  background: var(--ok-bg);
+  border-color: var(--ok);
 }
 
 .wt-block.status-skipped {
@@ -418,7 +418,6 @@ th.gt-name {
   border-radius: 5px;
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 0.62rem;
-  color: #fff;
   border: 1px solid transparent;
   display: inline-grid;
   place-items: center;
@@ -449,9 +448,9 @@ th.gt-name {
 
 .week-grid-table .gt-check.done,
 .week-grid-table .gt-check.done:hover {
-  background: var(--ok);
+  background: var(--ok-bg);
   border-color: var(--ok);
-  color: #fff;
+  color: var(--ok-ink);
 }
 
 .gt-check.skipped {
@@ -735,14 +734,14 @@ th.gt-name {
 
 .entry-block.state-conflict {
   opacity: 0.7;
-  background: #f6ded9;
+  background: var(--bad-bg);
   border-color: var(--bad);
   border-style: dashed;
 }
 
 .entry-block.dragging {
   opacity: 0.9;
-  box-shadow: 0 4px 14px rgba(47, 42, 36, 0.25);
+  box-shadow: 0 4px 14px rgba(60, 55, 51, 0.25);
   z-index: 3;
 }
 
@@ -815,7 +814,8 @@ th.gt-name {
 }
 
 .entry-block.faded {
-  opacity: 0.42;
+  /* 底色整体变浅之后，0.42 几乎看不见了 */
+  opacity: 0.52;
 }
 
 .dur-cell {
@@ -844,8 +844,8 @@ th.gt-name {
 .entry-block.status-skipped {
   background: repeating-linear-gradient(
     45deg,
-    #f0eae0 0 6px,
-    #e6ded1 6px 12px
+    var(--rule) 0 6px,
+    var(--rule-strong) 6px 12px
   );
   text-decoration: line-through;
 }
@@ -855,8 +855,8 @@ th.gt-name {
 }
 
 .timeline-col.actually .entry-block {
-  background: #e3efe4;
-  border-color: #b9d6bd;
+  background: var(--ok-bg);
+  border-color: var(--ok);
 }
 
 .entry-title {
@@ -960,7 +960,7 @@ th.gt-name {
 
 .status-pill {
   display: inline-block;
-  color: #fff;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 0.05rem 0.55rem;
   font-size: 0.72rem;
@@ -975,7 +975,7 @@ th.gt-name {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(47, 42, 36, 0.35);
+  background: rgba(60, 55, 51, 0.32);
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -1144,9 +1144,9 @@ th.gt-name {
 }
 
 .todo-check.done {
-  background: var(--ok);
+  background: var(--ok-bg);
   border-color: var(--ok);
-  color: #fff;
+  color: var(--ok-ink);
 }
 
 .todo-title {
@@ -1292,7 +1292,7 @@ th.gt-name {
   padding: 0;
   border-radius: 50%;
   border: 2px solid transparent;
-  box-shadow: inset 0 0 0 1px rgba(47, 42, 36, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(60, 55, 51, 0.14);
 }
 
 .color-dot:hover:not(:disabled) {
@@ -1361,7 +1361,7 @@ th.gt-name {
   border-radius: 50%;
   background: var(--paper-2);
   border: 1px solid var(--rule-strong);
-  box-shadow: 0 3px 12px rgba(47, 42, 36, 0.22);
+  box-shadow: 0 3px 12px rgba(60, 55, 51, 0.2);
   color: var(--ink);
 }
 
@@ -1376,8 +1376,8 @@ th.gt-name {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  background: #e3efe4;
-  border: 1px solid #b9d6bd;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok);
   border-radius: var(--radius);
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.8rem;
@@ -1407,9 +1407,9 @@ th.gt-name {
 }
 
 .timer-btn.on {
-  background: var(--ok);
+  background: var(--ok-bg);
   border-color: var(--ok);
-  color: #fff;
+  color: var(--ok-ink);
 }
 
 .capacity {
@@ -1422,8 +1422,8 @@ th.gt-name {
 }
 
 .capacity.over {
-  background: #f7e6e2;
-  color: #8a3527;
+  background: var(--bad-bg);
+  color: var(--bad-ink);
 }
 
 /* 正在计时的块：还没结束，画成虚线 */

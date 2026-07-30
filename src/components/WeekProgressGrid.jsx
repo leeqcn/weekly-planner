@@ -68,7 +68,15 @@ export default function WeekProgressGrid({
                         <td key={key} className="gt-cell">
                           <button
                             className={`gt-mark${blank ? ' empty' : ''}`}
-                            style={blank ? undefined : { background: status.color }}
+                            style={
+                              blank
+                                ? undefined
+                                : {
+                                    background: status.bg,
+                                    color: status.ink,
+                                    borderColor: status.edge,
+                                  }
+                            }
                             onClick={() => onSetPct(row, cell, nextPct(cell.pct))}
                             title={
                               blank

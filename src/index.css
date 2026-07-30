@@ -1,20 +1,34 @@
 :root {
-  /* 纸质 planner 的感觉：米白纸、墨色字、细横线 */
-  --paper: #faf7f0;
-  --paper-2: #fffdf8;
-  --ink: #2f2a24;
-  --ink-soft: #6d655a;
-  --ink-faint: #a8a094;
-  --rule: #e2dbcd;
-  --rule-strong: #cdc3b0;
-  --accent: #7a5c3e;
-  --accent-soft: #efe4d5;
-  --ok: #4f9d5d;
-  --warn: #d9a521;
-  --bad: #cc5b4a;
-  --special: #7d6bb0;
+  /* 莫兰迪配色：低饱和、掺灰的暖色。主色是一味莫兰迪橙（陶土色）。
+     深浅两档分开用 —— 淡的做底、深的做字：
+     莫兰迪本身饱和度低，中间调上压白字对比度不够看，
+     改成「淡底 + 深字」既符合这个调子，也真的看得清。 */
+  --paper: #faf8f5;
+  --paper-2: #fffefc;
+  --ink: #3c3733;
+  --ink-soft: #7b736b;
+  --ink-faint: #aca49c;
+  --rule: #ebe5de;
+  --rule-strong: #d7cdc2;
+
+  --accent: #a95f33;          /* 主色，压白字对比度 4.8 */
+  --accent-soft: #f6e5d7;     /* 淡橙，选中态和高亮的底 */
+  --accent-line: #cf9a72;     /* 装饰性的浅橙 */
+  --accent-dark: #8e4e28;     /* hover 用 */
+
+  --ok: #7f9c81;              /* 鼠尾草绿 */
+  --ok-bg: #d6e3d7;
+  --ok-ink: #43644a;
+  --warn: #bb9a56;            /* 赭黄 */
+  --warn-bg: #ece0c2;
+  --warn-ink: #705826;
+  --bad: #b57a6b;             /* 陶砖红 */
+  --bad-bg: #ecd5cd;
+  --bad-ink: #8a4735;
+
+  --special: #8b82a6;         /* 丁香紫 */
   --radius: 8px;
-  --shadow: 0 1px 2px rgba(47, 42, 36, 0.06), 0 8px 24px rgba(47, 42, 36, 0.05);
+  --shadow: 0 1px 2px rgba(60, 55, 51, 0.05), 0 8px 24px rgba(60, 55, 51, 0.045);
 
   color-scheme: light;
   font-family: 'Iowan Old Style', 'Songti SC', Georgia, 'Times New Roman',
@@ -68,7 +82,8 @@ button.primary {
 }
 
 button.primary:hover:not(:disabled) {
-  background: #6a4f35;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
 }
 
 button.ghost {
@@ -78,9 +93,9 @@ button.ghost {
 }
 
 button.danger:hover:not(:disabled) {
-  background: #f7e2de;
+  background: var(--bad-bg);
   border-color: var(--bad);
-  color: var(--bad);
+  color: var(--bad-ink);
 }
 
 input, select, textarea {

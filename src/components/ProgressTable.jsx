@@ -126,7 +126,14 @@ export default function ProgressTable({
                   </td>
                   <td>
                     {status ? (
-                      <span className="status-pill" style={{ background: status.color }}>
+                      <span
+                        className="status-pill"
+                        style={{
+                          background: status.bg,
+                          color: status.ink,
+                          borderColor: status.edge,
+                        }}
+                      >
                         {status.label}
                       </span>
                     ) : (
