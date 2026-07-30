@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { habitStatus } from '../lib/habits'
+import { colorOf } from '../lib/colors'
 
 /**
  * Day View 里 To do 和 Habits 共用的表格：一行一件事，
@@ -14,6 +15,7 @@ export default function ProgressTable({
   onSave,
   onOpen,
   onPlace,
+  onToggleKeep,
   emptyText,
 }) {
   const [draft, setDraft] = useState({})
@@ -59,6 +61,9 @@ export default function ProgressTable({
         <table className="habits-table">
           <thead>
             <tr>
+              {onToggleKeep && (
+                <th className="keep-col" title="勾上：排进时间轴后也留在这里">留</th>
+              )}
               <th>名称</th>
               {onPlace && <th>时长</th>}
               <th>完成度</th>
@@ -73,7 +78,22 @@ export default function ProgressTable({
               const status = row.unlogged ? null : habitStatus(row.pct)
               return (
                 <tr key={r.id}>
+                  {onToggleKeep && (
+                    <td className="keep-col">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(r.keep)}
+                        onChange={(e) => onToggleKeep(r.id, e.target.checked)}
+                        title="勾上：排进时间轴后也留在待办列表里"
+                      />
+                    </td>
+                  )}
                   <td className="habit-name">
+                    <span
+                      className="row-dot"
+                      style={{ background: colorOf(r.color).dot }}
+                      aria-hidden="true"
+                    />
                     {onOpen ? (
                       <button className="link-btn" onClick={() => onOpen(r.id)}>
                         {r.title}
@@ -119,13 +139,17 @@ export default function ProgressTable({
                   </td>
                   {onPlace && (
                     <td>
-                      <button
-                        className="place-btn"
-                        onClick={() => onPlace(r.id)}
-                        title="排进时间轴：自动找第一个装得下的空档"
-                      >
-                        排入 →
-                      </button>
+                      {r.scheduled ? (
+                        <span className="muted small">已排</span>
+                      ) : (
+                        <button
+                          className="place-btn"
+                          onClick={() => onPlace(r.id)}
+                          title="排进时间轴：自动找第一个装得下的空档"
+                        >
+                          排入 →
+                        </button>
+                      )}
                     </td>
                   )}
                 </tr>
@@ -137,7 +161,8 @@ export default function ProgressTable({
       {onOpen && (
         <p className="muted small">
           点名称可以改标题、时长或删除。
-          {onPlace && '「排入」会自动找第一个装得下的空档，排不下也会排上去并标红。'}
+          {onPlace &&
+            '「排入」会自动找第一个装得下的空档，排不下也会排上去并标红。勾上「留」，排进时间轴后也继续留在这张表里。'}
         </p>
       )}
     </section>

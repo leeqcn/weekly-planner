@@ -78,9 +78,11 @@ export default function TimeFields({ id, label, value, onChange, hint }) {
     <fieldset className="time-fields">
       <legend>{label}</legend>
       <div className="time-row">
-        {field('start', '开始', '9:30', 'numeric')}
-        {field('end', '结束', '11:00', 'numeric')}
-        {field('duration', '时长', '1:30', 'text')}
+        {/* 占位符故意写成 --:--：之前用「9:30」这种真时间，
+            看一眼分不清是自己填的还是提示 */}
+        {field('start', '开始', '--:--', 'numeric')}
+        {field('end', '结束', '--:--', 'numeric')}
+        {field('duration', '时长', '--:--', 'text')}
       </div>
       <p className="muted small">
         {value.duration ? `共 ${describeDuration(value.duration)}。` : ''}

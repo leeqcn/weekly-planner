@@ -2,6 +2,7 @@ import { format, isSameDay } from 'date-fns'
 import { dateKey, weekdayLabel } from '../lib/dates'
 import { habitStatus } from '../lib/habits'
 import { nextPct } from '../lib/schedule'
+import { colorOf } from '../lib/colors'
 
 /**
  * 周视图里 To do 和 Habits 共用的 n x 8 表格：左边一列事，右边周一到周日。
@@ -48,7 +49,14 @@ export default function WeekProgressGrid({
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.key}>
-                    <th scope="row" className="gt-name">{row.title}</th>
+                    <th scope="row" className="gt-name">
+                      <span
+                        className="row-dot"
+                        style={{ background: colorOf(row.color).dot }}
+                        aria-hidden="true"
+                      />
+                      {row.title}
+                    </th>
                     {row.cells.map((cell, i) => {
                       const key = `${row.key}|${i}`
                       if (!cell) return <td key={key} className="gt-cell na" />

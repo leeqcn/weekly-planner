@@ -2,6 +2,7 @@ import { format, isSameDay } from 'date-fns'
 import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { isScheduled } from '../lib/schedule'
+import { colorOf } from '../lib/colors'
 
 // 完整 24 小时一次画完，不在卡片里再套一层滚动 ——
 // 里面套滚动会看不到全天，还老是滚错那一层。页面自己滚就够了。
@@ -78,6 +79,7 @@ export default function WeekTimeline({ days, entries, specialDays, onOpenDay }) 
                     {blocks.map((b) => {
                       const width = 100 / b.lanes
                       const minutes = Math.max(15, (b.to - b.from) / 60000)
+                      const tint = colorOf(b.entry.color)
                       return (
                         <button
                           key={b.entry.id}
@@ -87,6 +89,8 @@ export default function WeekTimeline({ days, entries, specialDays, onOpenDay }) 
                             height: Math.max(12, (minutes / 60) * HOUR_PX),
                             left: `calc(${b.lane * width}% + 2px)`,
                             width: `calc(${width}% - 4px)`,
+                            background: tint.block,
+                            borderColor: tint.edge,
                           }}
                           onClick={() => onOpenDay(day)}
                           title={`${b.entry.title} ${formatTime(b.start)}–${formatTime(b.end)}`}

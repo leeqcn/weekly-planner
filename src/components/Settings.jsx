@@ -3,9 +3,17 @@ import { dateKey, fromDateKey } from '../lib/dates'
 import { TYPES } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
 import TimeFields from './TimeFields'
+import ColorPicker from './ColorPicker'
+import { colorOf } from '../lib/colors'
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
+/** 常用的重复预设 —— 三餐这种每天重复的，不用一个个点七下 */
+const PRESETS = [
+  { label: '每天', days: EVERY_DAY },
+  { label: '工作日', days: [1, 2, 3, 4, 5] },
+  { label: '周末', days: [6, 7] },
+]
 const TYPE_LABELS = Object.fromEntries(
   Object.entries(TYPES).map(([k, v]) => [k, v.label]),
 )
@@ -21,6 +29,8 @@ const BLANK = {
   recurrence_days: [],
   start_time: '',
   end_time: '',
+  color: null,
+  keep_in_todo: false,
   is_active: true,
 }
 
@@ -51,6 +61,8 @@ export default function Settings({ planner, onBack }) {
       recurrence_days: draft.type === 'habit' ? EVERY_DAY : draft.recurrence_days,
       start_time: isEvent ? draft.start_time || null : null,
       end_time: isEvent ? draft.end_time || null : null,
+      color: draft.color ?? null,
+      keep_in_todo: isTodo ? Boolean(draft.keep_in_todo) : false,
       is_active: draft.is_active,
     }
     if (!payload.title || !payload.recurrence_days.length) return
@@ -93,7 +105,14 @@ export default function Settings({ planner, onBack }) {
             <tbody>
               {planner.templates.map((t) => (
                 <tr key={t.id} className={t.is_active ? '' : 'inactive'}>
-                  <td>{t.title}</td>
+                  <td>
+                    <span
+                      className="row-dot"
+                      style={{ background: colorOf(t.color).dot }}
+                      aria-hidden="true"
+                    />
+                    {t.title}
+                  </td>
                   <td>
                     {TYPE_LABELS[t.type]}
                     {t.priority && (
@@ -209,6 +228,27 @@ export default function Settings({ planner, onBack }) {
             ) : (
             <>
             <label>{draft.recurrence === 'weekly' ? '周几' : '每月几号'}</label>
+            {draft.recurrence === 'weekly' && (
+              <div className="day-toggles presets">
+                {PRESETS.map((p) => (
+                  <button
+                    type="button"
+                    key={p.label}
+                    className="toggle"
+                    onClick={() => setDraft({ ...draft, recurrence_days: p.days })}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="toggle"
+                  onClick={() => setDraft({ ...draft, recurrence_days: [] })}
+                >
+                  清空
+                </button>
+              </div>
+            )}
             <div className="day-toggles">
               {(draft.recurrence === 'weekly'
                 ? [1, 2, 3, 4, 5, 6, 7]
@@ -238,6 +278,22 @@ export default function Settings({ planner, onBack }) {
               <TemplateTime draft={draft} setDraft={setDraft} />
             )}
 
+            <ColorPicker
+              value={draft.color}
+              onChange={(color) => setDraft({ ...draft, color })}
+            />
+
+            {draft.type === 'todo' && (
+              <label className="inline-check">
+                <input
+                  type="checkbox"
+                  checked={Boolean(draft.keep_in_todo)}
+                  onChange={(e) => setDraft({ ...draft, keep_in_todo: e.target.checked })}
+                />
+                排进时间轴后，仍然留在 To do 列表里
+              </label>
+            )}
+
             {draft.type === 'todo' && (
               <div className="field-row">
                 <div>
@@ -246,7 +302,7 @@ export default function Settings({ planner, onBack }) {
                     id="tpl-min"
                     inputMode="numeric"
                     value={draft.min_duration_minutes ?? ''}
-                    placeholder="30"
+                    placeholder="--"
                     onChange={(e) =>
                       setDraft({ ...draft, min_duration_minutes: e.target.value })
                     }
@@ -258,7 +314,7 @@ export default function Settings({ planner, onBack }) {
                     id="tpl-max"
                     inputMode="numeric"
                     value={draft.max_duration_minutes ?? ''}
-                    placeholder="60"
+                    placeholder="--"
                     onChange={(e) =>
                       setDraft({ ...draft, max_duration_minutes: e.target.value })
                     }

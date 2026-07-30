@@ -46,14 +46,14 @@ export function buildTodoRows(templates, entries, days) {
   const groups = new Map()
 
   for (const entry of entries) {
-    if (isScheduled(entry)) continue
-    if (entry.actual_start && entry.actual_end) continue // 只记实际的，不算待办
+    if (!isTodoRow(entry)) continue
     const key = entry.template_id ? `tpl:${entry.template_id}` : `adhoc:${entry.title}`
     if (!groups.has(key)) {
       groups.set(key, {
         key,
         title: entry.title,
         templateId: entry.template_id ?? null,
+        color: entry.color ?? null,
         byDate: new Map(),
       })
     }
@@ -64,6 +64,7 @@ export function buildTodoRows(templates, entries, days) {
     key: g.key,
     title: g.title,
     templateId: g.templateId,
+    color: g.color,
     cells: keys.map((k) => {
       const entry = g.byDate.get(k)
       if (!entry) return null
@@ -83,6 +84,7 @@ export function buildHabitRows(templates, habitLogs, days) {
       key: `habit:${t.id}`,
       title: t.title,
       templateId: t.id,
+      color: t.color ?? null,
       cells: days.map((day, i) => {
         if (!templateOccursOn(t, day)) return null
         const log =
@@ -104,15 +106,19 @@ export function nextPct(current) {
 }
 
 /**
- * 某天的待办：没有计划时间、也没记过实际的条目。
+ * 待办列表里该出现的条目。
  *
- * 「只记实际」的条目同样没有计划时间，但它是已经做完的记录，
- * 不该再出现在待办里 —— 它只出现在 Actually 栏。
+ *  - 没有计划时间的 —— 本来就是待办
+ *  - 有计划时间但勾了 keep_in_todo 的 —— 排进时间轴了也继续留在列表里
+ *  - 「只记实际」的（没计划但有实际）不算 —— 那是已完成的记录，只进 Actually 栏
  */
+export function isTodoRow(entry) {
+  if (entry.actual_start && entry.actual_end && !isScheduled(entry)) return false
+  return !isScheduled(entry) || entry.keep_in_todo
+}
+
 export function todosOfDay(entries, key) {
-  return entries.filter(
-    (e) => e.date === key && !isScheduled(e) && !(e.actual_start && e.actual_end),
-  )
+  return entries.filter((e) => e.date === key && isTodoRow(e))
 }
 
 /** 某天该打卡的习惯。 */

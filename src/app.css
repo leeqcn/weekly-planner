@@ -1273,3 +1273,99 @@ th.gt-name {
     gap: 0.35rem;
   }
 }
+
+/* ------------------------------------------------ 颜色选择 / 小圆点 / 勾选 */
+.color-picker {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.color-dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(47, 42, 36, 0.15);
+}
+
+.color-dot:hover:not(:disabled) {
+  border-color: var(--ink-faint);
+  background: inherit;
+}
+
+.color-dot.on {
+  border-color: var(--ink);
+}
+
+.row-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  vertical-align: 1px;
+}
+
+.inline-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.inline-check input {
+  margin: 0;
+}
+
+.keep-col {
+  width: 1.8rem;
+  text-align: center;
+}
+
+.day-toggles.presets {
+  margin-bottom: 0.3rem;
+}
+
+.day-toggles.presets .toggle {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+/* 选中的块（可以多选，一起拖） */
+.entry-block.picked {
+  box-shadow: 0 0 0 2px var(--accent);
+  z-index: 2;
+}
+
+/* ------------------------------------------------------- 右下角的撤销按钮 */
+.undo-fab {
+  position: fixed;
+  right: calc(1rem + env(safe-area-inset-right));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--paper-2);
+  border: 1px solid var(--rule-strong);
+  box-shadow: 0 3px 12px rgba(47, 42, 36, 0.22);
+  color: var(--ink);
+}
+
+.undo-fab:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}

@@ -181,6 +181,23 @@ export function usePlanner(repo) {
         created?.[0] ? repo.deleteEntry(created[0].id) : undefined,
       ),
 
+    /** 一次改多条，合成一步撤销 —— 拖动多个块时用。 */
+    updateEntries: (updates, label) => {
+      const before = updates.map(({ id, patch }) => ({
+        id,
+        patch: pick(findEntry(id), Object.keys(patch)),
+      }))
+      return act(
+        label ?? `修改 ${updates.length} 项`,
+        async () => {
+          for (const { id, patch } of updates) await repo.updateEntry(id, patch)
+        },
+        async () => {
+          for (const { id, patch } of before) await repo.updateEntry(id, patch)
+        },
+      )
+    },
+
     updateEntry: (id, patch, label) => {
       const before = findEntry(id)
       return act(

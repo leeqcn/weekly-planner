@@ -31,14 +31,7 @@ export default function Planner({ repo, onSignOut }) {
         )}
         <span className="spacer" />
         {planner.loading && <span className="muted small">载入中…</span>}
-        <button
-          className="ghost"
-          disabled={!planner.canUndo}
-          onClick={planner.undo}
-          title={planner.canUndo ? `撤销：${planner.undoLabel}` : '没有可撤销的操作'}
-        >
-          ↩ 撤销
-        </button>
+
         <button className="ghost" onClick={() => setView({ name: 'settings' })}>
           设置
         </button>
@@ -76,6 +69,34 @@ export default function Planner({ repo, onSignOut }) {
           <Settings planner={planner} onBack={() => setView({ name: 'week' })} />
         )}
       </main>
+
+      {/* 固定在右下角：撤销以前在顶栏，页面一长就得往上滑才找得到 */}
+      {planner.canUndo && (
+        <button
+          className="undo-fab"
+          onClick={planner.undo}
+          title={`撤销：${planner.undoLabel}`}
+          aria-label={`撤销：${planner.undoLabel}`}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M9 5 4 10l5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4 10h9a5.5 5.5 0 0 1 0 11h-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }

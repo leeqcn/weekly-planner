@@ -12,8 +12,8 @@ import { dateKey, weekStart } from '../lib/dates'
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
 
-/** 角落的小月历：点日期跳到对应的周。 */
-export default function MiniCalendar({ monday, onPick }) {
+/** 角落的小月历：点某一天直接进那天的 Day View。 */
+export default function MiniCalendar({ monday, onPick, onOpenDay }) {
   const [cursor, setCursor] = useState(() => startOfMonth(monday))
 
   const gridStart = weekStart(startOfMonth(cursor))
@@ -55,7 +55,11 @@ export default function MiniCalendar({ monday, onPick }) {
             ]
               .filter(Boolean)
               .join(' ')}
-            onClick={() => onPick(d)}
+            onClick={() => {
+              // 点某一天：既切到那一周，也直接进这天的 Day View
+              onPick(d)
+              onOpenDay?.(d)
+            }}
           >
             {format(d, 'd')}
           </button>

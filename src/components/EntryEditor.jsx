@@ -3,6 +3,7 @@ import { combineDateTime, minutesOfDay } from '../lib/dates'
 import { formatClock } from '../lib/time'
 import TimeFields from './TimeFields'
 import DayStrip from './DayStrip'
+import ColorPicker from './ColorPicker'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -37,6 +38,8 @@ export default function EntryEditor({
   const [title, setTitle] = useState(entry?.title ?? '')
   const [minDur, setMinDur] = useState(entry?.min_duration_minutes ?? '')
   const [maxDur, setMaxDur] = useState(entry?.max_duration_minutes ?? '')
+  const [color, setColor] = useState(entry?.color ?? null)
+  const [keep, setKeep] = useState(Boolean(entry?.keep_in_todo))
   const [plan, setPlan] = useState(() => toGroup(entry?.planned_start, entry?.planned_end))
   const [actual, setActual] = useState(() =>
     toGroup(entry?.actual_start, entry?.actual_end),
@@ -56,6 +59,8 @@ export default function EntryEditor({
     const durations = {
       min_duration_minutes: num(minDur),
       max_duration_minutes: num(maxDur),
+      color,
+      keep_in_todo: keep,
     }
 
     if (isNew) {
@@ -133,7 +138,7 @@ export default function EntryEditor({
                     id="dur-min"
                     inputMode="numeric"
                     value={minDur}
-                    placeholder="30"
+                    placeholder="--"
                     onChange={(e) => setMinDur(e.target.value)}
                   />
                 </div>
@@ -143,7 +148,7 @@ export default function EntryEditor({
                     id="dur-max"
                     inputMode="numeric"
                     value={maxDur}
-                    placeholder="60"
+                    placeholder="--"
                     onChange={(e) => setMaxDur(e.target.value)}
                   />
                 </div>
@@ -153,6 +158,17 @@ export default function EntryEditor({
                 块会画成半透明，表示还没定死。
               </p>
             </fieldset>
+
+            <ColorPicker value={color} onChange={setColor} />
+
+            <label className="inline-check">
+              <input
+                type="checkbox"
+                checked={keep}
+                onChange={(e) => setKeep(e.target.checked)}
+              />
+              排进时间轴后，仍然留在 To do 列表里
+            </label>
             <TimeFields id="actual" label="实际" value={actual} onChange={setActual} />
             {(plan.start !== null || actual.start !== null) && (
               <button

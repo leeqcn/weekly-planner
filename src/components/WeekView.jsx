@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 import { buildHabitRows, buildTodoRows } from '../lib/schedule'
+import { buildEntriesFor } from '../lib/generate'
 import MiniCalendar from './MiniCalendar'
 import WeeklyFocusPanel from './WeeklyFocusPanel'
 import WeekProgressGrid from './WeekProgressGrid'
@@ -11,6 +12,7 @@ export default function WeekView({ planner, onOpenDay }) {
     saveFocus, saveHabitLog, updateEntry, goToDate, shiftWeek, generateWeek, isCurrentWeek,
   } = planner
 
+  const pendingCount = buildEntriesFor(templates, days, entries).length
   const todoRows = buildTodoRows(templates, entries, days)
   const habitRows = buildHabitRows(templates, habitLogs, days)
 
@@ -41,14 +43,18 @@ export default function WeekView({ planner, onOpenDay }) {
             <button className="ghost" onClick={() => goToDate(new Date())}>回到本周</button>
           )}
         </div>
-        <button onClick={generateWeek} title="按模板补齐这一周还没生成的安排">
-          补齐这周的安排
-        </button>
+        {/* 平时切到某一周会自动按模板生成，这个按钮只在真的还有东西可补时才出现
+            （刚建完模板、或者在看过去的周 —— 那里故意不自动回填） */}
+        {pendingCount > 0 && (
+          <button onClick={generateWeek} title={`按模板补 ${pendingCount} 条还没生成的安排`}>
+            按模板补 {pendingCount} 条
+          </button>
+        )}
       </div>
 
       <div className="week-top">
         <WeeklyFocusPanel focus={focus} onSave={saveFocus} />
-        <MiniCalendar monday={monday} onPick={goToDate} />
+        <MiniCalendar monday={monday} onPick={goToDate} onOpenDay={onOpenDay} />
       </div>
 
       {/* 顺序：待办 -> 时间轴 -> 习惯 */}
