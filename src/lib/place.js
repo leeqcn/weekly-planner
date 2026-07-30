@@ -16,6 +16,49 @@ export function placementMinutes(entry, fallback = 60) {
 }
 
 /**
+ * 这一天真正被占掉的时段 —— 计算空闲和自动排入都用这一份。
+ *
+ * 不能一刀切成「按实际算」：**未来根本没有实际**。今天下午三点的时候，
+ * 晚上八点那件事只有计划、没有实际，忽略计划等于假装晚上是空的。
+ * 所以两者各管一段，按条目的状态分：
+ *
+ *   做完了（有实际起止）→ 占**实际**那一段，计划那段就此让出来
+ *                          （计划 21:00 读书、实际下午三点读完了，
+ *                           那 21:00–22:00 现在是空的，本来就该能再排事）
+ *   正在做（in_progress）→ 从实际开始到 max(现在, 计划结束)
+ *                          —— 超时了就按已经拖到的时间算，还没到点就按计划算
+ *   跳过了（skipped）    → 不占时间，让出来
+ *   还没做              → 占**计划**那一段，这是唯一的依据
+ *
+ * @param nowMin 「现在」是当天的第几分钟；别的日子传锚点就行
+ * @returns 按起点排好序的 {from,to}
+ */
+export function busyIntervals(dayEntries, { nowMin = DEFAULT_ANCHOR } = {}) {
+  const spans = []
+  for (const e of dayEntries) {
+    if (e.status === 'skipped') continue
+
+    if (e.actual_start && e.actual_end) {
+      spans.push({ from: minutesOfDay(e.actual_start), to: endMinute(e.actual_end) })
+      continue
+    }
+    if (e.status === 'in_progress' && e.actual_start) {
+      const from = minutesOfDay(e.actual_start)
+      const planEnd = e.planned_end ? endMinute(e.planned_end) : 0
+      spans.push({ from, to: Math.max(nowMin, planEnd, from + 5) })
+      continue
+    }
+    if (isScheduled(e)) {
+      spans.push({ from: minutesOfDay(e.planned_start), to: endMinute(e.planned_end) })
+    }
+  }
+  return spans.sort((a, b) => a.from - b.from)
+}
+
+/** 结束在第二天 0 点的算 24:00，不然会缩成 0 把整天都算成空的。 */
+const endMinute = (iso) => minutesOfDay(iso) || DAY_END
+
+/**
  * 找当天第一个塞得下 minutes 的空档。
  *
  * 「之后的顺序加入」是自动的：上一条排进去之后就成了占用时段，
@@ -26,16 +69,10 @@ export function placementMinutes(entry, fallback = 60) {
  *
  * @returns 起始分钟数，永远不为 null
  */
-export function findSlot(dayEntries, minutes, { anchor = DEFAULT_ANCHOR } = {}) {
+export function findSlot(dayEntries, minutes, { anchor = DEFAULT_ANCHOR, nowMin } = {}) {
   if (!minutes || minutes <= 0) minutes = 60
 
-  const busy = dayEntries
-    .filter(isScheduled)
-    .map((e) => ({
-      from: minutesOfDay(e.planned_start),
-      to: minutesOfDay(e.planned_end) || DAY_END, // 结束在第二天 0 点算 24:00
-    }))
-    .sort((a, b) => a.from - b.from)
+  const busy = busyIntervals(dayEntries, { nowMin: nowMin ?? anchor })
 
   let cursor = roundUp(Math.max(0, anchor))
   for (const block of busy) {
@@ -65,17 +102,14 @@ export function minutesToIso(key, minutes) {
 /**
  * 「装不装得下」—— 纸质 planner 唯一做不到的事就是加减法。
  *
- * 空闲时间从 anchor（今天就是「现在」）算到当天结束，扣掉已排的时段；
- * 需要的时间是还没排进时间轴的待办的时长合计（区间就给出上下限）。
+ * 空闲时间从 anchor（今天就是「现在」）算到当天结束，扣掉 busyIntervals 里的时段；
+ * 需要的时间是还没排进时间轴、也还没做完的待办的时长合计（区间就给出上下限）。
+ *
+ * 和 findSlot 共用同一份占用时段是有意的：不然会出现「说还剩两小时、
+ * 一点排入却塞不进去」这种自相矛盾。
  */
-export function capacityOf(dayEntries, todos, { anchor = DEFAULT_ANCHOR } = {}) {
-  const busy = dayEntries
-    .filter(isScheduled)
-    .map((e) => ({
-      from: minutesOfDay(e.planned_start),
-      to: minutesOfDay(e.planned_end) || DAY_END,
-    }))
-    .sort((a, b) => a.from - b.from)
+export function capacityOf(dayEntries, todos, { anchor = DEFAULT_ANCHOR, nowMin } = {}) {
+  const busy = busyIntervals(dayEntries, { nowMin: nowMin ?? anchor })
 
   let free = 0
   let cursor = Math.max(0, Math.min(anchor, DAY_END))
@@ -87,7 +121,15 @@ export function capacityOf(dayEntries, todos, { anchor = DEFAULT_ANCHOR } = {}) 
   }
   free += Math.max(0, DAY_END - cursor)
 
-  const pending = todos.filter((t) => !isScheduled(t))
+  // 已经做完的不再算进「还需要多少时间」—— 勾了「留在待办」的做完了也还在列表里
+  const pending = todos.filter(
+    (t) =>
+      !isScheduled(t) &&
+      t.status !== 'done' &&
+      t.status !== 'skipped' &&
+      !(t.actual_start && t.actual_end) &&
+      (t.completion_pct ?? 0) < 100,
+  )
   const min = pending.reduce(
     (sum, t) => sum + (t.min_duration_minutes ?? t.max_duration_minutes ?? 60),
     0,

@@ -26,6 +26,13 @@ export default function DayView({ planner, date, onBack }) {
   }, [])
   void tick // 只是为了让计时中的块每 30 秒重画一次
   const now = new Date()
+  // 「现在」是这一天的第几分钟：看过去的日子时那天已经全部过完了，
+  // 看以后的日子时那天一分钟都还没开始
+  const nowMinutes = isSameDay(date, now)
+    ? now.getHours() * 60 + now.getMinutes()
+    : date < now
+      ? 24 * 60
+      : 0
   const [picked, setPicked] = useState([]) // 选中的块，可多选
   const [editing, setEditing] = useState(null)
   const [cascade, setCascade] = useState(true) // 拖一个块，后面的跟着顺延
@@ -161,7 +168,7 @@ export default function DayView({ planner, date, onBack }) {
   /** 待办排进时间轴：自动找第一个装得下的空档，装不下也照排、标红。 */
   function placeTodo(entry) {
     const minutes = placementMinutes(entry)
-    const at = findSlot(planned, minutes, { anchor: anchorFor(key) })
+    const at = findSlot(dayEntries, minutes, { anchor: anchorFor(key), nowMin: nowMinutes })
     planner.updateEntry(
       entry.id,
       {
@@ -202,7 +209,11 @@ export default function DayView({ planner, date, onBack }) {
           }
     })
   const livePlanned = live(planned, 'planned')
-  const capacity = capacityOf(planned, todos, { anchor: anchorFor(key) })
+  // 占用时段按「已经做完的算实际、还没做的算计划」来 —— 见 place.js/busyIntervals
+  const capacity = capacityOf(dayEntries, todos, {
+    anchor: anchorFor(key),
+    nowMin: nowMinutes,
+  })
 
   const plannedLayout = layoutBlocks(
     planned.map((e) => ({ entry: e, start: e.planned_start, end: e.planned_end })),
