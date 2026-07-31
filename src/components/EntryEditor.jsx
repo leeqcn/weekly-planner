@@ -24,16 +24,27 @@ const toIso = (date, minutes) =>
 /**
  * 新建 / 修改一条安排。计划和实际分成两块单独填 ——
  * 之前只有一组时间输入，在「实际」那栏点开改时间，改的其实是计划。
+ *
+ * 分开之后还是会填错：两块长得一模一样，计划永远在上面，
+ * 从 Actually 那栏长按进来的人照着习惯往第一格里打。所以再补两件事：
+ *   - **从哪一栏进来的，那一块就排在最上面**，并且直接把光标放进去
+ *   - 两块颜色跟着时间轴走：计划是橙的、实际是绿的，扫一眼就知道在改哪个
+ *
+ * @param focus 'plan' | 'actual' —— 从哪一栏点进来的
+ * @param now   今天的第几分钟；传了的话实际那两格点一下就能填「现在」
  */
 export default function EntryEditor({
   entry,
   actualOnly,
+  focus = 'plan',
+  now = null,
   date,
   dayEntries,
   onSave,
   onDelete,
   onClose,
 }) {
+  const actualFirst = actualOnly || focus === 'actual'
   const isNew = !entry
   const [title, setTitle] = useState(entry?.title ?? '')
   const [minDur, setMinDur] = useState(entry?.min_duration_minutes ?? '')
@@ -112,20 +123,47 @@ export default function EntryEditor({
         <input
           id="entry-title"
           value={title}
-          autoFocus
+          autoFocus={isNew}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="做什么"
         />
 
         <div className="editor-body">
           <div className="editor-fields">
+            {actualFirst && (
+              <TimeFields
+                id="actual"
+                label="实际"
+                tone="actual"
+                value={actual}
+                onChange={setActual}
+                suggest={now}
+                autoFocus={!isNew}
+                hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
+              />
+            )}
+
             {!actualOnly && (
               <TimeFields
                 id="plan"
                 label="计划"
+                tone="plan"
                 value={plan}
                 onChange={setPlan}
+                autoFocus={!isNew && !actualFirst}
                 hint="三个都留空就是一条待办，可以之后再「排入」时间轴。"
+              />
+            )}
+
+            {!actualFirst && (
+              <TimeFields
+                id="actual"
+                label="实际"
+                tone="actual"
+                value={actual}
+                onChange={setActual}
+                suggest={now}
+                hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
               />
             )}
 
@@ -169,7 +207,6 @@ export default function EntryEditor({
               />
               排进时间轴后，仍然留在 To do 列表里
             </label>
-            <TimeFields id="actual" label="实际" value={actual} onChange={setActual} />
             {(plan.start !== null || actual.start !== null) && (
               <button
                 type="button"
@@ -189,10 +226,16 @@ export default function EntryEditor({
             )}
           </div>
 
+          {/* 缩略时间轴画的是正在改的那一组，不然改实际时间时旁边一动不动 */}
           <DayStrip
             entries={dayEntries ?? []}
             editingId={entry?.id}
-            draft={{ start: plan.start, end: plan.end }}
+            kind={actualFirst ? 'actual' : 'plan'}
+            draft={
+              actualFirst
+                ? { start: actual.start, end: actual.end }
+                : { start: plan.start, end: plan.end }
+            }
           />
         </div>
 

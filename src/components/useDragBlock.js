@@ -46,6 +46,7 @@ export function useDragBlock({ hourPx, onCommit, onLongPress }) {
       members,
       moved: false,
       pressId: members[0]?.id,
+      pressField: members[0]?.field,
     }
     setDrag({ mode, members })
 
@@ -56,7 +57,8 @@ export function useDragBlock({ hourPx, onCommit, onLongPress }) {
         if (!from || from.moved) return
         origin.current = null
         setDrag(null)
-        onLongPress(from.pressId)
+        // 带上是哪一栏：编辑器要把对应那组时间放到最上面
+        onLongPress(from.pressId, from.pressField)
       }, LONG_PRESS_MS)
     }
   }, [onLongPress])

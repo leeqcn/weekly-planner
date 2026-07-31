@@ -69,12 +69,13 @@ export default function ProgressTable({
                 <th className="keep-col" title="勾上：排进时间轴后也留在这里">留</th>
               )}
               <th>名称</th>
+              {/* 「排入」「开始」紧跟在时长后面 —— 放在最后一列的话，
+                  窄屏上这张表要横向滚到底才够得着，每次都得先划一下 */}
               {onPlace && <th>时长</th>}
+              {(onPlace || onStart) && <th />}
               <th>完成度</th>
               <th>状态</th>
               <th>备注</th>
-              {onStart && <th />}
-              {onPlace && <th />}
             </tr>
           </thead>
           <tbody>
@@ -108,6 +109,37 @@ export default function ProgressTable({
                     )}
                   </td>
                   {onPlace && <td className="small dur-cell">{r.duration || '—'}</td>}
+                  {(onPlace || onStart) && (
+                    <td className="act-cell">
+                      {onPlace &&
+                        (r.scheduled ? (
+                          <span className="muted small">已排</span>
+                        ) : (
+                          <button
+                            className="place-btn"
+                            onClick={() => onPlace(r.id)}
+                            title="排进时间轴：自动找第一个装得下的空档"
+                          >
+                            排入 →
+                          </button>
+                        ))}
+                      {onStart &&
+                        (runningId === r.id ? (
+                          <button className="timer-btn on" onClick={() => onStop(r.id)}>
+                            ■ 结束
+                          </button>
+                        ) : (
+                          <button
+                            className="timer-btn"
+                            onClick={() => onStart(r.id)}
+                            title="现在开始做，结束时再点一下 —— 猜不准时长就别猜"
+                            disabled={Boolean(runningId)}
+                          >
+                            ▶ 开始
+                          </button>
+                        ))}
+                    </td>
+                  )}
                   <td>
                     <div className="pct-cell">
                       <input
@@ -149,39 +181,6 @@ export default function ProgressTable({
                       onBlur={() => commit(r.id)}
                     />
                   </td>
-                  {onStart && (
-                    <td>
-                      {runningId === r.id ? (
-                        <button className="timer-btn on" onClick={() => onStop(r.id)}>
-                          ■ 结束
-                        </button>
-                      ) : (
-                        <button
-                          className="timer-btn"
-                          onClick={() => onStart(r.id)}
-                          title="现在开始做，结束时再点一下 —— 猜不准时长就别猜"
-                          disabled={Boolean(runningId)}
-                        >
-                          ▶ 开始
-                        </button>
-                      )}
-                    </td>
-                  )}
-                  {onPlace && (
-                    <td>
-                      {r.scheduled ? (
-                        <span className="muted small">已排</span>
-                      ) : (
-                        <button
-                          className="place-btn"
-                          onClick={() => onPlace(r.id)}
-                          title="排进时间轴：自动找第一个装得下的空档"
-                        >
-                          排入 →
-                        </button>
-                      )}
-                    </td>
-                  )}
                 </tr>
               )
             })}

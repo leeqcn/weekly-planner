@@ -8,7 +8,7 @@ const HOUR_PX = 15
  * 编辑时间时旁边的一条当天缩略时间轴 —— 之前填时间根本看不到
  * 哪些时段是空的，只能凭记忆猜。灰块是已排的，彩块是正在编辑的这条。
  */
-export default function DayStrip({ entries, editingId, draft }) {
+export default function DayStrip({ entries, editingId, draft, kind = 'plan' }) {
   const blocks = entries
     .filter((e) => isScheduled(e) && e.id !== editingId)
     .map((e) => ({
@@ -19,8 +19,10 @@ export default function DayStrip({ entries, editingId, draft }) {
     }))
 
   const hasDraft = draft.start !== null && draft.end !== null && draft.end > draft.start
+  // 「撞车」只对计划有意义。实际时间和别人的计划重叠不是错 ——
+  // 你就是那个点做的，警告它只会让人以为自己填错了。
   const clash =
-    hasDraft && blocks.some((b) => draft.start < b.to && draft.end > b.from)
+    kind === 'plan' && hasDraft && blocks.some((b) => draft.start < b.to && draft.end > b.from)
 
   return (
     <div className="day-strip">
@@ -52,7 +54,15 @@ export default function DayStrip({ entries, editingId, draft }) {
         )}
       </div>
       <p className="muted small strip-note">
-        {clash ? '和已排的时间重叠了' : hasDraft ? '这段是空的' : '当天已排的时间'}
+        {clash
+          ? '和已排的时间重叠了'
+          : kind === 'actual'
+            ? hasDraft
+              ? '这段是实际做的'
+              : '当天已排的时间'
+            : hasDraft
+              ? '这段是空的'
+              : '当天已排的时间'}
       </p>
     </div>
   )

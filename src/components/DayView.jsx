@@ -92,7 +92,11 @@ export default function DayView({ planner, date, onBack }) {
   const drag = useDragBlock({
     hourPx: HOUR_PX,
     onCommit: commitDrag,
-    onLongPress: (id) => setEditing({ entry: dayEntries.find((e) => e.id === id) }),
+    onLongPress: (id, field) =>
+      setEditing({
+        entry: dayEntries.find((e) => e.id === id),
+        focus: field === 'actual' ? 'actual' : 'plan',
+      }),
   })
 
   /** 一次拖动要带动哪些块。 */
@@ -391,7 +395,9 @@ export default function DayView({ planner, date, onBack }) {
           </div>
         </div>
         <p className="muted small">
-          拖块左边的竖条挪时间，拖底边改时长。<b>长按</b>打开编辑，单击选中
+          拖块左边的竖条挪时间，拖底边改时长。<b>长按</b>打开编辑 ——
+          从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的），
+          记实际时间时点开始/结束那一格可以一下填「现在」。单击选中
           （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。
           <b>半透明</b>是时长还没定死，<b>红色</b>是撞车。
         </p>
@@ -417,6 +423,9 @@ export default function DayView({ planner, date, onBack }) {
         <EntryEditor
           entry={editing.entry}
           actualOnly={editing.actualOnly}
+          focus={editing.focus}
+          // 只有「今天」的实际时间填「现在」才说得通
+          now={isSameDay(date, now) ? nowMinutes : null}
           date={key}
           dayEntries={dayEntries}
           onSave={saveEditor}

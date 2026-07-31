@@ -829,6 +829,15 @@ th.gt-name {
   padding: 0.2rem 0.5rem;
 }
 
+/* 「排入」「开始」并排放在时长后面，别挤到表格最右边去 */
+.act-cell {
+  white-space: nowrap;
+}
+
+.act-cell > * + * {
+  margin-left: 0.3rem;
+}
+
 .actually-head {
   justify-content: center;
   gap: 0.4rem;
@@ -1195,6 +1204,26 @@ th.gt-name {
   padding: 0 0.3rem;
 }
 
+/* 计划 / 实际两块跟时间轴用同一套颜色（计划=橙、实际=绿），
+   一眼就知道正在改哪一个 —— 两块长得一样才是填错的根源 */
+.time-fields.tone-plan {
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--accent-soft) 32%, transparent);
+}
+
+.time-fields.tone-plan legend {
+  color: var(--accent-dark);
+}
+
+.time-fields.tone-actual {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok-bg) 40%, transparent);
+}
+
+.time-fields.tone-actual legend {
+  color: var(--ok-ink);
+}
+
 .time-row {
   display: flex;
   gap: 0.5rem;
@@ -1203,6 +1232,37 @@ th.gt-name {
 .time-row > div {
   flex: 1;
   min-width: 0;
+}
+
+.time-cell {
+  position: relative;
+}
+
+/* 点开始/结束浮出来的「现在 15:42 · OK」 */
+.now-pop {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  padding: 0.25rem 0.3rem 0.25rem 0.45rem;
+  border: 1px solid var(--ok);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  box-shadow: var(--shadow);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.now-pop button {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 5px;
 }
 
 .time-row input {
