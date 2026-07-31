@@ -3,6 +3,7 @@ import { usePlanner } from '../state/usePlanner'
 import WeekView from './WeekView'
 import DayView from './DayView'
 import Settings from './Settings'
+import Help from './Help'
 
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
@@ -32,6 +33,14 @@ export default function Planner({ repo, onSignOut }) {
         <span className="spacer" />
         {planner.loading && <span className="muted small">载入中…</span>}
 
+        <button
+          className="ghost help-btn"
+          onClick={() => setView({ name: 'help' })}
+          title="手势和功能说明"
+          aria-label="帮助"
+        >
+          ?
+        </button>
         <button className="ghost" onClick={() => setView({ name: 'settings' })}>
           设置
         </button>
@@ -68,6 +77,7 @@ export default function Planner({ repo, onSignOut }) {
         {view.name === 'settings' && (
           <Settings planner={planner} onBack={() => setView({ name: 'week' })} />
         )}
+        {view.name === 'help' && <Help onBack={() => setView({ name: 'week' })} />}
       </main>
 
       {/* 固定在右下角：撤销以前在顶栏，页面一长就得往上滑才找得到 */}

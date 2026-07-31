@@ -1583,3 +1583,122 @@ th.gt-name {
 .entry-block.status-in_progress {
   border-style: dashed;
 }
+
+/* ------------------------------------------------------------------ 帮助页 */
+/* 顶栏那个 ? 做成圆的：它和「设置」「退出」是两类东西，
+   长得一样的话一排三个文字按钮，反而谁都不显眼 */
+.help-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 999px;
+  border-color: var(--rule-strong);
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--ink-soft);
+}
+
+.help-view {
+  display: grid;
+  gap: 1rem;
+}
+
+.help-view .card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.help-view h2 {
+  font-size: 0.95rem;
+}
+
+.help-view ul,
+.help-view ol {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.help-view p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.help-steps > li {
+  padding-left: 0.15rem;
+}
+
+.help-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.help-table th {
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+  padding: 0.3rem 0.7rem 0.3rem 0;
+  font-weight: 600;
+  color: var(--accent-dark);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.82rem;
+}
+
+.help-table td {
+  vertical-align: top;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.help-table tr:last-child td {
+  border-bottom: none;
+}
+
+.help-view details {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.6rem;
+  background: var(--paper);
+}
+
+.help-view details[open] {
+  padding-bottom: 0.6rem;
+}
+
+.help-view summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--accent-dark);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.help-view details > *:not(summary) {
+  margin-top: 0.5rem;
+}
+
+.help-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.help-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.help-swatch > span {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 4px;
+  border: 1px solid;
+}

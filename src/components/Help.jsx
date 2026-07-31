@@ -1,0 +1,299 @@
+import { COLORS } from '../lib/colors'
+
+/**
+ * 帮助页。
+ *
+ * 这个 app 大量用手势（长按、双击、拖把手），手势天生看不见 ——
+ * 每一条界面提示都只能塞一句话，塞多了就成了噪音。所以单开一页，
+ * 按「你想干什么」组织，而不是按功能清单排。
+ *
+ * 用 <details> 折叠：手机上一屏放不下十几节，全展开等于什么都找不到。
+ */
+export default function Help({ onBack }) {
+  return (
+    <div className="help-view">
+      <div className="day-head">
+        <button className="ghost" onClick={onBack}>
+          ‹ 回到周视图
+        </button>
+        <h1>帮助</h1>
+      </div>
+
+      <section className="card">
+        <h2>一分钟上手</h2>
+        <ol className="help-steps">
+          <li>
+            <b>先建模板。</b>右上角「设置」里加几条每周重复的事：上班（时间安排）、
+            交房租（待办）、运动（习惯）。模板只写一次，之后每周自动生成。
+          </li>
+          <li>
+            <b>回到周视图点「补齐这周的安排」</b>，模板就按重复规则铺到这一周的每一天。
+          </li>
+          <li>
+            <b>点某一天的日期</b>进入当天，排时间、打卡、记实际。
+          </li>
+        </ol>
+        <p className="muted small">
+          不想建模板也行：进某一天，点时间轴栏头的 <b>＋</b> 直接加临时的事。
+        </p>
+      </section>
+
+      <section className="card">
+        <h2>三个模块，顺序固定</h2>
+        <p className="muted small">周视图和日视图都是这个顺序，不会串。</p>
+        <table className="help-table">
+          <tbody>
+            <tr>
+              <th>To do</th>
+              <td>只有事、没有时间。可以写<b>时长区间</b>，点「排入」放到时间轴上。</td>
+            </tr>
+            <tr>
+              <th>Time schedule</th>
+              <td>完整 24 小时的时间轴，左边 Plan、右边 Actually。睡觉也画得下。</td>
+            </tr>
+            <tr>
+              <th>Habits</th>
+              <td>每天重复、按完成度打卡的事。时间只有几分钟的（量血压）放这儿，不上时间轴。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section className="card">
+        <h2>时间轴上的手势</h2>
+        <table className="help-table">
+          <tbody>
+            <tr>
+              <th>长按空白处</th>
+              <td>
+                在那个时间<b>加一条</b>：从今天还没安排的事里挑一件，或者直接写新的。
+                两栏都行。也可以点栏头的 <b>＋</b>。
+              </td>
+            </tr>
+            <tr>
+              <th>长按块</th>
+              <td>
+                打开编辑。<b>从哪一栏长按，编辑器就把哪一组时间放在最上面</b> ——
+                在右边长按就是改实际，不会改到计划。
+              </td>
+            </tr>
+            <tr>
+              <th>拖块左边的竖条</th>
+              <td>挪时间（吸附到 5 分钟）</td>
+            </tr>
+            <tr>
+              <th>拖块底边</th>
+              <td>改时长。手动拉过长短 = 你自己定死了时长，块随之变实心。</td>
+            </tr>
+            <tr>
+              <th>单击块</th>
+              <td>选中。可以点好几个，然后一起拖。</td>
+            </tr>
+            <tr>
+              <th>双击左边的块</th>
+              <td>标记完成，实际时间照抄计划</td>
+            </tr>
+            <tr>
+              <th>双击右边的块</th>
+              <td>撤销完成</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="muted small">
+          手机上只有那两道窄条能拖，块的其余部分照常点击、照常滚页面 ——
+          不然手指落在块上就滚不动 24 小时的时间轴了。
+        </p>
+        <p className="muted small">
+          时间轴右上角的<b>「拖一个，后面的跟着顺延」</b>默认开着：拖一个块，
+          它之后的块跟着挪同样的量（一件事提前或延误，后面自动跟上）。
+          只对 Plan 生效 —— Actually 是已经发生的事，不该被顺手改掉。
+        </p>
+      </section>
+
+      <section className="card">
+        <h2>Plan 和 Actually 是两回事</h2>
+        <p>
+          左边 Plan 是<b>打算做什么</b>，右边 Actually 是<b>实际做了什么</b>。
+          两栏各铺一层淡底色（左偏橙、右偏绿），编辑器里那两组时间用同一套颜色。
+        </p>
+        <details>
+          <summary>怎么记实际时间最快</summary>
+          <ul>
+            <li>
+              <b>照计划做完了</b>：双击左边的块，实际时间自动照抄计划。
+            </li>
+            <li>
+              <b>不知道要多久</b>：待办那行点「▶ 开始」，顶上出现一条横幅显示已经多久，
+              右边的块跟着长到「现在」，做完点「■ 结束」。
+            </li>
+            <li>
+              <b>事后补记</b>：长按右边的块 → 点「开始」或「结束」那一格 →
+              浮出「现在 19:42」→ 点 OK。只有今天会出现这个。
+            </li>
+            <li>
+              <b>压根没计划过</b>：长按右边那栏的空白处，直接写一件。
+            </li>
+          </ul>
+        </details>
+        <details>
+          <summary>块画成什么样，是什么意思</summary>
+          <table className="help-table">
+            <tbody>
+              <tr>
+                <th>实心</th>
+                <td>起止都定死（最短 = 最长）而且不和别的块冲突</td>
+              </tr>
+              <tr>
+                <th>半透明</th>
+                <td>时长还是个区间（比如购物 30–60 分钟），没定死</td>
+              </tr>
+              <tr>
+                <th>红色</th>
+                <td>和别的块撞了。不拦你，自己拖开就行。</td>
+              </tr>
+              <tr>
+                <th>变淡</th>
+                <td>这条计划已经完成或跳过了</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </section>
+
+      <section className="card">
+        <h2>时间怎么输入</h2>
+        <ul>
+          <li>
+            全部手打，没有时钟转盘。<b>9</b> / <b>930</b> / <b>0930</b> / <b>9:30</b> 都认。
+          </li>
+          <li>
+            <b>开始、结束、时长填两个，第三个自动算。</b>时长可以写{' '}
+            <b>90</b> / <b>1:30</b> / <b>1.5h</b> / <b>45m</b>。
+          </li>
+          <li>三个都留空 = 这是一条没有时间的待办。</li>
+          <li>编辑时右边有一条当天的缩略时间轴，能看到哪些时段是空的、有没有撞车。</li>
+        </ul>
+      </section>
+
+      <section className="card">
+        <h2>不知道几点做的事</h2>
+        <p>
+          「购物 30–60 分钟」「晚餐 1 小时」这种：知道要多久，但不知道几点开始。
+          在待办里写上<b>时长区间</b>，然后：
+        </p>
+        <ul>
+          <li>
+            点<b>「排入 →」</b>（就在时长后面），自动找当天第一个装得下的空档，按上限算。
+            再排下一个自然接在后面 —— 「下班后购物、晚餐、洗澡」点三下就依次排好。
+          </li>
+          <li>
+            <b>装不下也照排</b>（接在最后一个块后面，哪怕过了 24 点），只是标红。
+            拒绝排入只会逼你跑去别处手动填时间。
+          </li>
+          <li>
+            勾上那一列的<b>「留」</b>，排进时间轴后这件事还继续留在待办列表里。
+          </li>
+        </ul>
+        <details>
+          <summary>「还空着几小时」那一行是怎么算的</summary>
+          <p>
+            空闲从「现在」算到当天结束，扣掉已经占用的时段；需要的时间是还没排、
+            也还没做完的待办合计。不够会变红并写明差多少。
+          </p>
+          <p className="muted small">
+            占用时段按状态分：<b>做完的按实际算</b>（计划 21:00 读书、下午三点就读完了，
+            那 21:00 现在是空的，能再排事）、正在做的算到「现在」或计划结束、
+            跳过的不占、<b>还没做的按计划算</b>（未来没有「实际」可言）。
+            「排入」用的是同一份账，所以说有空就一定排得进去。
+          </p>
+        </details>
+      </section>
+
+      <section className="card">
+        <h2>周视图</h2>
+        <ul>
+          <li>
+            To do 和 Habits 是 n×8 的表格，一行一件事、一列一天。
+            <b>点格子在 100 / 50 / 0 之间循环</b>。
+          </li>
+          <li>
+            待办<b>没打分算 0（红）</b> —— 一眼看出任务落在哪天还没做。
+            习惯<b>没打卡留空白</b> —— 默认全红太吓人。
+          </li>
+          <li>中间是 7 条时间轴，一眼看这周排得满不满。</li>
+          <li>
+            <b>点日期</b>进那一天。窄屏上时间块缩成色条只看分布，内容进日视图看。
+          </li>
+        </ul>
+      </section>
+
+      <section className="card">
+        <h2>颜色</h2>
+        <p>
+          睡觉一个颜色、工作一个颜色，扫一眼就知道一天长什么样。
+          在设置里给模板选，或者在某一条上单独改（单独改过的优先）。
+        </p>
+        <div className="help-swatches">
+          {Object.entries(COLORS).map(([key, c]) => (
+            <span key={key} className="help-swatch">
+              <span style={{ background: c.block, borderColor: c.edge }} />
+              {c.label}
+            </span>
+          ))}
+        </div>
+        <p className="muted small">
+          莫兰迪配色：低饱和、掺灰。七个颜色两两之间的感知差异是算过的，
+          不是挑着好看就完事 —— 上一版八个颜色里有五对肉眼分不出来。
+        </p>
+      </section>
+
+      <section className="card">
+        <h2>撤销</h2>
+        <p>
+          右下角那个 <b>↺</b> 按钮撤销上一步，对所有操作有效：拖动、排入、打卡、
+          改颜色、删除。按住它能看到撤不撤的是哪一步。电脑上 <b>Ctrl/⌘ + Z</b> 也行。
+        </p>
+        <p className="muted small">
+          一次拖动改了好几个块（顺延）算<b>一步</b>。刷新页面后撤销记录会清空。
+          唯一撤不干净的是「删除模板」：模板本身能原样回来，被连带删掉的打卡记录回不来。
+        </p>
+      </section>
+
+      <section className="card">
+        <h2>设置里有什么</h2>
+        <ul>
+          <li>
+            <b>模板</b>：每周重复的事。类型分时间安排 / 待办 / 习惯，
+            决定它出现在哪一块。可以设固定时间、时长区间、颜色。
+          </li>
+          <li>
+            <b>重复规则</b>：选星期几，或者每月某一天（交房租）。
+          </li>
+          <li>
+            改模板的标题会同步到<b>今天及以后</b>已经生成的条目，过去的不动。
+            颜色是实时跟着模板走的，改完所有视图立刻变。
+          </li>
+        </ul>
+      </section>
+
+      <section className="card">
+        <h2>装到手机桌面</h2>
+        <p>
+          这是个 PWA。iPhone 用 Safari 打开 → 分享 → <b>加入主画面</b>；
+          Android 用 Chrome 打开 → 菜单 → <b>安装应用程式</b>。
+          装完像普通 app 一样打开，没有浏览器地址栏。
+        </p>
+        <p className="muted small">
+          界面本身离线也打得开，但读写数据要联网。
+        </p>
+      </section>
+
+      <div className="modal-actions">
+        <span className="spacer" />
+        <button className="primary" onClick={onBack}>
+          知道了
+        </button>
+      </div>
+    </div>
+  )
+}

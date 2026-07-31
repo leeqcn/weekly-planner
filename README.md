@@ -88,8 +88,13 @@ scripts/palette-check.mjs   量调色板的色差（CIEDE2000）
   repo/mock.js      localStorage 实现
   repo/supabase.js  Supabase 实现（接口与 mock 完全一致）
 src/state/usePlanner.js   数据加载 / 写入，组件只管渲染
-src/components/           WeekView / DayView / Settings / …
+src/components/           WeekView / DayView / Settings / Help / …
+docs/软件说明.md          面向「没看过代码也没用过」的人的整体说明
 ```
+
+顶栏那个 `?` 是**帮助页**（`Help.jsx`）。这个 app 手势多，而手势天生看不见 ——
+每处界面提示只能塞一句话，塞多了就成噪音，所以单开一页，
+按「你想干什么」组织，不按功能清单排。加了新手势记得同步那一页。
 
 ## 三个模块
 
