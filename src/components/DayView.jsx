@@ -8,7 +8,9 @@ import { describeDuration, formatClock } from '../lib/time'
 import { colorOf, makeColorResolver } from '../lib/colors'
 import EntryEditor from './EntryEditor'
 import ProgressTable from './ProgressTable'
+import QuickAdd from './QuickAdd'
 import { useDragBlock } from './useDragBlock'
+import { useEmptyPress } from './useEmptyPress'
 
 // 完整 24 小时一次画完，不在卡片里再套滚动
 const HOUR_PX = 44
@@ -35,6 +37,7 @@ export default function DayView({ planner, date, onBack }) {
       : 0
   const [picked, setPicked] = useState([]) // 选中的块，可多选
   const [editing, setEditing] = useState(null)
+  const [quick, setQuick] = useState(null) // 空白处长按：{ field, at }
   const [cascade, setCascade] = useState(true) // 拖一个块，后面的跟着顺延
 
   const dayEntries = planner.entries.filter((e) => e.date === key)
@@ -168,6 +171,63 @@ export default function DayView({ planner, date, onBack }) {
 
   const saveHabit = (templateId, { pct, note }) =>
     planner.saveHabitLog({ template_id: templateId, date: key, completion_pct: pct, note })
+
+  const empty = useEmptyPress({
+    hourPx: HOUR_PX,
+    onOpen: useCallback((field, at) => setQuick({ field, at }), []),
+  })
+
+  /**
+   * 空白处长按之后能选哪些 —— 「这一栏还空着的那些事」：
+   * Plan 那栏列还没排时间的，Actually 那栏列还没记过实际的。
+   */
+  const quickCandidates = (field) =>
+    dayEntries.filter(
+      (e) =>
+        e.status !== 'skipped' &&
+        (field === 'actual' ? !(e.actual_start && e.actual_end) : !isScheduled(e)),
+    )
+
+  /** 加到哪一栏就写哪一组时间。记进 Actually = 这件事做了。 */
+  const quickTimes = (field, at, minutes) => {
+    const from = minutesToIso(key, at)
+    const to = minutesToIso(key, at + minutes)
+    return field === 'actual'
+      ? { actual_start: from, actual_end: to, status: 'done', completion_pct: 100 }
+      : { planned_start: from, planned_end: to }
+  }
+
+  function quickPick(entry, at) {
+    const minutes = placementMinutes(entry)
+    planner.updateEntry(
+      entry.id,
+      quickTimes(quick.field, at, minutes),
+      `${quick.field === 'actual' ? '记下' : '排入'}「${entry.title}」`,
+    )
+    setQuick(null)
+  }
+
+  function quickCreate(title, minutes, at) {
+    planner.addEntry({
+      template_id: null,
+      date: key,
+      title,
+      planned_start: null,
+      planned_end: null,
+      actual_start: null,
+      actual_end: null,
+      min_duration_minutes: minutes,
+      max_duration_minutes: minutes,
+      color: null,
+      keep_in_todo: false,
+      note: null,
+      status: 'planned',
+      completion_pct: null,
+      rescheduled_from: null,
+      ...quickTimes(quick.field, at, minutes),
+    })
+    setQuick(null)
+  }
 
   /** 待办排进时间轴：自动找第一个装得下的空档，装不下也照排、标红。 */
   function placeTodo(entry) {
@@ -353,16 +413,25 @@ export default function DayView({ planner, date, onBack }) {
           </label>
         </div>
         <div className="timeline-head">
-          <span>Plan</span>
+          <span className="row-gap col-head">
+            Plan
+            <button
+              className="ghost small-btn"
+              onClick={() => setQuick({ field: 'planned', at: anchorFor(key) })}
+              title="加一件要做的事"
+            >
+              ＋
+            </button>
+          </span>
           <span />
-          <span className="row-gap actually-head">
+          <span className="row-gap col-head">
             Actually
             <button
               className="ghost small-btn"
-              onClick={() => setEditing({ entry: null, actualOnly: true })}
+              onClick={() => setQuick({ field: 'actual', at: anchorFor(key) })}
               title="记一件没排过计划、但确实做了的事"
             >
-              ＋ 只记实际
+              ＋
             </button>
           </span>
         </div>
@@ -370,6 +439,18 @@ export default function DayView({ planner, date, onBack }) {
           className={`timeline${drag.isDragging ? ' dragging' : ''}`}
           style={{ height: 24 * HOUR_PX, '--hour-px': `${HOUR_PX}px` }}
           {...drag.handlers}
+          onPointerMove={(e) => {
+            drag.handlers.onPointerMove(e)
+            empty.move(e)
+          }}
+          onPointerUp={(e) => {
+            drag.handlers.onPointerUp(e)
+            empty.cancel()
+          }}
+          onPointerCancel={(e) => {
+            drag.handlers.onPointerCancel(e)
+            empty.cancel()
+          }}
         >
           {isSameDay(date, now) && (
             <div
@@ -378,8 +459,13 @@ export default function DayView({ planner, date, onBack }) {
             />
           )}
 
-          <div className="timeline-col plan">
+          {/* 空白处长按 = 在这儿加一条。落在块上的按压由块自己的把手接管 */}
+          <div
+            className="timeline-col plan"
+            onPointerDown={(e) => empty.begin(e, 'planned')}
+          >
             {plannedLayout.map((b) => renderBlock(b, 'planned'))}
+            <PressHint hint={empty.hint} field="planned" />
           </div>
 
           <div className="timeline-axis">
@@ -390,12 +476,18 @@ export default function DayView({ planner, date, onBack }) {
             ))}
           </div>
 
-          <div className="timeline-col actually">
+          <div
+            className="timeline-col actually"
+            onPointerDown={(e) => empty.begin(e, 'actual')}
+          >
             {actualLayout.map((b) => renderBlock(b, 'actual'))}
+            <PressHint hint={empty.hint} field="actual" />
           </div>
         </div>
         <p className="muted small">
-          拖块左边的竖条挪时间，拖底边改时长。<b>长按</b>打开编辑 ——
+          <b>长按空白处</b>（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件，
+          或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。
+          拖块左边的竖条挪时间，拖底边改时长。<b>长按块</b>打开编辑 ——
           从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的），
           记实际时间时点开始/结束那一格可以一下填「现在」。单击选中
           （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。
@@ -433,6 +525,29 @@ export default function DayView({ planner, date, onBack }) {
           onClose={() => setEditing(null)}
         />
       )}
+
+      {quick && (
+        <QuickAdd
+          field={quick.field}
+          at={quick.at}
+          now={isSameDay(date, now) ? nowMinutes : null}
+          candidates={quickCandidates(quick.field)}
+          resolveColor={resolveColor}
+          onPick={quickPick}
+          onCreate={quickCreate}
+          onClose={() => setQuick(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+/** 长按空白处时先冒出来的那道线：告诉你这个手势有反应，也标出会加在哪儿。 */
+function PressHint({ hint, field }) {
+  if (!hint || hint.field !== field) return null
+  return (
+    <div className="press-hint" style={{ top: (hint.at / 60) * HOUR_PX }}>
+      <span>{formatClock(hint.at)} 起</span>
     </div>
   )
 }

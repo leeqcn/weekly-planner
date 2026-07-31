@@ -838,16 +838,102 @@ th.gt-name {
   margin-left: 0.3rem;
 }
 
-.actually-head {
+.col-head {
   justify-content: center;
   gap: 0.4rem;
 }
 
-.actually-head .small-btn {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
+.col-head .small-btn {
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
   text-transform: none;
   letter-spacing: 0;
+}
+
+/* 长按空白处时先冒出来的提示线 */
+.press-hint {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  height: 0;
+  border-top: 2px dashed var(--accent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.press-hint span {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 4px;
+  padding: 0 0.3rem;
+}
+
+.timeline-col.actually .press-hint {
+  border-top-color: var(--ok-ink);
+}
+
+.timeline-col.actually .press-hint span {
+  background: var(--ok-ink);
+}
+
+/* ---------------------------------------------- 空白处长按：快捷加一条 */
+.quick-add {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.quick-group {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.quick-list {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+
+.quick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+}
+
+.quick-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-new {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.quick-new > input:first-child {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.quick-dur {
+  width: 3.4rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .entry-block.status-skipped {
@@ -863,9 +949,16 @@ th.gt-name {
   border-style: dashed;
 }
 
-.timeline-col.actually .entry-block {
-  background: var(--ok-bg);
-  border-color: var(--ok);
+/* 两栏各铺一层很淡的底：计划偏橙、实际偏绿，和编辑器里那两组时间对上。
+   底色只铺在栏上，块自己的颜色不动 —— 分类配色是用来认「这是什么事」的，
+   不能被「这是哪一栏」抢走。
+   （之前这里是给实际栏的块直接刷绿底，但块的背景是内联样式，这条规则从来没生效过。） */
+.timeline-col.plan {
+  background: color-mix(in srgb, var(--accent-soft) 22%, transparent);
+}
+
+.timeline-col.actually {
+  background: color-mix(in srgb, var(--ok-bg) 26%, transparent);
 }
 
 .entry-title {
