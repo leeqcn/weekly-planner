@@ -4,6 +4,7 @@ import WeekView from './WeekView'
 import DayView from './DayView'
 import Settings from './Settings'
 import Help from './Help'
+import Stats from './Stats'
 
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
@@ -33,6 +34,9 @@ export default function Planner({ repo, onSignOut }) {
         <span className="spacer" />
         {planner.loading && <span className="muted small">载入中…</span>}
 
+        <button className="ghost" onClick={() => setView({ name: 'stats' })}>
+          统计
+        </button>
         <button
           className="ghost help-btn"
           onClick={() => setView({ name: 'help' })}
@@ -78,6 +82,9 @@ export default function Planner({ repo, onSignOut }) {
           <Settings planner={planner} onBack={() => setView({ name: 'week' })} />
         )}
         {view.name === 'help' && <Help onBack={() => setView({ name: 'week' })} />}
+        {view.name === 'stats' && (
+          <Stats planner={planner} onBack={() => setView({ name: 'week' })} />
+        )}
       </main>
 
       {/* 固定在右下角：撤销以前在顶栏，页面一长就得往上滑才找得到 */}

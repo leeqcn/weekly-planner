@@ -248,12 +248,13 @@ export function createMockRepo(seed) {
 
     async purgeOlderThan(cutoff) {
       return mutate((db) => {
-        const before =
-          db.schedule_entries.length + db.habits_log.length
+        const before = db.schedule_entries.length
         db.schedule_entries = db.schedule_entries.filter((e) => e.date >= cutoff)
-        db.habits_log = db.habits_log.filter((h) => h.date >= cutoff)
-        // daily_rollup 不清 —— 明细删掉之后它就是统计仅有的数据来源
-        return before - (db.schedule_entries.length + db.habits_log.length)
+        // habits_log 和 daily_rollup 都不清：
+        //   前者本身就已经是汇总（一天一个习惯一行、一年才两千行），
+        //   删掉等于把打卡历史丢了，而它是打卡统计仅有的来源；
+        //   后者是明细被删之后时间统计仅有的来源。
+        return before - db.schedule_entries.length
       })
     },
   }

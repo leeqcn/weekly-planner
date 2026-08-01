@@ -1799,3 +1799,154 @@ th.gt-name {
 .suggest-row + .suggest-row {
   border-top: 1px solid var(--rule);
 }
+
+/* -------------------------------------------------------------------- 统计 */
+.stats-view {
+  display: grid;
+  /* minmax(0, 1fr) 而不是默认的 auto：grid 项默认 min-width:auto，
+     里面一根横条或一排芯片的最小宽度就能把整栏撑破，页面开始左右晃 */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.2rem 0 0.4rem;
+}
+
+.stat-card {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.stat-card.warn {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 每类一行的横条 */
+.bars {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 3.2rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.bar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  position: relative;
+  display: block;
+  height: 1.15rem;
+  background: var(--paper);
+  border-radius: 3px;
+}
+
+.bar-actual {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+}
+
+/* 计划画成细框叠在实际上面：比两根并排的条省一半高度，
+   而且「超了/欠了」是长度差，本来就该重叠着看 */
+.bar-planned {
+  position: absolute;
+  inset: -2px auto -2px 0;
+  border: 1px dashed;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.chart-wrap {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.chart {
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
+.trend .chart {
+  height: 110px;
+}
+
+/* 坐标轴文字放在 SVG 外面：图要铺满容器就得 preserveAspectRatio="none"，
+   而那会把里面的文字横向拉伸八九倍，糊成一片 */
+.chart-axis {
+  display: flex;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-axis > span {
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.chart-axis.ends {
+  justify-content: space-between;
+}
+
+.chart-axis.ends > span {
+  flex: 0 0 auto;
+}
+
+.stats-table td {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stats-table .neg {
+  color: var(--bad-ink);
+}
+
+.stats-total td {
+  color: var(--ink-soft);
+  border-top: 1px solid var(--rule-strong);
+}

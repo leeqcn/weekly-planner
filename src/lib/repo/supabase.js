@@ -215,8 +215,10 @@ export function createSupabaseRepo(userId) {
 
     async purgeOlderThan(cutoff) {
       unwrap(await from('schedule_entries').delete().lt('date', cutoff))
-      unwrap(await from('habits_log').delete().lt('date', cutoff))
-      // daily_rollup 不清 —— 明细删掉之后它就是统计仅有的数据来源
+      // habits_log 和 daily_rollup 都不清：
+      //   前者本身就已经是汇总（一天一个习惯一行、一年才两千行），
+      //   删掉等于把打卡历史丢了，而它是打卡统计仅有的来源；
+      //   后者是明细被删之后时间统计仅有的来源。
     },
   }
 }
