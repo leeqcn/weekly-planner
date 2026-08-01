@@ -47,11 +47,26 @@ export const colorOf = (key) => COLORS[key] ?? COLORS[ALIASES[key]] ?? COLORS.de
  *
  * 颜色是表现层的东西，**不往条目上复制** —— 复制过就成了快照，
  * 之后改模板不会回头更新已经生成的条目（这正是之前那个 bug）。
- * 所以：条目自己填了颜色算「单独改过这一条」，优先；否则跟着模板走。
+ * 所以从具体到笼统一层层往上找：
+ *
+ *   条目自己填的  单独改过这一条
+ *   模板填的      这个模板一直是这个色
+ *   分类填的      整类一个色（睡觉一个色、工作一个色）
+ *   默认色
+ *
+ * 加上分类这一层之后，「睡觉的颜色」和「睡觉这一类」不再是两套要手工对齐的
+ * 东西了 —— 颜色成了分类的一个属性，统计图表和时间轴自动同色。
  *
  * @returns 传给 colorOf 的 key
  */
-export function makeColorResolver(templates) {
-  const byId = new Map(templates.map((t) => [t.id, t]))
-  return (entry) => entry?.color ?? byId.get(entry?.template_id)?.color ?? null
+export function makeColorResolver(templates, categories = []) {
+  const byTemplate = new Map(templates.map((t) => [t.id, t]))
+  const byCategory = new Map(categories.map((c) => [c.id, c]))
+  return (entry) => {
+    if (entry?.color) return entry.color
+    const tpl = byTemplate.get(entry?.template_id)
+    if (tpl?.color) return tpl.color
+    const catId = entry?.category_id ?? tpl?.category_id
+    return byCategory.get(catId)?.color ?? null
+  }
 }

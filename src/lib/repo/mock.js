@@ -10,6 +10,8 @@ const EMPTY = {
   habits_log: [],
   weekly_focus: [],
   special_days: [],
+  categories: [],
+  daily_rollup: [],
 }
 
 function load() {
@@ -183,12 +185,74 @@ export function createMockRepo(seed) {
       })
     },
 
+    async listCategories() {
+      return load().categories
+    },
+
+    async createCategory(data) {
+      return mutate((db) => {
+        const row = {
+          created_at: new Date().toISOString(),
+          color: null,
+          sort_order: 0,
+          is_active: true,
+          ...data,
+          id: data.id ?? uid(),
+        }
+        db.categories.push(row)
+        return row
+      })
+    },
+
+    async updateCategory(id, patch) {
+      return mutate((db) => {
+        const row = db.categories.find((c) => c.id === id)
+        Object.assign(row, patch)
+        return row
+      })
+    },
+
+    async listRollups(from, to) {
+      return load().daily_rollup.filter((r) => inRange(r, from, to))
+    },
+
+    /** 幂等覆盖：同一个 (date, category_key) 有就改、没有就加。 */
+    async saveRollups(rows) {
+      if (!rows.length) return []
+      return mutate((db) => {
+        for (const row of rows) {
+          const found = db.daily_rollup.find(
+            (r) => r.date === row.date && r.category_key === row.category_key,
+          )
+          if (found) Object.assign(found, row, { updated_at: new Date().toISOString() })
+          else
+            db.daily_rollup.push({
+              id: uid(),
+              updated_at: new Date().toISOString(),
+              ...row,
+            })
+        }
+        return rows
+      })
+    },
+
+    async deleteRollups(keys) {
+      if (!keys.length) return
+      mutate((db) => {
+        const drop = new Set(keys.map((k) => `${k.date}|${k.category_key}`))
+        db.daily_rollup = db.daily_rollup.filter(
+          (r) => !drop.has(`${r.date}|${r.category_key}`),
+        )
+      })
+    },
+
     async purgeOlderThan(cutoff) {
       return mutate((db) => {
         const before =
           db.schedule_entries.length + db.habits_log.length
         db.schedule_entries = db.schedule_entries.filter((e) => e.date >= cutoff)
         db.habits_log = db.habits_log.filter((h) => h.date >= cutoff)
+        // daily_rollup 不清 —— 明细删掉之后它就是统计仅有的数据来源
         return before - (db.schedule_entries.length + db.habits_log.length)
       })
     },

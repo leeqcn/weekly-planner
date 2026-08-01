@@ -10,9 +10,16 @@ const HOUR_PX = 26
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
 /** 7 个并排的时间轴。保留完整 24 小时，往上滑能看到 0–6 点的睡眠。 */
-export default function WeekTimeline({ days, entries, templates, specialDays, onOpenDay }) {
+export default function WeekTimeline({
+  days,
+  entries,
+  templates,
+  categories,
+  specialDays,
+  onOpenDay,
+}) {
   const now = new Date()
-  const resolveColor = makeColorResolver(templates)
+  const resolveColor = makeColorResolver(templates, categories)
   const specialByDate = new Map(specialDays.map((s) => [s.date, s]))
 
   return (

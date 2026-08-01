@@ -42,9 +42,9 @@ function sortRows(rows, templates) {
  * 待办的行：没有计划时间的条目。同一个模板归一行；
  * 手动加的按标题归行，所以连着几天加同一件事也会并成一行。
  */
-export function buildTodoRows(templates, entries, days) {
+export function buildTodoRows(templates, entries, days, categories = []) {
   const keys = days.map(dateKey)
-  const resolveColor = makeColorResolver(templates)
+  const resolveColor = makeColorResolver(templates, categories)
   const groups = new Map()
 
   for (const entry of entries) {

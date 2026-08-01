@@ -159,9 +159,64 @@ export function createSupabaseRepo(userId) {
       )
     },
 
+    async listCategories() {
+      return unwrap(
+        await from('categories').select('*').order('sort_order', { ascending: true }),
+      )
+    },
+
+    async createCategory(data) {
+      return unwrap(await from('categories').insert(own(data)).select().single())
+    },
+
+    async updateCategory(id, patch) {
+      return unwrap(
+        await from('categories').update(patch).eq('id', id).select().single(),
+      )
+    },
+
+    async listRollups(fromDate, toDate) {
+      return unwrap(
+        await from('daily_rollup')
+          .select('*')
+          .gte('date', fromDate)
+          .lte('date', toDate)
+          .order('date', { ascending: true }),
+      )
+    },
+
+    /**
+     * 幂等覆盖。0007 里 (user_id, date, category_key) 是**普通唯一约束**
+     * 而不是部分索引，所以这里的 upsert 推断得出来 —— 0002 那次 42P10
+     * 就是栽在部分索引上的。
+     */
+    async saveRollups(rows) {
+      if (!rows.length) return []
+      return unwrap(
+        await from('daily_rollup')
+          .upsert(
+            rows.map((r) => own({ ...r, updated_at: new Date().toISOString() })),
+            { onConflict: 'user_id,date,category_key' },
+          )
+          .select(),
+      )
+    },
+
+    async deleteRollups(keys) {
+      for (const k of keys) {
+        unwrap(
+          await from('daily_rollup')
+            .delete()
+            .eq('date', k.date)
+            .eq('category_key', k.category_key),
+        )
+      }
+    },
+
     async purgeOlderThan(cutoff) {
       unwrap(await from('schedule_entries').delete().lt('date', cutoff))
       unwrap(await from('habits_log').delete().lt('date', cutoff))
+      // daily_rollup 不清 —— 明细删掉之后它就是统计仅有的数据来源
     },
   }
 }

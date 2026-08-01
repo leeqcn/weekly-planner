@@ -51,7 +51,7 @@ export default function DayView({ planner, date, onBack }) {
     : actual
   const habits = habitsOfDay(planner.templates, date)
   const special = planner.specialDays.find((s) => s.date === key)
-  const resolveColor = makeColorResolver(planner.templates)
+  const resolveColor = makeColorResolver(planner.templates, planner.categories)
 
   const isPicked = (id) => picked.includes(id)
   const togglePick = (id) =>
@@ -207,7 +207,38 @@ export default function DayView({ planner, date, onBack }) {
     setQuick(null)
   }
 
-  function quickCreate(title, minutes, at) {
+  /**
+   * 自动补全的候选：最近用过的标题，按「用得多 + 用得近」排。
+   *
+   * 源头收敛比事后清洗有效得多 —— 「去超市」第二次是点选而不是重打，
+   * 就不会长出「去趟超市」「超市」这些同义异形的标题来。
+   * 顺带把上次的时长和分类也带过来，等于记住了这件事的默认值。
+   */
+  const recentTitles = () => {
+    const seen = new Map()
+    for (const e of planner.entries) {
+      const t = e.title?.trim()
+      if (!t) continue
+      const prev = seen.get(t)
+      const minutes =
+        e.max_duration_minutes ??
+        (e.actual_start && e.actual_end
+          ? Math.round((new Date(e.actual_end) - new Date(e.actual_start)) / 60000)
+          : null)
+      if (!prev) seen.set(t, { title: t, count: 1, last: e.date, minutes, categoryId: e.category_id ?? null })
+      else {
+        prev.count += 1
+        if (e.date > prev.last) {
+          prev.last = e.date
+          prev.minutes = minutes ?? prev.minutes
+          prev.categoryId = e.category_id ?? prev.categoryId
+        }
+      }
+    }
+    return [...seen.values()].sort((a, b) => b.count - a.count || b.last.localeCompare(a.last))
+  }
+
+  function quickCreate(title, minutes, at, categoryId = null) {
     planner.addEntry({
       template_id: null,
       date: key,
@@ -219,6 +250,7 @@ export default function DayView({ planner, date, onBack }) {
       min_duration_minutes: minutes,
       max_duration_minutes: minutes,
       color: null,
+      category_id: categoryId,
       keep_in_todo: false,
       note: null,
       status: 'planned',
@@ -520,6 +552,8 @@ export default function DayView({ planner, date, onBack }) {
           now={isSameDay(date, now) ? nowMinutes : null}
           date={key}
           dayEntries={dayEntries}
+          categories={planner.categories}
+          templates={planner.templates}
           onSave={saveEditor}
           onDelete={() => removeEntry(editing.entry)}
           onClose={() => setEditing(null)}
@@ -532,6 +566,8 @@ export default function DayView({ planner, date, onBack }) {
           at={quick.at}
           now={isSameDay(date, now) ? nowMinutes : null}
           candidates={quickCandidates(quick.field)}
+          recent={recentTitles()}
+          categories={planner.categories}
           resolveColor={resolveColor}
           onPick={quickPick}
           onCreate={quickCreate}

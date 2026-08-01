@@ -4,7 +4,10 @@ import { TYPES } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
 import TimeFields from './TimeFields'
 import ColorPicker from './ColorPicker'
+import CategoryPicker from './CategoryPicker'
+import Uncategorized from './Uncategorized'
 import { colorOf } from '../lib/colors'
+import { sortCategories } from '../lib/categories'
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
@@ -30,6 +33,7 @@ const BLANK = {
   start_time: '',
   end_time: '',
   color: null,
+  category_id: null,
   keep_in_todo: false,
   is_active: true,
 }
@@ -62,6 +66,7 @@ export default function Settings({ planner, onBack }) {
       start_time: isEvent ? draft.start_time || null : null,
       end_time: isEvent ? draft.end_time || null : null,
       color: draft.color ?? null,
+      category_id: draft.category_id ?? null,
       keep_in_todo: isTodo ? Boolean(draft.keep_in_todo) : false,
       is_active: draft.is_active,
     }
@@ -155,6 +160,10 @@ export default function Settings({ planner, onBack }) {
           停用只是不再生成新日程，历史记录会保留。
         </p>
       </section>
+
+      <Categories planner={planner} />
+
+      <Uncategorized planner={planner} />
 
       <SpecialDays planner={planner} />
 
@@ -278,6 +287,13 @@ export default function Settings({ planner, onBack }) {
               <TemplateTime draft={draft} setDraft={setDraft} />
             )}
 
+            <CategoryPicker
+              value={draft.category_id}
+              categories={planner.categories}
+              onChange={(category_id) => setDraft({ ...draft, category_id })}
+              label="分类（统计按它汇总）"
+            />
+
             <ColorPicker
               value={draft.color}
               onChange={(color) => setDraft({ ...draft, color })}
@@ -348,6 +364,130 @@ export default function Settings({ planner, onBack }) {
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * 分类管理。
+ *
+ * 只给「停用」不给「删除」：分类是统计的维度，删掉会让那段历史无处可归。
+ * 停用之后不再出现在选择器里，但已有条目照常解析、统计照常算。
+ */
+function Categories({ planner }) {
+  const [draft, setDraft] = useState(null)
+  const list = sortCategories(planner.categories)
+
+  async function save(e) {
+    e.preventDefault()
+    const name = draft.name.trim()
+    if (!name) return
+    const payload = { name, color: draft.color ?? null, sort_order: Number(draft.sort_order) || 0 }
+    if (draft.id) await planner.updateCategory(draft.id, payload)
+    else await planner.createCategory({ ...payload, is_active: true })
+    setDraft(null)
+  }
+
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h2>分类</h2>
+        <button
+          onClick={() =>
+            setDraft({ name: '', color: null, sort_order: (list.at(-1)?.sort_order ?? 0) + 10 })
+          }
+        >
+          ＋ 新建分类
+        </button>
+      </div>
+
+      {list.length === 0 ? (
+        <p className="muted">还没有分类。</p>
+      ) : (
+        <div className="table-scroll">
+          <table className="tpl-table">
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>排序</th>
+                <th>状态</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((c) => (
+                <tr key={c.id} className={c.is_active ? '' : 'inactive'}>
+                  <td>
+                    <span
+                      className="row-dot"
+                      style={{ background: colorOf(c.color).dot }}
+                      aria-hidden="true"
+                    />
+                    {c.name}
+                  </td>
+                  <td className="small">{c.sort_order}</td>
+                  <td className="small">{c.is_active ? '启用' : '停用'}</td>
+                  <td className="row-gap">
+                    <button className="ghost" onClick={() => setDraft({ ...c })}>
+                      编辑
+                    </button>
+                    <button
+                      className="ghost"
+                      onClick={() =>
+                        planner.updateCategory(c.id, { is_active: !c.is_active })
+                      }
+                    >
+                      {c.is_active ? '停用' : '启用'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <p className="muted small">
+        统计按分类汇总，不按标题 ——「地铁上班」和「打车回家」是两个标题、同一类。
+        分类的颜色会被模板和条目继承（自己另外选了就以自己的为准）。
+        <b>只能停用不能删</b>：删掉会让那段历史无处可归。
+      </p>
+
+      {draft && (
+        <div className="modal-backdrop" onClick={() => setDraft(null)}>
+          <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
+            <h2>{draft.id ? '修改分类' : '新建分类'}</h2>
+            <label htmlFor="cat-name">名称</label>
+            <input
+              id="cat-name"
+              value={draft.name}
+              autoFocus
+              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              placeholder="Sleep / Work / …"
+            />
+            <label htmlFor="cat-sort">排序（小的在前）</label>
+            <input
+              id="cat-sort"
+              inputMode="numeric"
+              value={draft.sort_order}
+              onChange={(e) => setDraft({ ...draft, sort_order: e.target.value })}
+            />
+            <ColorPicker
+              value={draft.color}
+              onChange={(color) => setDraft({ ...draft, color })}
+            />
+            <div className="modal-actions">
+              <span className="spacer" />
+              <button type="button" className="ghost" onClick={() => setDraft(null)}>
+                取消
+              </button>
+              <button type="submit" className="primary">
+                保存
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </section>
   )
 }
 

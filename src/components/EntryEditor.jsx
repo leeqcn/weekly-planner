@@ -4,6 +4,7 @@ import { formatClock } from '../lib/time'
 import TimeFields from './TimeFields'
 import DayStrip from './DayStrip'
 import ColorPicker from './ColorPicker'
+import CategoryPicker from './CategoryPicker'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -40,6 +41,8 @@ export default function EntryEditor({
   now = null,
   date,
   dayEntries,
+  categories = [],
+  templates = [],
   onSave,
   onDelete,
   onClose,
@@ -50,6 +53,7 @@ export default function EntryEditor({
   const [minDur, setMinDur] = useState(entry?.min_duration_minutes ?? '')
   const [maxDur, setMaxDur] = useState(entry?.max_duration_minutes ?? '')
   const [color, setColor] = useState(entry?.color ?? null)
+  const [categoryId, setCategoryId] = useState(entry?.category_id ?? null)
   const [keep, setKeep] = useState(Boolean(entry?.keep_in_todo))
   const [plan, setPlan] = useState(() => toGroup(entry?.planned_start, entry?.planned_end))
   const [actual, setActual] = useState(() =>
@@ -71,6 +75,7 @@ export default function EntryEditor({
       min_duration_minutes: num(minDur),
       max_duration_minutes: num(maxDur),
       color,
+      category_id: categoryId,
       keep_in_todo: keep,
     }
 
@@ -196,6 +201,13 @@ export default function EntryEditor({
                 块会画成半透明，表示还没定死。
               </p>
             </fieldset>
+
+            <CategoryPicker
+              value={categoryId}
+              categories={categories}
+              onChange={setCategoryId}
+              inherited={templates.find((t) => t.id === entry?.template_id)?.category_id}
+            />
 
             <ColorPicker value={color} onChange={setColor} />
 

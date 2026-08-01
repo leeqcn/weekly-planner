@@ -1702,3 +1702,100 @@ th.gt-name {
   border-radius: 4px;
   border: 1px solid;
 }
+
+/* ------------------------------------------------------------ 分类 / 归类 */
+.cat-picker {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.cat-row,
+.uncat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.cat-chip.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.uncat-group {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.uncat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.uncat-row:last-child {
+  border-bottom: none;
+}
+
+.uncat-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 7rem;
+  font-size: 0.9rem;
+}
+
+/* 标题自动补全的浮层 */
+.quick-title-cell {
+  position: relative;
+  flex: 1;
+  min-width: 8rem;
+}
+
+.quick-title-cell > input {
+  width: 100%;
+}
+
+.suggest-pop {
+  position: absolute;
+  z-index: 6;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  display: grid;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.suggest-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.suggest-row + .suggest-row {
+  border-top: 1px solid var(--rule);
+}
