@@ -1137,11 +1137,24 @@ th.gt-name {
   flex-wrap: wrap;
 }
 
+/**
+ * 保存/取消**钉在弹窗底部**，跟着内容一起滚就找不着了。
+ *
+ * 弹窗本身是滚动容器（max-height + overflow-y），所以 sticky bottom 就够，
+ * 不用把内容再包一层。负外边距是为了抵消 .card 的内边距，
+ * 让这条底栏铺满整个宽度 —— 不然内容会从它两侧的缝里透出来。
+ */
 .modal-actions {
+  position: sticky;
+  bottom: -1rem;
+  z-index: 2;
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  margin-top: 0.6rem;
+  margin: 0.6rem -1.1rem -1rem;
+  padding: 0.6rem 1.1rem 1rem;
+  background: var(--paper-2);
+  border-top: 1px solid var(--rule);
 }
 
 .day-toggles {
@@ -1979,4 +1992,29 @@ th.gt-name {
 .stats-total td {
   color: var(--ink-soft);
   border-top: 1px solid var(--rule-strong);
+}
+
+/* 编辑器里收起来的那组不常用字段 */
+.more-fields {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.6rem;
+  background: var(--paper);
+}
+
+.more-fields[open] {
+  padding-bottom: 0.6rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.more-fields > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--accent-dark);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.more-fields > summary .small {
+  font-family: inherit;
 }

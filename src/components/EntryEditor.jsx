@@ -5,6 +5,7 @@ import TimeFields from './TimeFields'
 import DayStrip from './DayStrip'
 import ColorPicker from './ColorPicker'
 import CategoryPicker from './CategoryPicker'
+import { colorOf } from '../lib/colors'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -55,10 +56,21 @@ export default function EntryEditor({
   const [color, setColor] = useState(entry?.color ?? null)
   const [categoryId, setCategoryId] = useState(entry?.category_id ?? null)
   const [keep, setKeep] = useState(Boolean(entry?.keep_in_todo))
+  // 新建时摊开（要设分类），改已有的收起来（十有八九只是改时间）
+  const [showMore, setShowMore] = useState(isNew)
   const [plan, setPlan] = useState(() => toGroup(entry?.planned_start, entry?.planned_end))
   const [actual, setActual] = useState(() =>
     toGroup(entry?.actual_start, entry?.actual_end),
   )
+
+  const moreSummary = [
+    categories.find((c) => c.id === categoryId)?.name,
+    minDur || maxDur ? `${minDur || maxDur}–${maxDur || minDur}′` : null,
+    color ? colorOf(color).label : null,
+    keep ? '留在待办' : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   function submit(event) {
     event.preventDefault()
@@ -143,7 +155,9 @@ export default function EntryEditor({
                 value={actual}
                 onChange={setActual}
                 suggest={now}
-                autoFocus={!isNew}
+                // 实际那组光标落在**结束**：从 Actually 栏进来通常就是
+                // 「刚做完，补一下几点结束的」。聚焦那一下「现在」浮层跟着弹出来
+                autoFocusField={!isNew ? 'end' : null}
                 hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
               />
             )}
@@ -155,7 +169,8 @@ export default function EntryEditor({
                 tone="plan"
                 value={plan}
                 onChange={setPlan}
-                autoFocus={!isNew && !actualFirst}
+                // 计划那组落在**开始**：改计划多半是把它挪个起点
+                autoFocusField={!isNew && !actualFirst ? 'start' : null}
                 hint="三个都留空就是一条待办，可以之后再「排入」时间轴。"
               />
             )}
@@ -171,6 +186,22 @@ export default function EntryEditor({
                 hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
               />
             )}
+
+            {/* 常用的只有时间。时长区间 / 分类 / 颜色 / 「留」这几样基本是
+                在模板上设一次就不动的，摊开来只会把保存按钮挤到屏幕外面去。
+                收起来之后整个弹窗一屏放得下，改时间不用滚。
+                摘要那一行让人不用展开也知道里面是什么 */}
+            <details
+              className="more-fields"
+              open={showMore}
+              onToggle={(e) => setShowMore(e.currentTarget.open)}
+            >
+              <summary>
+                更多设置
+                {!showMore && moreSummary && (
+                  <span className="muted small">（{moreSummary}）</span>
+                )}
+              </summary>
 
             <fieldset className="time-fields">
               <legend>预计时长</legend>
@@ -231,6 +262,7 @@ export default function EntryEditor({
                 清空时间（变成待办）
               </button>
             )}
+            </details>
             {entry?.rescheduled_from && (
               <p className="muted small">
                 原计划 {formatClock(minutesOfDay(entry.rescheduled_from))}，已改期。

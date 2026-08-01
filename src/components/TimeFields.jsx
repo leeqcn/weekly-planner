@@ -19,6 +19,9 @@ import {
  * value: { start, end, duration }，分钟数或 null
  * suggest: 分钟数。传了的话，点开始/结束会浮出「现在 15:42 · OK」，
  *          一下填好 —— 记实际时间时几乎总是「就是现在」，不该还要手打。
+ * autoFocusField: 光标默认落在哪一格。计划落「开始」、实际落「结束」，
+ *          因为改计划通常是挪起点，而记实际是补上「几点做完的」。
+ *          聚焦那一下「现在」浮层就会跟着出来，等于少点一次。
  */
 export default function TimeFields({
   id,
@@ -28,7 +31,8 @@ export default function TimeFields({
   hint,
   suggest,
   tone,
-  autoFocus,
+  /** 'start' | 'end' | null —— 光标默认落在哪一格 */
+  autoFocusField,
 }) {
   const [text, setText] = useState(() => ({
     start: formatClock(value.start),
@@ -106,7 +110,7 @@ export default function TimeFields({
         id={`${id}-${name}`}
         inputMode={mode}
         autoComplete="off"
-        autoFocus={autoFocus && name === 'start'}
+        autoFocus={autoFocusField === name}
         placeholder={placeholder}
         value={text[name]}
         onChange={handle(name)}
