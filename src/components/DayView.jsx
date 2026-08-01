@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { format, isSameDay } from 'date-fns'
 import { dateKey, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
@@ -56,6 +56,27 @@ export default function DayView({ planner, date, onBack }) {
   const isPicked = (id) => picked.includes(id)
   const togglePick = (id) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+
+  /**
+   * 单击选中要**等一下**再生效：双击之前浏览器会先发两次 click，
+   * 不拦的话双击 = 选中再取消选中，白闪一下操作条，而且双击完还留着个
+   * 莫名其妙的选中态。第二下来了就把这次单击撤掉。
+   *
+   * 220ms 几乎感觉不到，而双击是主操作（完成 / 撤销完成），
+   * 选中只是拖动前的准备，慢一点无所谓。
+   */
+  const clickTimer = useRef(null)
+  useEffect(() => () => clearTimeout(clickTimer.current), [])
+
+  const onBlockClick = (id) => {
+    clearTimeout(clickTimer.current)
+    clickTimer.current = setTimeout(() => togglePick(id), 220)
+  }
+  const onBlockDoubleClick = (entry, field) => {
+    clearTimeout(clickTimer.current)
+    if (field === 'actual') undoDone(entry)
+    else markDone(entry)
+  }
 
   /** 松手：一次拖动可能动了好几个块，合成一步撤销。 */
   const commitDrag = useCallback(
@@ -333,8 +354,8 @@ export default function DayView({ planner, date, onBack }) {
         overlay={drag.overlay(entry.id, field)}
         faded={field === 'planned' && (entry.status === 'done' || entry.status === 'skipped')}
         picked={isPicked(entry.id)}
-        onClick={() => togglePick(entry.id)}
-        onDoubleClick={() => (field === 'actual' ? undoDone(entry) : markDone(entry))}
+        onClick={() => onBlockClick(entry.id)}
+        onDoubleClick={() => onBlockDoubleClick(entry, field)}
         color={resolveColor(entry)}
         onGrip={(event, mode) =>
           drag.begin(event, { mode, members: membersFor(entry, field, mode) })
@@ -387,8 +408,8 @@ export default function DayView({ planner, date, onBack }) {
               ? dayEntries.find((e) => e.id === picked[0])?.title
               : `选中 ${picked.length} 项`}
           </span>
-          <span className="muted small">拖任一块的把手可以一起挪</span>
-          <span className="spacer" />
+          {/* 「拖把手可以一起挪」那句话搬走了：浮条要一行放得下，
+              手机上一换行就摞成四层，挡住半个时间轴。这句在时间轴下面的说明里有 */}
           {picked.length === 1 && (
             <>
               <button onClick={() => setEditing({ entry: dayEntries.find((e) => e.id === picked[0]) })}>
@@ -402,7 +423,9 @@ export default function DayView({ planner, date, onBack }) {
               </button>
             </>
           )}
-          <button className="ghost" onClick={() => setPicked([])}>取消选中</button>
+          <button className="ghost" onClick={() => setPicked([])} title="取消选中" aria-label="取消选中">
+            ✕
+          </button>
         </div>
       )}
 

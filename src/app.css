@@ -586,20 +586,50 @@ th.gt-name {
   width: 200px;
 }
 
+/**
+ * 选中块之后浮出来的操作条。
+ *
+ * **必须浮空，不能占文档流。** 它原先是普通元素，出现时把下面所有内容顶下去
+ * 107px、消失时又弹回来 —— 而双击一个块会先触发两次 click，
+ * 也就是「选中 → 取消选中」，于是双击变成了 +107px / -107px 两下抽搐。
+ * 浮起来之后页面高度不变，怎么点都不动。
+ * 顺带它还永远在手边，不用往上滑找。
+ */
 .action-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 21;
+  /* 给右下角的撤销按钮让开 */
+  max-width: min(calc(100vw - 2rem), 40rem);
+  margin-right: 3.5rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0.4rem;
+  /* 不换行：换行就摞成好几层，手机上挡掉半个时间轴。放不下就把标题截断 */
+  flex-wrap: nowrap;
   background: var(--accent-soft);
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--accent);
   border-radius: var(--radius);
-  padding: 0.5rem 0.7rem;
-  margin-bottom: 0.8rem;
+  padding: 0.45rem 0.55rem;
+  box-shadow: 0 3px 12px rgba(60, 55, 51, 0.2);
+}
+
+.action-bar button {
+  flex: none;
+  white-space: nowrap;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
 }
 
 .selected-title {
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 0.2rem;
 }
 
 .untimed {

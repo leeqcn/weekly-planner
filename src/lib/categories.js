@@ -19,12 +19,12 @@ export const NO_CATEGORY = 'none'
 
 /** 第一次进来自动建这几个，颜色一人一个，正好用满调色板。 */
 export const DEFAULT_CATEGORIES = [
-  { name: 'Sleep', color: 'lilac', sort_order: 10 },
-  { name: 'Work', color: 'mist', sort_order: 20 },
-  { name: 'Study', color: 'sage', sort_order: 30 },
-  { name: 'Daily life', color: 'ochre', sort_order: 40 },
-  { name: 'Relax', color: 'default', sort_order: 50 },
-  { name: 'Health', color: 'clay', sort_order: 60 },
+  { name: 'Sleep', color: 'stone', sort_order: 10 }, // 灰
+  { name: 'Work', color: 'mist', sort_order: 20 }, // 雾蓝
+  { name: 'Study', color: 'lilac', sort_order: 30 }, // 丁香紫
+  { name: 'Daily life', color: 'ochre', sort_order: 40 }, // 赭黄
+  { name: 'Relax', color: 'default', sort_order: 50 }, // 陶土橙
+  { name: 'Health', color: 'sage', sort_order: 60 }, // 鼠尾草绿
 ]
 
 export const sortCategories = (categories) =>
