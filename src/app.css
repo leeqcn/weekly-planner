@@ -1571,6 +1571,14 @@ th.gt-name.expanded .gt-name-label {
   border-radius: 50%;
   margin-right: 0.4rem;
   vertical-align: 1px;
+  /* 在 flex 容器里（.gt-name-btn），名字太长时浏览器会从每个子项身上抠宽度，
+     8px 的圆被压成 6px 宽 → 竖椭圆。圆点不参与收缩，只让名字截断 */
+  flex: none;
+}
+
+/* 按钮已经用 gap 隔开了，再留 margin 等于白吃 0.4rem 的名字宽度 */
+.gt-name-btn .row-dot {
+  margin-right: 0;
 }
 
 .inline-check {
