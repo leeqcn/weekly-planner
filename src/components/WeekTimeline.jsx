@@ -101,7 +101,12 @@ export default function WeekTimeline({
                             height: Math.max(12, (minutes / 60) * HOUR_PX),
                             left: `calc(${b.lane * width}% + 2px)`,
                             width: `calc(${width}% - 4px)`,
-                            background: tint.block,
+                            // 还没发生的把**底色**掺白压淡，字和边框不动 ——
+                            // 见 app.css 里 .wt-block.is-planned 那段的说明
+                            background:
+                              b.kind === 'planned'
+                                ? `color-mix(in srgb, ${tint.block} 45%, var(--paper-2))`
+                                : tint.block,
                             borderColor: tint.edge,
                           }}
                           onClick={() => onOpenDay(day)}
