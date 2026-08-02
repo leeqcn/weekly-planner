@@ -157,6 +157,34 @@ export function blockState(entry, dayEntries) {
   return 'solid'
 }
 
+/**
+ * Week view 里一条日程该画哪一段 —— **做完的画实际，没做的画计划**。
+ *
+ * 和 place.js 里 `busyIntervals` 是同一条规则（那边算「今天还空着多少」）。
+ * 共用一条规则是有意的：周视图讲的故事和加减法讲的故事永远一致，
+ * 只需要记一条，而不是两条。
+ *
+ * 不按「今天之前 / 之后」切，按**条目状态**切 —— 日期切法会在今天这一天出错：
+ * 今天上午已经过完、晚上还没发生，整天算「过去」的话晚上就一片空白了。
+ *
+ * 一条目最多一个块，永远不会画双份，所以不会更乱。
+ *
+ * @returns { start, end, kind: 'actual' | 'planned' }，没有任何时间就返回 null
+ */
+export function blockToShow(entry, now = new Date()) {
+  if (entry.actual_start && entry.actual_end) {
+    return { start: entry.actual_start, end: entry.actual_end, kind: 'actual' }
+  }
+  // 正在计时的画到「现在」为止，和 Day View 一样
+  if (entry.status === 'in_progress' && entry.actual_start) {
+    return { start: entry.actual_start, end: now.toISOString(), kind: 'actual' }
+  }
+  if (isScheduled(entry)) {
+    return { start: entry.planned_start, end: entry.planned_end, kind: 'planned' }
+  }
+  return null // 没时间的待办不上时间轴
+}
+
 /** '30–60 分钟' / '1 小时'，块上和待办表里都用。 */
 export function describeRange(entry) {
   const { min_duration_minutes: min, max_duration_minutes: max } = entry

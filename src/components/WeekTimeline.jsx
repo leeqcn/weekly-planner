@@ -1,7 +1,7 @@
 import { format, isSameDay } from 'date-fns'
 import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
-import { isScheduled } from '../lib/schedule'
+import { blockToShow } from '../lib/schedule'
 import { colorOf, makeColorResolver } from '../lib/colors'
 
 // 完整 24 小时一次画完，不在卡片里再套一层滚动 ——
@@ -68,13 +68,17 @@ export default function WeekTimeline({
 
               {days.map((day) => {
                 const key = dateKey(day)
-                const dayEntries = entries.filter((e) => e.date === key && isScheduled(e))
+                // 做完的画实际、没做的画计划（见 schedule.js 的 blockToShow）。
+                // 顺带把「只记实际」那类条目也带进来了 —— 以前只画 planned_*，
+                // 临时去趟超市在周视图上是完全隐身的
                 const blocks = layoutBlocks(
-                  dayEntries.map((e) => ({
-                    entry: e,
-                    start: e.planned_start,
-                    end: e.planned_end,
-                  })),
+                  entries
+                    .filter((e) => e.date === key)
+                    .map((e) => {
+                      const shown = blockToShow(e, now)
+                      return shown ? { entry: e, ...shown } : null
+                    })
+                    .filter(Boolean),
                 )
                 return (
                   <div className="wt-col" key={key}>
@@ -91,7 +95,7 @@ export default function WeekTimeline({
                       return (
                         <button
                           key={b.entry.id}
-                          className={`wt-block status-${b.entry.status}`}
+                          className={`wt-block status-${b.entry.status} is-${b.kind}`}
                           style={{
                             top: (minutesOfDay(b.start) / 60) * HOUR_PX,
                             height: Math.max(12, (minutes / 60) * HOUR_PX),
@@ -101,7 +105,7 @@ export default function WeekTimeline({
                             borderColor: tint.edge,
                           }}
                           onClick={() => onOpenDay(day)}
-                          title={`${b.entry.title} ${formatTime(b.start)}–${formatTime(b.end)}`}
+                          title={`${b.entry.title} ${formatTime(b.start)}–${formatTime(b.end)}（${b.kind === 'actual' ? '实际' : '计划'}）`}
                         >
                           <span>{b.entry.title}</span>
                         </button>

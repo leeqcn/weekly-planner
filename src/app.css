@@ -333,18 +333,18 @@
   text-overflow: ellipsis;
 }
 
-.wt-block.status-done {
-  background: var(--ok-bg);
-  border-color: var(--ok);
+/* 实线 = 已经发生的（画的是实际），虚线 = 还没发生的（画的是计划）。
+   一眼就是「实线是过去，虚线是打算」。
+   （原来这儿还有 status-done 刷绿底和 status-rescheduled 画虚线两条规则：
+   前者被块上的内联背景色盖掉、从来没生效过；后者会和这套虚线打架 ——
+   做完的改期条目本该是实线。两条都删了。） */
+.wt-block.is-planned {
+  border-style: dashed;
 }
 
 .wt-block.status-skipped {
   opacity: 0.45;
   text-decoration: line-through;
-}
-
-.wt-block.status-rescheduled {
-  border-style: dashed;
 }
 
 /* ------------------------------------ 周视图：To do / Habits 的 n x 8 表格 */
