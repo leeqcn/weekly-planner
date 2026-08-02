@@ -12,6 +12,8 @@ import { colorOf } from '../lib/colors'
  *   'zero'  —— 待办用，直接按 0 显示成红色，一眼看出任务在哪天
  *   'blank' —— 习惯用，留空白，不然满屏红色
  */
+import { useState } from 'react'
+
 export default function WeekProgressGrid({
   title,
   rows,
@@ -22,6 +24,10 @@ export default function WeekProgressGrid({
   onSetPct,
 }) {
   const today = new Date()
+  // 点开名字看全称。手机上一行放不下 7 天 + 完整名字，名字截断是唯一
+  // 不牺牲「周一到周日一眼看全」的办法；截断之后点一下展开成多行，
+  // 列宽不变（max-width 还在），只是这一行变高，不会把整张表推得乱跳
+  const [expanded, setExpanded] = useState(null)
 
   return (
     <section className="card">
@@ -49,13 +55,24 @@ export default function WeekProgressGrid({
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.key}>
-                    <th scope="row" className="gt-name">
-                      <span
-                        className="row-dot"
-                        style={{ background: colorOf(row.color).dot }}
-                        aria-hidden="true"
-                      />
-                      {row.title}
+                    <th
+                      scope="row"
+                      className={`gt-name${expanded === row.key ? ' expanded' : ''}`}
+                    >
+                      <button
+                        className="gt-name-btn"
+                        title={row.title}
+                        onClick={() =>
+                          setExpanded((k) => (k === row.key ? null : row.key))
+                        }
+                      >
+                        <span
+                          className="row-dot"
+                          style={{ background: colorOf(row.color).dot }}
+                          aria-hidden="true"
+                        />
+                        <span className="gt-name-label">{row.title}</span>
+                      </button>
                     </th>
                     {row.cells.map((cell, i) => {
                       const key = `${row.key}|${i}`

@@ -360,11 +360,14 @@
   overflow-x: auto;
 }
 
+/* 不设 min-width：宁可把名字截断，也要让周一到周日 7 列完整显示。
+   之前 min-width:320px + 名字列 nowrap，390px 的手机上差 10px、
+   320px 上差 80px，周日被切在屏幕外面，得横滑才看得见。 */
 .week-grid-table {
   width: 100%;
-  min-width: 320px;
   border-collapse: collapse;
   font-size: 0.85rem;
+  table-layout: fixed;
 }
 
 .week-grid-table th,
@@ -401,21 +404,74 @@
 th.gt-name {
   text-align: left;
   font-weight: 500;
-  white-space: nowrap;
-  padding-right: 0.6rem;
-  min-width: 5.5rem;
+  padding-right: 0.4rem;
+  /* 挤不下就截断（点一下看全称）。宽度让给 7 天那 7 列 —— 名字看半截还认得出，
+     周日看不见就真的没用了。
+     写死 rem 而不是百分比：table-layout:fixed 下百分比会让名字列在宽屏上
+     胀到三百多像素；而 max-width 在 fixed 布局里根本不生效（列宽只看 width）。
+     7 天那 7 列不写宽度，fixed 布局会把剩下的宽度平分给它们。 */
+  width: 7rem;
   position: sticky;
   left: 0;
   background: var(--paper-2);
+}
+
+.gt-name-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.gt-name-btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--accent-dark);
+}
+
+.gt-name-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 展开只让这一行的名字换行，列宽不变 —— 不会把整张表推得乱跳 */
+th.gt-name.expanded .gt-name-label {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
 }
 
 .cl-row-task th.gt-name {
   color: var(--ink-soft);
 }
 
-.week-grid-table thead th:not(.gt-name),
-.gt-cell {
-  width: 11%;
+/* 很窄的手机（iPhone SE 那一档）：名字列和格子再收一点，
+   保证 7 列 + 一个还能认出来的名字塞得进去 */
+@media (max-width: 380px) {
+  .week-grid-table th,
+  .week-grid-table td {
+    padding: 0.3rem 0.1rem;
+  }
+
+  th.gt-name {
+    width: 4rem;
+    font-size: 0.8rem;
+  }
+
+  .gt-mark,
+  .gt-check {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 0.56rem;
+  }
 }
 
 .gt-mark,
