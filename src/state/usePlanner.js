@@ -28,6 +28,9 @@ export function usePlanner(repo) {
   const [templates, setTemplates] = useState([])
   const [categories, setCategories] = useState([])
   const [entries, setEntries] = useState([])
+  // 生成器专用：含已删除条目的 (template_id, date)。
+  // 拿还活着的 entries 当判据的话，删掉的会被重新生成出来
+  const [entryKeys, setEntryKeys] = useState([])
   const [habitLogs, setHabitLogs] = useState([])
   const [focus, setFocus] = useState([])
   const [specialDays, setSpecialDays] = useState([])
@@ -44,10 +47,11 @@ export function usePlanner(repo) {
   const load = useCallback(async () => {
     setError(null)
     try {
-      const [tpl, cat, ent, logs, foc, sp] = await Promise.all([
+      const [tpl, cat, ent, keys, logs, foc, sp] = await Promise.all([
         repo.listTemplates(),
         repo.listCategories(),
         repo.listEntries(fromKey, toKey),
+        repo.listEntryKeys(fromKey, toKey),
         repo.listHabitLogs(fromKey, toKey),
         repo.listWeeklyFocus(fromKey),
         repo.listSpecialDays(fromKey, toKey),
@@ -55,10 +59,11 @@ export function usePlanner(repo) {
       setTemplates(tpl)
       setCategories(cat)
       setEntries(ent)
+      setEntryKeys(keys)
       setHabitLogs(logs)
       setFocus(foc)
       setSpecialDays(sp)
-      return { templates: tpl, entries: ent, categories: cat }
+      return { templates: tpl, entries: ent, entryKeys: keys, categories: cat }
     } catch (e) {
       setError(e.message ?? String(e))
       return null
@@ -115,7 +120,7 @@ export function usePlanner(repo) {
         const loaded = await load()
         if (cancelled || !loaded) return
         if (toKey < dateKey(new Date())) return // 过去的周不回填，避免凭空造历史
-        const rows = buildEntriesFor(loaded.templates, days, loaded.entries)
+        const rows = buildEntriesFor(loaded.templates, days, loaded.entryKeys)
         if (!rows.length) return
         await repo.createEntries(rows)
         if (!cancelled) await load()
@@ -132,7 +137,7 @@ export function usePlanner(repo) {
 
   const generateWeek = useCallback(async () => {
     try {
-      const rows = buildEntriesFor(templates, days, entries)
+      const rows = buildEntriesFor(templates, days, entryKeys)
       if (rows.length) await repo.createEntries(rows)
       await load()
       return rows.length
@@ -140,7 +145,7 @@ export function usePlanner(repo) {
       setError(`生成日程失败：${e.message ?? e}`)
       return 0
     }
-  }, [repo, templates, entries, days, load])
+  }, [repo, templates, entryKeys, days, load])
 
   /**
    * 所有写操作都走这里：动手之前先把「怎么撤回」记下来。
@@ -194,6 +199,7 @@ export function usePlanner(repo) {
     templates,
     categories,
     entries,
+    entryKeys,
     habitLogs,
     focus,
     specialDays,
@@ -304,14 +310,16 @@ export function usePlanner(repo) {
       )
     },
 
-    deleteEntry: (id) => {
-      const before = findEntry(id)
-      return act(
-        `删除「${before?.title ?? ''}」`,
+    /**
+     * 删除是**打墓碑**不是真删（db/0009）：(template_id, date) 那个坑还占着，
+     * 模板生成器就不会把它再长回来。撤销只要把墓碑抹掉。
+     */
+    deleteEntry: (id) =>
+      act(
+        `删除「${findEntry(id)?.title ?? ''}」`,
         () => repo.deleteEntry(id),
-        () => repo.createEntries([before]), // 连 id 一起还原
-      )
-    },
+        () => repo.restoreEntry(id),
+      ),
 
     saveHabitLog: (log) => {
       const before = habitLogs.find(

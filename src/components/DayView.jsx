@@ -193,10 +193,36 @@ export default function DayView({ planner, date, onBack }) {
   const saveHabit = (templateId, { pct, note }) =>
     planner.saveHabitLog({ template_id: templateId, date: key, completion_pct: pct, note })
 
-  const empty = useEmptyPress({
-    hourPx: HOUR_PX,
-    onOpen: useCallback((field, at) => setQuick({ field, at }), []),
-  })
+  /**
+   * 新加一条默认从几点开始。
+   *
+   * **不用手指按下去的那个位置。** 24 小时压在 1056px 里，一像素 1.4 分钟，
+   * 手机上根本点不准。而绝大多数时候下一件事就是接着上一件做的，
+   * 所以默认取**这一栏里最后一件在按压点之前结束的事的结束时间**。
+   * 一件都没有就退回按压点（取整到 5 分钟）。
+   *
+   * 浮层里那个输入框可以随便改，还留了个「按的位置」按钮退回原来的行为。
+   */
+  function defaultStartFor(field, around) {
+    const source = field === 'actual' ? actualShown : planned
+    const ends = source
+      .map((e) =>
+        field === 'actual'
+          ? minutesOfDay(e.actual_end) || (minutesOfDay(e.actual_start) > 0 ? 1440 : 0)
+          : minutesOfDay(e.planned_end) || (minutesOfDay(e.planned_start) > 0 ? 1440 : 0),
+      )
+      .filter((m) => m <= around)
+    return ends.length ? Math.max(...ends) : Math.round(around / 5) * 5
+  }
+
+  const openQuick = useCallback(
+    (field, at) => setQuick({ field, at: defaultStartFor(field, at), pressedAt: at }),
+    // defaultStartFor 每次渲染都是新的，但它读的是当前这一帧的块，正是要的
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dayEntries],
+  )
+
+  const empty = useEmptyPress({ hourPx: HOUR_PX, onOpen: openQuick })
 
   /**
    * 空白处长按之后能选哪些 —— 「这一栏还空着的那些事」：
@@ -472,7 +498,7 @@ export default function DayView({ planner, date, onBack }) {
             Plan
             <button
               className="ghost small-btn"
-              onClick={() => setQuick({ field: 'planned', at: anchorFor(key) })}
+              onClick={() => openQuick('planned', anchorFor(key))}
               title="加一件要做的事"
             >
               ＋
@@ -483,7 +509,7 @@ export default function DayView({ planner, date, onBack }) {
             Actually
             <button
               className="ghost small-btn"
-              onClick={() => setQuick({ field: 'actual', at: anchorFor(key) })}
+              onClick={() => openQuick('actual', anchorFor(key))}
               title="记一件没排过计划、但确实做了的事"
             >
               ＋
@@ -587,6 +613,7 @@ export default function DayView({ planner, date, onBack }) {
         <QuickAdd
           field={quick.field}
           at={quick.at}
+          pressedAt={quick.pressedAt}
           now={isSameDay(date, now) ? nowMinutes : null}
           candidates={quickCandidates(quick.field)}
           recent={recentTitles()}

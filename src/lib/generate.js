@@ -6,10 +6,15 @@ import { combineDateTime, dateKey, templateOccursOn } from './dates'
  * event 生成带时间的条目（上时间轴），todo 生成不带时间的条目（进待办）。
  * habit 不进这张表，它走 habits_log 打卡。
  * 已经存在的 (template_id, date) 会被跳过，所以可以放心重复调用。
+ *
+ * `existingKeys` 必须包含**已经删掉的**那些（repo.listEntryKeys 就是干这个的）。
+ * 只看还活着的条目，用户删掉的那条下次刷新就又长回来了 —— 界面上删了、
+ * 一刷新又出现，就是这个原因。删除现在是打墓碑（见 db/0009），
+ * 坑还占着，这里才看得见。
  */
-export function buildEntriesFor(templates, days, existingEntries) {
+export function buildEntriesFor(templates, days, existingKeys) {
   const existing = new Set(
-    existingEntries
+    existingKeys
       .filter((e) => e.template_id)
       .map((e) => `${e.template_id}|${e.date}`),
   )

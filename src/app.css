@@ -2018,3 +2018,22 @@ th.gt-name {
 .more-fields > summary .small {
   font-family: inherit;
 }
+
+/* 快捷加一条里的「几点开始」 */
+.quick-start {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.quick-start > label {
+  margin: 0;
+}
+
+.quick-start > input {
+  width: 4.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}

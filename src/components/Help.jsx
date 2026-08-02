@@ -67,7 +67,8 @@ export default function Help({ onBack }) {
               <th>长按空白处</th>
               <td>
                 在那个时间<b>加一条</b>：从今天还没安排的事里挑一件，或者直接写新的。
-                两栏都行。也可以点栏头的 <b>＋</b>。
+                两栏都行。也可以点栏头的 <b>＋</b>。开始时间可以直接打，
+                默认是<b>上一件事结束的时间</b>（手指点不准没关系）。
               </td>
             </tr>
             <tr>
@@ -326,6 +327,19 @@ export default function Help({ onBack }) {
             </li>
           </ul>
         </details>
+      </section>
+
+      <section className="card">
+        <h2>删掉就是删掉了</h2>
+        <p>
+          模板每次打开 app 都会把这一周还缺的安排补出来。所以删除做成了
+          <b>打墓碑</b>：那一天那个模板的位置还占着，只是不显示了 ——
+          删掉的东西<b>不会在刷新之后又冒出来</b>。
+        </p>
+        <p className="muted small">
+          撤销随时能把它拿回来（同一次打开期间）。墓碑跟着 28 天的清理一起消失。
+          下一周同一个模板照常生成，删的只是那一天那一条。
+        </p>
       </section>
 
       <section className="card">

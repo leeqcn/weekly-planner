@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { colorOf } from '../lib/colors'
 import { describeRange } from '../lib/schedule'
-import { formatClock } from '../lib/time'
+import { formatClock, parseClock } from '../lib/time'
 import { placementMinutes } from '../lib/place'
 import CategoryPicker from './CategoryPicker'
 
@@ -25,6 +25,8 @@ const MAX_SUGGEST = 5
 export default function QuickAdd({
   field,
   at,
+  /** 手指实际按下去的那个时间，和默认值不一定一样 —— 给一个「改用它」的按钮 */
+  pressedAt,
   now,
   candidates,
   recent = [],
@@ -35,6 +37,9 @@ export default function QuickAdd({
   onClose,
 }) {
   const [start, setStart] = useState(at)
+  // 输入框里存原文，只在失焦时规范成 09:30 —— 和 TimeFields 一个道理，
+  // 边打边格式化的话打「930」在打完「9」的瞬间就被改成「09:00」了
+  const [startText, setStartText] = useState(() => formatClock(at))
   const [title, setTitle] = useState('')
   const [minutes, setMinutes] = useState(String(DEFAULT_MINUTES))
   const [categoryId, setCategoryId] = useState(null)
@@ -60,6 +65,11 @@ export default function QuickAdd({
           .slice(0, MAX_SUGGEST)
       : []
 
+  const setStartBoth = (min) => {
+    setStart(min)
+    setStartText(formatClock(min))
+  }
+
   const applySuggestion = (s) => {
     setTitle(s.title)
     if (s.minutes) setMinutes(String(s.minutes))
@@ -75,18 +85,44 @@ export default function QuickAdd({
   return (
     <div className="modal-backdrop" onClick={() => armed && onClose()}>
       <div className="card modal quick-add" onClick={(e) => e.stopPropagation()}>
-        <h2>
-          {formatClock(start)} 起，加到「{isActual ? '实际' : '计划'}」
-        </h2>
-        <p className="muted small">
-          时间不对没关系，加上去之后拖块左边的竖条挪、拖底边改时长。
-        </p>
+        <h2>加到「{isActual ? '实际' : '计划'}」</h2>
 
-        {now != null && now !== start && (
-          <button type="button" className="ghost small-btn" onClick={() => setStart(now)}>
-            改成现在 {formatClock(now)}
-          </button>
-        )}
+        {/* 开始时间做成可以打的输入框。手指在手机上根本点不准，
+            光靠按下去那个位置定时间太碰运气；默认值也不用手指位置，
+            用**上一件事的结束时间**，因为绝大多数时候下一件就是接着上一件做的 */}
+        <div className="quick-start">
+          <label htmlFor="quick-start">几点开始</label>
+          <input
+            id="quick-start"
+            inputMode="numeric"
+            autoComplete="off"
+            value={startText}
+            onChange={(e) => {
+              setStartText(e.target.value)
+              const p = parseClock(e.target.value)
+              if (p !== null) setStart(p)
+            }}
+            onBlur={() => setStartText(formatClock(start))}
+          />
+          {now != null && now !== start && (
+            <button type="button" className="ghost small-btn" onClick={() => setStartBoth(now)}>
+              现在 {formatClock(now)}
+            </button>
+          )}
+          {pressedAt != null && pressedAt !== start && (
+            <button
+              type="button"
+              className="ghost small-btn"
+              onClick={() => setStartBoth(pressedAt)}
+              title="改用刚才按下去的那个位置"
+            >
+              按的位置 {formatClock(pressedAt)}
+            </button>
+          )}
+        </div>
+        <p className="muted small">
+          9 / 930 / 9:30 都认。时长不对也没关系，加上去之后拖块底边就能改。
+        </p>
 
         {candidates.length > 0 && (
           <div className="quick-group">

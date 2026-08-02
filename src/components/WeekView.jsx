@@ -8,11 +8,11 @@ import WeekTimeline from './WeekTimeline'
 
 export default function WeekView({ planner, onOpenDay }) {
   const {
-    days, monday, templates, categories, entries, habitLogs, specialDays, focus,
+    days, monday, templates, categories, entries, entryKeys, habitLogs, specialDays, focus,
     saveFocus, saveHabitLog, updateEntry, goToDate, shiftWeek, generateWeek, isCurrentWeek,
   } = planner
 
-  const pendingCount = buildEntriesFor(templates, days, entries).length
+  const pendingCount = buildEntriesFor(templates, days, entryKeys).length
   const todoRows = buildTodoRows(templates, entries, days, categories)
   const habitRows = buildHabitRows(templates, habitLogs, days)
 

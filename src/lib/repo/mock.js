@@ -75,7 +75,18 @@ export function createMockRepo(seed) {
     },
 
     async listEntries(from, to) {
-      return load().schedule_entries.filter((e) => inRange(e, from, to))
+      // 删掉的不出现在任何界面里
+      return load().schedule_entries.filter((e) => inRange(e, from, to) && !e.deleted_at)
+    },
+
+    /**
+     * 生成器专用：这一段里**所有**条目的 (template_id, date)，含已删除的。
+     * 只看没删的，墓碑那个坑就是空的，下次刷新又生成一条出来。
+     */
+    async listEntryKeys(from, to) {
+      return load()
+        .schedule_entries.filter((e) => inRange(e, from, to))
+        .map((e) => ({ template_id: e.template_id, date: e.date }))
     },
 
     async createEntries(rows) {
@@ -116,9 +127,18 @@ export function createMockRepo(seed) {
       })
     },
 
+    /** 打墓碑而不是真删 —— 见 db/0009。 */
     async deleteEntry(id) {
       mutate((db) => {
-        db.schedule_entries = db.schedule_entries.filter((e) => e.id !== id)
+        const row = db.schedule_entries.find((e) => e.id === id)
+        if (row) row.deleted_at = new Date().toISOString()
+      })
+    },
+
+    async restoreEntry(id) {
+      mutate((db) => {
+        const row = db.schedule_entries.find((e) => e.id === id)
+        if (row) row.deleted_at = null
       })
     },
 

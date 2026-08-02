@@ -42,7 +42,23 @@ export function createSupabaseRepo(userId) {
           .select('*')
           .gte('date', fromDate)
           .lte('date', toDate)
+          .is('deleted_at', null) // 删掉的不出现在任何界面里
           .order('planned_start', { ascending: true, nullsFirst: false }),
+      )
+    },
+
+    /**
+     * 生成器专用：这一段里**所有**条目的 (template_id, date)，含已删除的。
+     *
+     * 必须含已删除的 —— 生成器靠这个判断「这一天这个模板已经有了」。
+     * 只看没删的，那墓碑那个坑就是空的，下次刷新又生成一条出来。
+     */
+    async listEntryKeys(fromDate, toDate) {
+      return unwrap(
+        await from('schedule_entries')
+          .select('template_id,date')
+          .gte('date', fromDate)
+          .lte('date', toDate),
       )
     },
 
@@ -87,8 +103,19 @@ export function createSupabaseRepo(userId) {
       )
     },
 
+    /** 打墓碑而不是真删 —— 见 db/0009。 */
     async deleteEntry(id) {
-      unwrap(await from('schedule_entries').delete().eq('id', id))
+      unwrap(
+        await from('schedule_entries')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id),
+      )
+    },
+
+    async restoreEntry(id) {
+      unwrap(
+        await from('schedule_entries').update({ deleted_at: null }).eq('id', id),
+      )
     },
 
     async listHabitLogs(fromDate, toDate) {
