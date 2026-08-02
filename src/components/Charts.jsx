@@ -49,13 +49,22 @@ export function StackedWeeks({ weeks, colorFor, nameFor }) {
   const w = 100 / Math.max(1, weeks.length)
   const pad = Math.min(1.5, w * 0.12)
 
+  // 层序必须**全窗口统一**，按各类的总时长排（多的在下面）。
+  // 之前是每根柱子按自己那周的大小排，于是 Sleep 和 Work 谁在下面
+  // 每周都在换 —— 柱子之间就没法比了，堆叠图的意义正好在这。
+  const totals = new Map()
+  for (const wk of weeks) {
+    for (const [key, minutes] of wk.parts) totals.set(key, (totals.get(key) ?? 0) + minutes)
+  }
+  const order = [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([key]) => key)
+
   return (
     <div className="chart-wrap">
       <svg className="chart" viewBox={`0 0 100 ${H}`} preserveAspectRatio="none">
         {weeks.map((wk, i) => {
           let y = H
           const scale = H / Math.max(1, wk.capacity)
-          const parts = [...wk.parts.entries()].sort((a, b) => b[1] - a[1])
+          const parts = order.map((key) => [key, wk.parts.get(key) ?? 0]).filter(([, m]) => m > 0)
           return (
             <g key={wk.week}>
               {parts.map(([key, minutes]) => {

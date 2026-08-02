@@ -22,6 +22,22 @@
   text-transform: uppercase;
 }
 
+/* 手机上顶栏放不下时，被挤的必须是标题，不能是按钮 ——
+   「统计」「设置」断成两行（统/计）比标题换行难看得多。
+   标题让它自己折成两行，按钮一律不折 */
+.app-bar button,
+.app-bar .badge {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* 再窄就只能舍一个：「本地模式」这个提示在设置页里还有，先让它走 */
+@media (max-width: 380px) {
+  .app-bar .badge {
+    display: none;
+  }
+}
+
 .spacer {
   flex: 1;
 }
