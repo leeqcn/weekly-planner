@@ -95,18 +95,24 @@ export default function ProgressTable({
                     </td>
                   )}
                   <td className="habit-name">
-                    <span
-                      className="row-dot"
-                      style={{ background: colorOf(r.color).dot }}
-                      aria-hidden="true"
-                    />
-                    {onOpen ? (
-                      <button className="link-btn" onClick={() => onOpen(r.id)}>
-                        {r.title}
-                      </button>
-                    ) : (
-                      r.title
-                    )}
+                    {/* 名称不能想多宽就多宽 —— 它一撑，后面的完成度、状态、备注
+                        就被挤出屏幕，每次都得横滑。截断，全称去编辑器里看 */}
+                    <span className="hn-wrap">
+                      <span
+                        className="row-dot"
+                        style={{ background: colorOf(r.color).dot }}
+                        aria-hidden="true"
+                      />
+                      {onOpen ? (
+                        <button className="link-btn hn-label" title={r.title} onClick={() => onOpen(r.id)}>
+                          {r.title}
+                        </button>
+                      ) : (
+                        <span className="hn-label" title={r.title}>
+                          {r.title}
+                        </span>
+                      )}
+                    </span>
                   </td>
                   {onPlace && <td className="small dur-cell">{r.duration || '—'}</td>}
                   {(onPlace || onStart) && (

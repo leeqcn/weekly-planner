@@ -426,7 +426,7 @@ th.gt-name {
      写死 rem 而不是百分比：table-layout:fixed 下百分比会让名字列在宽屏上
      胀到三百多像素；而 max-width 在 fixed 布局里根本不生效（列宽只看 width）。
      7 天那 7 列不写宽度，fixed 布局会把剩下的宽度平分给它们。 */
-  width: 7rem;
+  width: 5rem;
   position: sticky;
   left: 0;
   background: var(--paper-2);
@@ -478,7 +478,7 @@ th.gt-name.expanded .gt-name-label {
   }
 
   th.gt-name {
-    width: 4rem;
+    width: 3.5rem;
     font-size: 0.8rem;
   }
 
@@ -1150,6 +1150,37 @@ th.gt-name.expanded .gt-name-label {
   white-space: nowrap;
 }
 
+/* 名称列封顶并截断。不封的话「预约牙医复查」这种一条就把表撑到 600px，
+   手机上 329px 的容器里，完成度和状态得横滑才看得见 */
+.hn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 8rem;
+}
+
+.hn-wrap .row-dot {
+  margin-right: 0; /* 外面已经有 gap */
+}
+
+.hn-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* 手机上收到 5rem 是量出来的：名称再宽 7px，「排入 / 开始」这两个每天都要按的
+   按钮就会被挤出屏幕，得先横滑一下才够得着 */
+@media (max-width: 430px) {
+  .hn-wrap {
+    max-width: 5rem;
+  }
+}
+
 .pct-cell {
   display: flex;
   align-items: center;
@@ -1298,7 +1329,6 @@ th.gt-name.expanded .gt-name-label {
   }
 
   th.gt-name {
-    min-width: 4.5rem;
     font-size: 0.8rem;
   }
 
