@@ -13,7 +13,7 @@ import { colorOf } from '../lib/colors'
 
 const shortWeek = (key) => key.slice(5).replace('-', '/')
 
-/** 一类一行的横条：实际（粗）+ 计划（细框叠在上面）。 */
+/** 一类一行的横条：实际（实心色块）+ 计划（虚线框叠在上面）。 */
 export function CompareBars({ rows, max }) {
   const top = max || Math.max(1, ...rows.map((r) => Math.max(r.actual, r.planned)))
   return (
@@ -31,7 +31,14 @@ export function CompareBars({ rows, max }) {
               {r.planned > 0 && (
                 <span
                   className="bar-planned"
-                  style={{ width: `${(r.planned / top) * 100}%`, borderColor: tint.edge }}
+                  style={{
+                    width: `${(r.planned / top) * 100}%`,
+                    // 边框要同时压得住两种底：左半截叠在实心条上，右半截落在浅色轨道上。
+                    // 原来用 tint.edge，对实心条的对比度只有 1.21（1.0 就是看不见）——
+                    // 「做得比计划多」的行里虚线框整个是隐形的。
+                    // 掺墨之后是 1.9–2.1 / 5.5–6.2，两种底上都看得见。
+                    borderColor: `color-mix(in srgb, ${tint.dot} 45%, var(--ink))`,
+                  }}
                 />
               )}
             </span>

@@ -174,8 +174,11 @@ export default function Stats({ planner, onBack }) {
                 label: `${fmtHours(c.actual)}h`,
               }))}
             />
+            {/* 说明得照着眼睛看到的说。原来写「粗条 / 细框」——
+                可你看到的是「实心 / 虚线」，对不上就只能靠猜 */}
             <p className="muted small">
-              粗条是实际，细框是计划。细框比粗条长 = 排了没做完。
+              <b>实心色块 = 实际</b>做了多少，<b>虚线框 = 当初计划</b>多少。
+              虚线框比色块长 = 排了没做完；短 = 做得比计划多。
             </p>
           </section>
 
