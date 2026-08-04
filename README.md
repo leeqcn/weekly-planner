@@ -19,11 +19,26 @@ npm run dev
 和日记 App 是**两个独立的 project**（独立仓库、独立 Vercel Project），
 只是共用同一个 Supabase 实例。所以：
 
-- 建表 SQL 归本仓库管（`db/0001_init.sql`），**不要放进日记 App 的仓库或它的 migrations 目录**。
+（自己装的人不用管这段，直接新建一个 Supabase 项目就行。）
+
+- 建表 SQL 归本仓库管（`db/schema.sql`），**不要放进日记 App 的仓库或它的 migrations 目录**。
 - 表名都是本项目自己的（`templates` / `schedule_entries` / `habits_log` /
   `weekly_focus` / `special_days`），不碰日记 App 的任何表。
 
-步骤：
+### 建表：新装的人跑一个文件就行
+
+打开 Supabase 控制台 → SQL Editor，把 **`db/schema.sql`** 整个贴进去执行一次。
+它是下面那串迁移的**最终状态**，建 7 张表、索引、约束，并给每张表打开 RLS。
+可重复执行，跑两遍也不会坏。
+
+> 这个文件不是手写的：它跟「从零按顺序跑完 0001–0009」的结果做过逐项比对，
+> 134 项结构（列 / 约束 / 索引 / RLS / 策略）完全一致；RLS 也在真 Postgres 上
+> 验过 —— 换个用户读不到别人的行、冒名写入被策略拒绝、匿名角色一行都读不到。
+
+**已经在用的老库**才需要下面这串迁移，按顺序补跑缺的那几个：
+
+<details>
+<summary>db/0001–0009 迁移清单（老库用）</summary>
 
 1. 打开 Supabase 控制台 → SQL Editor，按顺序跑 `db/` 下的脚本（都可重复执行）：
    - `0001_init.sql` — 建 5 张表并打开 RLS
@@ -44,13 +59,28 @@ npm run dev
      它会覆盖这六个分类当前的颜色，跑一次就够，之后在设置里改。
    - `0009_soft_delete.sql` — **必须跑**。加 `deleted_at`，删除改成打墓碑。
      不跑的话，在 Day View 里删掉的模板条目一刷新又会长回来。
-2. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key。
-3. 重启 `npm run dev`。这时会先要求登录。
+
+</details>
+
+然后：
+
+1. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key
+   （Supabase 控制台 → Project Settings → API，用 **anon public** 那把，
+   不要用 `service_role`）。
+2. 重启 `npm run dev`。这时会先要求登录。
 
 ### 登录 / Redirect URL（重要）
 
-登录方式是 **Google 登录**，邮箱 magic link 作为兜底。Google provider 在共用的
-Supabase 实例里已经开好了（日记 App 在用），本项目不用再配。
+登录方式是 **Google 登录**，邮箱 magic link 作为兜底。
+
+**自己新建 Supabase 项目的话**，要先去 Authentication → Providers 打开一个方式：
+Google 需要去 Google Cloud 建 OAuth Client（回调填 Supabase 给的那个
+`https://<项目>.supabase.co/auth/v1/callback`）；嫌麻烦就只开 Email，
+用 magic link 登录，一样能用。
+
+另外建议顺手关掉开放注册（Authentication → Sign In / Providers →
+关掉 *Allow new users to sign up*，或限制允许的邮箱），
+否则任何拿到你线上地址的人都能在**你的**库里建账号存数据。
 
 但有个坑：**Supabase 只接受白名单里的回跳地址**。不在白名单里的 `redirectTo`
 会被静默忽略，直接退回 Site URL —— 而 Site URL 是日记 App 的地址，
@@ -612,5 +642,28 @@ CSV **长表**（`日期, 周, 分类, 计划分钟, 实际分钟, 次数`），
 
 ## 部署
 
-Vercel 新建一个 Project 指向本仓库，framework 选 Vite，
-环境变量填 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`。
+想自己用一份的话，整个流程是这样（大概十几分钟）：
+
+1. **Fork 本仓库**。
+2. **建 Supabase 项目** → SQL Editor 里跑一次 `db/schema.sql`。
+3. **Authentication → Providers** 开一个登录方式（Google 或 Email magic link），
+   顺手关掉开放注册。
+4. **Vercel** 新建 Project 指向你 fork 的仓库，framework 选 Vite，
+   环境变量填 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`
+   （anon public 那把，不是 `service_role`）。
+5. 回到 Supabase → Authentication → URL Configuration，
+   把 Vercel 给的域名加进 **Redirect URLs**（见上面那节，不加会登不进去）。
+
+不想碰 Supabase 的话，什么都不配直接 `npm run dev` 也能用 ——
+数据存在浏览器 localStorage，换设备不同步，清缓存就没了。
+
+### 关于那把 anon key
+
+它会被编译进前端 JS 包，**任何打开你站点的人都看得到**，这是设计如此、不是疏忽。
+真正拦住人的是 RLS：每张表都是「只有登录用户、且只能碰 `user_id` 是自己的行」，
+匿名角色一条策略都没有。所以别把 `service_role` key 放进前端或提交进仓库 ——
+那把是绕过 RLS 的。
+
+## License
+
+[MIT](LICENSE)。随便拿去用、改、发布，出了问题自己负责。

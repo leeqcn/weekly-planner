@@ -37,8 +37,12 @@ alter table public.templates drop constraint if exists templates_type_check;
 alter table public.templates
   add constraint templates_type_check check (type in ('event', 'todo', 'habit'));
 
--- priority 原来限定给 type='task'，现在归 todo
+-- priority 原来限定给 type='task'，现在归 todo。
+-- 两个名字都要先 drop：旧库里叫 ..._for_task，而全新建的库（现在的 0001）
+-- 已经带着 ..._for_todo 了 —— 只 drop 旧名字的话，新库跑到这里会直接报
+-- 「constraint already exists」，从零按顺序跑迁移的人第一步就卡住。
 alter table public.templates drop constraint if exists templates_priority_only_for_task;
+alter table public.templates drop constraint if exists templates_priority_only_for_todo;
 alter table public.templates
   add constraint templates_priority_only_for_todo
   check (type = 'todo' or priority is null);
