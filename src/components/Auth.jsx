@@ -4,12 +4,9 @@ import { supabase } from '../lib/supabaseClient'
 /**
  * Google 登录为主，邮箱 magic link 兜底。
  *
- * 两个 App 共用同一个 Supabase 实例 = 共用同一份 auth.users，
- * 所以用同一个 Google 账号登录，两边就是同一个 user_id。
- *
  * 注意：redirectTo 必须出现在 Supabase 的 Authentication → URL Configuration
- * → Redirect URLs 白名单里，否则 Supabase 会忽略它、退回到 Site URL
- * （也就是日记 App 的地址）。链接跑到日记 App 去就是这个原因。
+ * → Redirect URLs 白名单里，否则 Supabase 会**静默忽略**它、退回到 Site URL。
+ * 「点了登录链接却回不到本站」几乎都是这个原因 —— 不会报错，只是回错地方。
  */
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -89,9 +86,9 @@ export default function Auth() {
         )}
 
         <p className="muted small auth-hint">
-          登录后跳到了日记 App？去 Supabase → Authentication → URL Configuration
-          → Redirect URLs，把 <code>{redirectTo}/**</code> 加进白名单。
-          不在白名单里的地址会被忽略，直接退回 Site URL。
+          点了登录链接却没回到这里？去 Supabase → Authentication → URL
+          Configuration → Redirect URLs，把 <code>{redirectTo}/**</code> 加进白名单。
+          不在白名单里的地址会被静默忽略，直接退回 Site URL。
         </p>
       </div>
     </div>

@@ -1,105 +1,197 @@
 # Weekly Planner
 
-个人日程规划 App —— 在「喜欢做的事」和「该做但容易忽视的事」之间找平衡。
+一个自己用的周计划本。左边写**打算怎么过**，右边记**实际怎么过的**，
+一周下来时间到底去哪了，它算给你看。
 
-当前进度：**Step 1**（手动排程 + 打卡 + 复用模板，不做 AI 排程）。
+不做 AI 排程，不推送，不催你。就是一本电子的纸质 planner。
 
-## 跑起来
+| 一周 | 一天 | 习惯 | 统计 |
+|---|---|---|---|
+| ![一周](docs/screenshots/week.png) | ![一天](docs/screenshots/day.png) | ![习惯](docs/screenshots/habits.png) | ![统计](docs/screenshots/stats.png) |
+
+> 截图里全是编的示例数据。
+
+**这份说明分两半**：前半段给想用的人，不需要懂代码；
+后半段 [给开发者](#给开发者) 是设计笔记，讲每个决定背后的理由。
+
+---
+
+# 给使用者
+
+## 它能干什么
+
+- **一天两栏**：左边「计划」，右边「实际」。计划不用改，只管记实际，
+  差在哪儿一眼看到。
+- **待办可以「排入」**：写上「买菜 40–60 分钟」，点一下自动找当天第一个
+  装得下的空档。排不下会告诉你还差多少分钟。
+- **习惯打卡**：一行一个习惯，一列一天，点一下在 100 / 50 / 0 之间循环。
+- **统计**：按分类（睡眠 / 工作 / 学习 / 日常 / 休闲 / 健康）汇总，
+  日均、最多最少、每周趋势，还能导出 CSV 用表格软件打开。
+- **手机上直接用**：加到主屏幕之后跟 App 一样，全屏、有图标。
+
+## 有没有下载就能用的版本？
+
+没有 —— 它是**网页**，不是要装的软件，所以不存在 `.exe` 或者上架的 App。
+也正因为这样，你不用管什么版本、更新、系统兼容。
+
+代价是它得跑在某个地方。下面这套是免费的：
+**Vercel** 放网页，**Supabase** 存数据，两家的免费额度对一个人来说绰绰有余。
+配好一次，之后手机电脑打开网址就能用，数据自动同步。
+
+## 自己装一份（大约 15 分钟）
+
+不需要写代码，但要在两个网站上点一点。跟着做就行。
+
+### 第 1 步：建数据库（Supabase）
+
+1. 去 [supabase.com](https://supabase.com) 注册，**New project**，
+   地区选离你近的（比如东京 / 新加坡）。数据库密码随便设一个，存好。
+2. 项目建好后，左边菜单 **SQL Editor** → New query。
+3. 把本仓库 [`db/schema.sql`](db/schema.sql) 的内容**整个复制粘贴进去**，
+   点 Run。看到 Success 就成了 —— 表全建好了。
+4. 左边 **Project Settings → API**，记下两个值待会儿要用：
+   - **Project URL**（形如 `https://xxxx.supabase.co`）
+   - **anon public** 那把 key（很长一串）
+   > ⚠️ 千万别用旁边那把 `service_role` —— 那是管理员钥匙，不能放进网页。
+
+### 第 2 步：设置登录方式
+
+左边 **Authentication → Providers**，开一个就行：
+
+- **Email**（最省事）：打开它，用邮箱收登录链接（magic link）登录，不用记密码。
+- **Google**：更方便，但要去 Google Cloud 建一个 OAuth Client，稍微麻烦点。
+
+然后在 **Authentication → Sign In / Providers** 里
+**关掉 "Allow new users to sign up"**（自己注册完之后再关）。
+不关的话，任何知道你网址的人都能在你的数据库里建账号。
+
+### 第 3 步：部署（Vercel）
+
+点这个按钮，它会把仓库复制一份到你的 GitHub，然后问你要上面那两个值：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fleeqcn%2Fweekly-planner&env=VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY&envDescription=Supabase%20%E7%9A%84%20Project%20URL%20%E5%92%8C%20anon%20public%20key&project-name=weekly-planner&repository-name=weekly-planner)
+
+- `VITE_SUPABASE_URL` → 填 Project URL
+- `VITE_SUPABASE_ANON_KEY` → 填 anon public key
+
+等一两分钟，Vercel 会给你一个网址，形如 `https://weekly-planner-xxx.vercel.app`。
+
+### 第 4 步：把网址告诉 Supabase（不做这步登不进去）
+
+回到 Supabase → **Authentication → URL Configuration**：
+
+- **Site URL** 填 Vercel 给你的那个网址
+- **Redirect URLs** 里加一行：`https://你的网址.vercel.app/**`（末尾两个星号别漏）
+
+Supabase 只认白名单里的回跳地址，不在名单里会被静默忽略 ——
+表现就是点了登录链接却回不到你的站点。
+
+打开网址，登录，开始用。
+
+## 加到手机主屏幕
+
+用手机浏览器打开你的网址：
+
+- **iPhone**：Safari → 分享 → 添加到主屏幕
+- **Android**：Chrome → 菜单 → 添加到主屏幕
+
+之后从图标打开就是全屏，跟装了个 App 一样。
+
+## 常见问题
+
+**要花钱吗？**
+不用。Vercel 和 Supabase 的免费额度对一个人的日程数据来说远远够用。
+唯一要注意的是 Supabase 免费项目**闲置一周左右会被暂停**，
+去控制台点一下就能恢复，数据不会丢。
+
+**数据存在哪？会不会被别人看到？**
+存在你自己的 Supabase 里。每张表都开了行级安全（RLS）：
+**只有登录的你能读写自己的行**，没登录的人一行都读不到。
+我（作者）也看不到你的数据 —— 你的数据库跟我没有任何关系。
+
+**不想弄这两个网站，能先试试吗？**
+能。把仓库下载下来，装好 [Node.js](https://nodejs.org) 后跑：
 
 ```bash
 npm install
 npm run dev
 ```
 
-**不配 Supabase 也能直接跑。** 没有 `.env.local` 时 App 自动进入「本地模式」：
-数据存在浏览器 localStorage，还会灌一份示例模板，用来确认 UI 布局。
+什么都不用配。这时数据存在你自己的浏览器里（换设备不同步，清缓存就没了），
+适合先摸一摸看喜不喜欢。
 
-## 接 Supabase
+**用着用着不会用了？**
+App 右上角有个 **?**，里面写了所有手势和功能。
 
-和日记 App 是**两个独立的 project**（独立仓库、独立 Vercel Project），
-只是共用同一个 Supabase 实例。所以：
+**能改成我想要的样子吗？**
+可以，MIT 协议，随便改随便用。往下翻是给开发者的部分。
 
-（自己装的人不用管这段，直接新建一个 Supabase 项目就行。）
+---
 
-- 建表 SQL 归本仓库管（`db/schema.sql`），**不要放进日记 App 的仓库或它的 migrations 目录**。
-- 表名都是本项目自己的（`templates` / `schedule_entries` / `habits_log` /
-  `weekly_focus` / `special_days`），不碰日记 App 的任何表。
+# 给开发者
 
-### 建表：新装的人跑一个文件就行
+```bash
+npm install
+npm run dev      # 不配 Supabase 也能跑，走 localStorage 假数据
+npx oxlint src/  # lint
+npm run build
+```
 
-打开 Supabase 控制台 → SQL Editor，把 **`db/schema.sql`** 整个贴进去执行一次。
-它是下面那串迁移的**最终状态**，建 7 张表、索引、约束，并给每张表打开 RLS。
-可重复执行，跑两遍也不会坏。
+没有 `.env.local` 时自动进「本地模式」：数据存 localStorage，
+还会灌一份示例模板。已经配好 Supabase 但想继续用假数据调 UI，
+在 `.env.local` 里加 `VITE_USE_MOCK=1`。
 
-> 这个文件不是手写的：它跟「从零按顺序跑完 0001–0009」的结果做过逐项比对，
-> 134 项结构（列 / 约束 / 索引 / RLS / 策略）完全一致；RLS 也在真 Postgres 上
-> 验过 —— 换个用户读不到别人的行、冒名写入被策略拒绝、匿名角色一行都读不到。
+## 数据库
 
-**已经在用的老库**才需要下面这串迁移，按顺序补跑缺的那几个：
+新建的库跑一次 [`db/schema.sql`](db/schema.sql) 即可 —— 7 张表、索引、约束、RLS 全在里面，
+可重复执行。
+
+> 它不是手写凑出来的：跟「从零按顺序跑完 `db/0001`–`0009`」的结果做过逐项比对，
+> 134 项结构（列 / 约束 / 索引 / RLS / 策略）完全一致；RLS 在真 Postgres 上验过 ——
+> 换个用户读不到别人的行、冒名写入被策略拒绝、匿名角色一行都读不到。
+
+**已经在用的老库**按顺序补跑缺的迁移：
 
 <details>
 <summary>db/0001–0009 迁移清单（老库用）</summary>
 
-1. 打开 Supabase 控制台 → SQL Editor，按顺序跑 `db/` 下的脚本（都可重复执行）：
-   - `0001_init.sql` — 建 5 张表并打开 RLS
-   - `0002_entry_unique_constraint.sql` — 唯一约束修正（可选）
-   - `0003_task_types.sql` — **必须跑**。类型从 `fixed_event/task/habit`
-     改成 `event/todo/habit`，同时按「有没有填时间」修正存量数据。
-     不跑的话新建模板会被数据库的 check 约束挡下来。
-   - `0004_todo_progress.sql` — **必须跑**。给 `schedule_entries` 加
-     `completion_pct` 和 `note`，待办才有完成度和备注。
-   - `0005_flexible_blocks.sql` — **必须跑**。给 `schedule_entries` 加
-     `min_duration_minutes` / `max_duration_minutes`，待办才有时长区间。
-   - `0006_color_and_keep.sql` — **必须跑**。加 `color`（配色）和
-     `keep_in_todo`（排进时间轴后仍留在待办）。
-   - `0007_categories_and_rollup.sql` — **必须跑**。加 `categories`（分类）
-     和 `daily_rollup`（每日汇总），统计的地基。
-   - `0008_category_colors.sql` — 可选，只改数据。把已经建好的六个默认分类
-     改成指定配色（新建的库不用跑，`DEFAULT_CATEGORIES` 里已经是这套了）。
-     它会覆盖这六个分类当前的颜色，跑一次就够，之后在设置里改。
-   - `0009_soft_delete.sql` — **必须跑**。加 `deleted_at`，删除改成打墓碑。
-     不跑的话，在 Day View 里删掉的模板条目一刷新又会长回来。
+- `0001_init.sql` — 建 5 张表并打开 RLS
+- `0002_entry_unique_constraint.sql` — 唯一约束修正（可选）
+- `0003_task_types.sql` — **必须跑**。类型从 `fixed_event/task/habit`
+  改成 `event/todo/habit`，同时按「有没有填时间」修正存量数据。
+  不跑的话新建模板会被 check 约束挡下来。
+- `0004_todo_progress.sql` — **必须跑**。给 `schedule_entries` 加
+  `completion_pct` 和 `note`。
+- `0005_flexible_blocks.sql` — **必须跑**。加 `min_duration_minutes` /
+  `max_duration_minutes`，待办才有时长区间。
+- `0006_color_and_keep.sql` — **必须跑**。加 `color` 和 `keep_in_todo`。
+- `0007_categories_and_rollup.sql` — **必须跑**。加 `categories` 和
+  `daily_rollup`，统计的地基。
+- `0008_category_colors.sql` — 可选，只改数据。把六个默认分类改成指定配色
+  （新建的库不用跑）。会覆盖当前颜色，跑一次就够。
+- `0009_soft_delete.sql` — **必须跑**。加 `deleted_at`，删除改成打墓碑。
+  不跑的话，Day View 里删掉的模板条目一刷新又会长回来。
 
 </details>
 
-然后：
+### 关于那把 anon key
 
-1. 复制 `.env.local.example` 为 `.env.local`，填 URL 和 anon key
-   （Supabase 控制台 → Project Settings → API，用 **anon public** 那把，
-   不要用 `service_role`）。
-2. 重启 `npm run dev`。这时会先要求登录。
+它会被编译进前端 JS 包，**任何打开站点的人都看得到**，这是设计如此、不是疏忽。
+挡住人的是 RLS：每张表都是「只有 authenticated 角色、且只能碰 `user_id` 是自己的行」，
+匿名角色一条策略都没有。所以别把 `service_role` key 放进前端或提交进仓库 ——
+那把是绕过 RLS 的。
 
-### 登录 / Redirect URL（重要）
+### 登录 / Redirect URL
 
-登录方式是 **Google 登录**，邮箱 magic link 作为兜底。
-
-**自己新建 Supabase 项目的话**，要先去 Authentication → Providers 打开一个方式：
-Google 需要去 Google Cloud 建 OAuth Client（回调填 Supabase 给的那个
-`https://<项目>.supabase.co/auth/v1/callback`）；嫌麻烦就只开 Email，
-用 magic link 登录，一样能用。
-
-另外建议顺手关掉开放注册（Authentication → Sign In / Providers →
-关掉 *Allow new users to sign up*，或限制允许的邮箱），
-否则任何拿到你线上地址的人都能在**你的**库里建账号存数据。
-
-但有个坑：**Supabase 只接受白名单里的回跳地址**。不在白名单里的 `redirectTo`
-会被静默忽略，直接退回 Site URL —— 而 Site URL 是日记 App 的地址，
-所以登录链接会把你送到日记 App 去。
-
-去 Supabase → Authentication → URL Configuration → **Redirect URLs**，
-把本项目的地址都加进去（Site URL 保持日记 App 的不动）：
+Google 登录为主，邮箱 magic link 兜底。**Supabase 只接受白名单里的回跳地址**，
+不在白名单里的 `redirectTo` 会被静默忽略、直接退回 Site URL。
+去 Authentication → URL Configuration → **Redirect URLs** 里加全：
 
 ```
 http://localhost:5173/**
-https://<本项目的 Vercel 域名>/**
-https://<本项目>-*.vercel.app/**    # 预览部署，可选
+https://<你的 Vercel 域名>/**
+https://<项目名>-*.vercel.app/**    # 预览部署，可选
 ```
-
-两个 App 共用同一份 `auth.users`，用同一个 Google 账号登录，两边就是同一个
-`user_id`；各自的表靠 RLS 隔离，互相看不到对方的数据。
-
-想在已经配好 `.env.local` 的情况下继续用假数据调 UI，
-在 `.env.local` 里加一行 `VITE_USE_MOCK=1` 即可。
 
 ## 结构
 
@@ -642,27 +734,10 @@ CSV **长表**（`日期, 周, 分类, 计划分钟, 实际分钟, 次数`），
 
 ## 部署
 
-想自己用一份的话，整个流程是这样（大概十几分钟）：
-
-1. **Fork 本仓库**。
-2. **建 Supabase 项目** → SQL Editor 里跑一次 `db/schema.sql`。
-3. **Authentication → Providers** 开一个登录方式（Google 或 Email magic link），
-   顺手关掉开放注册。
-4. **Vercel** 新建 Project 指向你 fork 的仓库，framework 选 Vite，
-   环境变量填 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`
-   （anon public 那把，不是 `service_role`）。
-5. 回到 Supabase → Authentication → URL Configuration，
-   把 Vercel 给的域名加进 **Redirect URLs**（见上面那节，不加会登不进去）。
-
-不想碰 Supabase 的话，什么都不配直接 `npm run dev` 也能用 ——
-数据存在浏览器 localStorage，换设备不同步，清缓存就没了。
-
-### 关于那把 anon key
-
-它会被编译进前端 JS 包，**任何打开你站点的人都看得到**，这是设计如此、不是疏忽。
-真正拦住人的是 RLS：每张表都是「只有登录用户、且只能碰 `user_id` 是自己的行」，
-匿名角色一条策略都没有。所以别把 `service_role` key 放进前端或提交进仓库 ——
-那把是绕过 RLS 的。
+步骤写在前面 [自己装一份](#自己装一份大约-15-分钟) 那节了，
+这里只补一句给开发者的：framework 选 Vite，环境变量
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`，
+预览部署的域名记得也加进 Supabase 的 Redirect URLs。
 
 ## License
 
