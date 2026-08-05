@@ -423,9 +423,9 @@ export default function HelpEn({ onBack }) {
         </p>
         <p className="muted small">
           One drag that shifted several blocks counts as <b>one</b> step. The undo history
-          is cleared when you reload the page. The one thing undo cannot fully restore is
-          deleting a template: the template itself comes back, but the habit logs that went
-          with it do not.
+          is cleared when you reload the page. Deleting a template undoes cleanly too: the
+          template, the habit logs that were deleted along with it, and the link between it
+          and the entries it generated all go back.
         </p>
       </section>
 

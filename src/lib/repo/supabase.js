@@ -32,6 +32,33 @@ export function createSupabaseRepo(userId) {
       )
     },
 
+    // 删模板之前得先把「会被连带带走的东西」捞出来，撤销时才放得回去。
+    // habits_log 是 on delete cascade（真的删掉），
+    // schedule_entries 是 on delete set null（行还在，但和模板断了链）
+    async listHabitLogsByTemplate(templateId) {
+      return unwrap(await from('habits_log').select('*').eq('template_id', templateId))
+    },
+
+    async listEntryIdsByTemplate(templateId) {
+      const rows = unwrap(
+        await from('schedule_entries').select('id').eq('template_id', templateId),
+      )
+      return rows.map((r) => r.id)
+    },
+
+    async restoreHabitLogs(rows) {
+      if (!rows.length) return
+      // 带着原来的 id 插回去，撤销出来的就是原来那几行
+      unwrap(await from('habits_log').insert(rows.map(own)))
+    },
+
+    async relinkEntries(ids, templateId) {
+      if (!ids.length) return
+      unwrap(
+        await from('schedule_entries').update({ template_id: templateId }).in('id', ids),
+      )
+    },
+
     async deleteTemplate(id) {
       unwrap(await from('templates').delete().eq('id', id))
     },

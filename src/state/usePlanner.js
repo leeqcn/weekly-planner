@@ -270,13 +270,27 @@ export function usePlanner(repo) {
       )
     },
 
-    deleteTemplate: (id) => {
+    deleteTemplate: async (id) => {
       const before = templates.find((t) => t.id === id)
+
+      // 删之前先把会被连带带走的两样东西记下来 —— 删完就查不到了：
+      //   habits_log       on delete cascade   → 打卡历史真的没了
+      //   schedule_entries on delete set null  → 行还在，但和模板断了链
+      // 第二样漏掉的话，撤销之后生成器看不见「这个坑被占着」，
+      // 下次打开会把这一周的条目再生成一份，变成两条一模一样的。
+      const [logs, entryIds] = await Promise.all([
+        repo.listHabitLogsByTemplate(id),
+        repo.listEntryIdsByTemplate(id),
+      ])
+
       return act(
         `删除「${before?.title ?? ''}」`,
         () => repo.deleteTemplate(id),
-        // 连带删掉的打卡记录恢复不了，模板本身能原样回来
-        () => repo.createTemplate(before),
+        async () => {
+          await repo.createTemplate(before) // 带原 id 放回去
+          await repo.relinkEntries(entryIds, id)
+          await repo.restoreHabitLogs(logs)
+        },
       )
     },
 

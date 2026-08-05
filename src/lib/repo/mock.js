@@ -64,6 +64,35 @@ export function createMockRepo(seed) {
       })
     },
 
+    // 删模板之前得先把「会被连带带走的东西」捞出来，撤销时才放得回去
+    async listHabitLogsByTemplate(templateId) {
+      return load().habits_log.filter((h) => h.template_id === templateId)
+    },
+
+    async listEntryIdsByTemplate(templateId) {
+      return load()
+        .schedule_entries.filter((e) => e.template_id === templateId)
+        .map((e) => e.id)
+    },
+
+    async restoreHabitLogs(rows) {
+      if (!rows.length) return
+      mutate((db) => {
+        // 原样放回（连 id 一起），不然撤销出来的是另一批行
+        db.habits_log.push(...rows.map((r) => ({ ...r })))
+      })
+    },
+
+    async relinkEntries(ids, templateId) {
+      if (!ids.length) return
+      const set = new Set(ids)
+      mutate((db) => {
+        db.schedule_entries.forEach((e) => {
+          if (set.has(e.id)) e.template_id = templateId
+        })
+      })
+    },
+
     async deleteTemplate(id) {
       mutate((db) => {
         db.templates = db.templates.filter((t) => t.id !== id)
