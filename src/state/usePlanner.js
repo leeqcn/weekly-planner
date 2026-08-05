@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildEntriesFor } from '../lib/generate'
-import { addDays, dateKey, retentionCutoff, weekDays, weekStart } from '../lib/dates'
+import { addDays, dateKey, retentionCutoff, weekDays, weekStart, combineDateTime } from '../lib/dates'
 import { DEFAULT_CATEGORIES } from '../lib/categories'
 import { buildRollups, staleRollupKeys } from '../lib/rollup'
 import { tr } from '../lib/i18n'
@@ -241,31 +241,75 @@ export function usePlanner(repo) {
         repo.deleteTemplate(created.id),
       ),
 
-    updateTemplate: (id, patch) => {
+    updateTemplate: async (id, patch) => {
       const before = templates.find((t) => t.id === id)
+      const today = dateKey(new Date())
 
       // 标题和「留」这两样是数据，已经生成的条目里存的是当时的副本，
       // 改模板必须把它们一起改掉，否则周视图还显示旧标题。
-      // （颜色不在这里 —— 它渲染时直接从模板取，不存副本。）
+      // （颜色和分类不在这里 —— 它们渲染时直接从模板取，不存副本。）
       const spread = Object.fromEntries(
         ['title', 'keep_in_todo'].filter((k) => k in patch).map((k) => [k, patch[k]]),
       )
-      const today = dateKey(new Date())
       const affected = Object.keys(spread).length
         ? entries.filter((e) => e.template_id === id && e.date >= today)
         : []
+
+      // 时间和时长同样是生成时抄进条目的，以前不往前传 —— 结果是改了模板，
+      // 待办里躺着的还是旧时长，而「排入」找空档用的正是条目上的那个数。
+      //
+      // 现在跟着改，但守两条线：
+      //   1. 只动今天及以后。历史就该保持当时的样子。
+      //   2. 手动动过的不覆盖。判据是「这条还和**旧模板**长得一模一样吗」——
+      //      一样就是模板生的、没人碰过，跟着走；不一样说明你对那天另有安排。
+      //   3. 已经开始 / 做完 / 跳过的不动：那时候的计划是什么就是什么，
+      //      事后改计划会让「计划 vs 实际」失真。
+      const timeChanged = ['start_time', 'end_time'].some((k) => k in patch)
+      const durChanged = ['min_duration_minutes', 'max_duration_minutes'].some((k) => k in patch)
+      const sameMoment = (a, b) =>
+        a == null || b == null ? a == null && b == null : new Date(a).getTime() === new Date(b).getTime()
+
+      const retimed = []
+      if (before && (timeChanged || durChanged)) {
+        const next = { ...before, ...patch }
+        for (const e of await repo.listEntriesByTemplate(id, today)) {
+          if (e.status !== 'planned') continue
+          const p = {}
+          if (
+            timeChanged &&
+            sameMoment(e.planned_start, combineDateTime(e.date, before.start_time)) &&
+            sameMoment(e.planned_end, combineDateTime(e.date, before.end_time))
+          ) {
+            p.planned_start = combineDateTime(e.date, next.start_time)
+            p.planned_end = combineDateTime(e.date, next.end_time)
+          }
+          if (
+            durChanged &&
+            (e.min_duration_minutes ?? null) === (before.min_duration_minutes ?? null) &&
+            (e.max_duration_minutes ?? null) === (before.max_duration_minutes ?? null)
+          ) {
+            p.min_duration_minutes = next.min_duration_minutes ?? null
+            p.max_duration_minutes = next.max_duration_minutes ?? null
+          }
+          if (Object.keys(p).length) {
+            retimed.push({ id: e.id, patch: p, before: pick(e, Object.keys(p)) })
+          }
+        }
+      }
 
       return act(
         `修改「${before?.title ?? ''}」`,
         async () => {
           await repo.updateTemplate(id, patch)
           if (affected.length) await repo.updateEntriesByTemplate(id, spread, today)
+          for (const r of retimed) await repo.updateEntry(r.id, r.patch)
         },
         async () => {
           await repo.updateTemplate(id, pick(before, Object.keys(patch)))
           for (const e of affected) {
             await repo.updateEntry(e.id, pick(e, Object.keys(spread)))
           }
+          for (const r of retimed) await repo.updateEntry(r.id, r.before)
         },
       )
     },

@@ -441,9 +441,26 @@ export default function HelpEn({ onBack }) {
             <b>Repeat rules</b>: pick days of the week, or a day of the month (rent).
           </li>
           <li>
-            Renaming a template updates entries already generated for <b>today and later</b>;
-            past ones are left alone. Colour is resolved live from the template, so
-            changing it updates every view at once.
+            <b>When template edits take effect</b>: the title, times and duration range
+            propagate to entries already generated for <b>today and later</b>;{' '}
+            <b>past ones are left alone</b>, because history should look the way it did at
+            the time. Category and colour are resolved live, so changing them updates every
+            view at once, history included.
+          </li>
+          <li>
+            <b>Entries you edited by hand are not overwritten.</b> If you moved one day’s
+            block or changed its length, that day keeps your version. Anything started,
+            done or skipped is left alone too — rewriting the plan afterwards would distort
+            plan-versus-actual.
+          </li>
+          <li>
+            Changing which weekdays a template repeats on, or <b>disabling</b> it, does{' '}
+            <b>not remove entries already generated</b> — it only affects what gets
+            generated from now on. Delete the leftovers yourself if you do not want them.
+          </li>
+          <li>
+            <b>Habit templates</b> generate no entries, so edits take effect across the
+            whole week immediately and past logs stay attached.
           </li>
           <li>
             <b>Language</b>: Chinese or English. It follows your browser by default.

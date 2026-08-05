@@ -69,6 +69,12 @@ export function createMockRepo(seed) {
       return load().habits_log.filter((h) => h.template_id === templateId)
     },
 
+    async listEntriesByTemplate(templateId, fromDate) {
+      return load().schedule_entries.filter(
+        (e) => e.template_id === templateId && e.date >= fromDate && !e.deleted_at,
+      )
+    },
+
     async listEntryIdsByTemplate(templateId) {
       return load()
         .schedule_entries.filter((e) => e.template_id === templateId)

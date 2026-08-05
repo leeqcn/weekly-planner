@@ -39,6 +39,16 @@ export function createSupabaseRepo(userId) {
       return unwrap(await from('habits_log').select('*').eq('template_id', templateId))
     },
 
+    async listEntriesByTemplate(templateId, fromDate) {
+      return unwrap(
+        await from('schedule_entries')
+          .select('*')
+          .eq('template_id', templateId)
+          .gte('date', fromDate)
+          .is('deleted_at', null),
+      )
+    },
+
     async listEntryIdsByTemplate(templateId) {
       const rows = unwrap(
         await from('schedule_entries').select('id').eq('template_id', templateId),
