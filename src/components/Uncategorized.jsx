@@ -1,5 +1,6 @@
 import { activeCategories, makeCategoryResolver } from '../lib/categories'
 import { colorOf } from '../lib/colors'
+import { pick, tr } from '../lib/i18n'
 
 /**
  * 未分类收纳箱。
@@ -34,8 +35,8 @@ export default function Uncategorized({ planner }) {
   if (!rows.length && !looseTemplates.length) {
     return (
       <section className="card">
-        <h2>未分类</h2>
-        <p className="muted">这一周的东西都归好类了。</p>
+        <h2>{tr('未分类')}</h2>
+        <p className="muted">{tr('这一周的东西都归好类了。')}</p>
       </section>
     )
   }
@@ -43,20 +44,17 @@ export default function Uncategorized({ planner }) {
   const assign = (entries, categoryId) =>
     planner.updateEntries(
       entries.map((e) => ({ id: e.id, patch: { category_id: categoryId } })),
-      `归类「${entries[0].title}」${entries.length > 1 ? ` ×${entries.length}` : ''}`,
+      pick(() => `归类「${entries[0].title}」${entries.length > 1 ? ` ×${entries.length}` : ''}`, () => `Categorise “${entries[0].title}”${entries.length > 1 ? ` ×${entries.length}` : ''}`),
     )
 
   return (
     <section className="card">
-      <h2>未分类</h2>
-      <p className="muted small">
-        显示的是<b>当前这一周</b>还没归类的。切到别的周会看到那一周的。
-        明细过了保留期就只剩汇总、改不动了，所以尽量趁早归。
-      </p>
+      <h2>{tr('未分类')}</h2>
+      <p className="muted small">{tr('显示的是')}<b>{tr('当前这一周')}</b>{tr('还没归类的。切到别的周会看到那一周的。 明细过了保留期就只剩汇总、改不动了，所以尽量趁早归。')}</p>
 
       {looseTemplates.length > 0 && (
         <div className="uncat-group">
-          <label>模板还没设分类（设一次，它生成的所有条目都跟着走）</label>
+          <label>{tr('模板还没设分类（设一次，它生成的所有条目都跟着走）')}</label>
           {looseTemplates.map((t) => (
             <div className="uncat-row" key={t.id}>
               <span className="uncat-title">
@@ -85,7 +83,7 @@ export default function Uncategorized({ planner }) {
 
       {rows.length > 0 && (
         <div className="uncat-group">
-          <label>临时加的条目（按标题成堆归）</label>
+          <label>{tr('临时加的条目（按标题成堆归）')}</label>
           {rows.map(([title, entries]) => (
             <div className="uncat-row" key={title}>
               <span className="uncat-title">

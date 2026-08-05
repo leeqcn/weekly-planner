@@ -7,6 +7,7 @@ import {
   startOfWeek,
   subDays,
 } from 'date-fns'
+import { weekdayWord } from './i18n'
 
 /** 'yyyy-MM-dd'，全项目统一用它作为 date 列的值和 React key。 */
 export function dateKey(date) {
@@ -68,11 +69,11 @@ export function toTimeInput(iso) {
   return formatTime(iso)
 }
 
-const WEEKDAY_CN = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+// 星期的写法归 i18n 管：中文「周一」、英文「Mon」
 
 /** '周一' … '周日'（date-fns 默认 locale 是英文，这里直接给中文）。 */
 export function weekdayLabel(date) {
-  return WEEKDAY_CN[isoWeekday(date) - 1]
+  return weekdayWord(isoWeekday(date))
 }
 
 /** 保留期边界：今天往前 days 天的 dateKey，早于它的流水数据会被清理。 */

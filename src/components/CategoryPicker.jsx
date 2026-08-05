@@ -1,5 +1,6 @@
 import { activeCategories } from '../lib/categories'
 import { colorOf } from '../lib/colors'
+import { tr } from '../lib/i18n'
 
 /**
  * 一排芯片选分类。做成点选而不是手打 —— 分类是统计的维度，
@@ -11,7 +12,7 @@ export default function CategoryPicker({
   value,
   categories,
   onChange,
-  label = '分类',
+  label = tr('分类'),
   inherited = null,
 }) {
   const list = activeCategories(categories)
@@ -30,7 +31,7 @@ export default function CategoryPicker({
           className={`cat-chip${value == null ? ' on' : ''}`}
           onClick={() => onChange(null)}
         >
-          {inheritedName ? `跟模板（${inheritedName}）` : '未分类'}
+          {inheritedName ? tr('跟模板') + `（${inheritedName}）` : tr('未分类')}
         </button>
         {list.map((c) => (
           <button

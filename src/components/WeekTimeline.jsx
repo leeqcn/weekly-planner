@@ -3,6 +3,7 @@ import { dateKey, formatTime, minutesOfDay, weekdayLabel } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { blockToShow } from '../lib/schedule'
 import { colorOf, makeColorResolver } from '../lib/colors'
+import { tr } from '../lib/i18n'
 
 // 完整 24 小时一次画完，不在卡片里再套一层滚动 ——
 // 里面套滚动会看不到全天，还老是滚错那一层。页面自己滚就够了。
@@ -43,7 +44,7 @@ export default function WeekTimeline({
                     .filter(Boolean)
                     .join(' ')}
                   onClick={() => onOpenDay(day)}
-                  title={special ? special.label : '打开这天'}
+                  title={special ? special.label : tr('打开这天')}
                 >
                   <span className="wt-wd">{weekdayLabel(day)}</span>
                   <span className="wt-date">{format(day, 'd')}</span>
@@ -110,7 +111,7 @@ export default function WeekTimeline({
                             borderColor: tint.edge,
                           }}
                           onClick={() => onOpenDay(day)}
-                          title={`${b.entry.title} ${formatTime(b.start)}–${formatTime(b.end)}（${b.kind === 'actual' ? '实际' : '计划'}）`}
+                          title={`${b.entry.title} ${formatTime(b.start)}–${formatTime(b.end)}（${b.kind === 'actual' ? tr('实际') : tr('计划')}）`}
                         >
                           <span>{b.entry.title}</span>
                         </button>

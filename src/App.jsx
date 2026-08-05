@@ -5,6 +5,7 @@ import { createSupabaseRepo } from './lib/repo/supabase'
 import { buildSeed } from './lib/mockSeed'
 import Auth from './components/Auth'
 import Planner from './components/Planner'
+import { LangProvider, useLang } from './state/LangContext'
 import './app.css'
 
 export default function App() {
@@ -29,14 +30,24 @@ export default function App() {
     return session ? createSupabaseRepo(session.user.id) : null
   }, [session])
 
-  if (checking) return <div className="boot">载入中…</div>
-  if (!repo) return <Auth />
-
   return (
-    <Planner
-      key={session?.user.id ?? 'local'}
-      repo={repo}
-      onSignOut={isSupabaseConfigured ? () => supabase.auth.signOut() : null}
-    />
+    <LangProvider>
+      {checking ? (
+        <Boot />
+      ) : !repo ? (
+        <Auth />
+      ) : (
+        <Planner
+          key={session?.user.id ?? 'local'}
+          repo={repo}
+          onSignOut={isSupabaseConfigured ? () => supabase.auth.signOut() : null}
+        />
+      )}
+    </LangProvider>
   )
+}
+
+function Boot() {
+  const { t } = useLang()
+  return <div className="boot">{t('载入中…')}</div>
 }

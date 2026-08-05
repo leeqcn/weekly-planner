@@ -7,6 +7,7 @@ import {
   parseDuration,
   reconcile,
 } from '../lib/time'
+import { pick, tr } from '../lib/i18n'
 
 /**
  * 开始 / 结束 / 时长三个输入框，填两个自动算第三个。
@@ -143,13 +144,13 @@ export default function TimeFields({
       <div className="time-row">
         {/* 占位符故意写成 --:--：之前用「9:30」这种真时间，
             看一眼分不清是自己填的还是提示 */}
-        {field('start', '开始', '--:--', 'numeric')}
-        {field('end', '结束', '--:--', 'numeric')}
-        {field('duration', '时长', '--:--', 'text')}
+        {field('start', tr('开始'), '--:--', 'numeric')}
+        {field('end', tr('结束'), '--:--', 'numeric')}
+        {field('duration', tr('时长'), '--:--', 'text')}
       </div>
       <p className="muted small">
-        {value.duration ? `共 ${describeDuration(value.duration)}。` : ''}
-        {hint ?? '填两个就行，第三个自动算。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。'}
+        {value.duration ? pick(() => `共 ${describeDuration(value.duration)}。`, () => `${describeDuration(value.duration)} in total.`) : ''}
+        {hint ?? tr('填两个就行，第三个自动算。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。')}
       </p>
     </fieldset>
   )

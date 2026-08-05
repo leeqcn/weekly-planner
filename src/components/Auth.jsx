@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { tr } from '../lib/i18n'
 
 /**
  * Google 登录为主，邮箱 magic link 兜底。
@@ -35,7 +36,7 @@ export default function Auth() {
         ? { status: 'error', message: error.message }
         : {
             status: 'sent',
-            message: '登录链接已发到邮箱。如果点开后跳到了别的站点，看下面那行说明。',
+            message: tr('登录链接已发到邮箱。如果点开后跳到了别的站点，看下面那行说明。'),
           },
     )
   }
@@ -54,15 +55,15 @@ export default function Auth() {
           disabled={busy}
         >
           <GoogleMark />
-          {state.status === 'redirecting' ? '跳转中…' : '用 Google 登录'}
+          {state.status === 'redirecting' ? tr('跳转中…') : tr('用 Google 登录')}
         </button>
 
         <div className="auth-divider">
-          <span>或</span>
+          <span>{tr('或')}</span>
         </div>
 
         <form className="auth-email" onSubmit={signInWithEmail}>
-          <label htmlFor="auth-email">邮箱登录链接</label>
+          <label htmlFor="auth-email">{tr('邮箱登录链接')}</label>
           <div className="row-gap">
             <input
               id="auth-email"
@@ -74,7 +75,7 @@ export default function Auth() {
               placeholder="you@example.com"
             />
             <button type="submit" disabled={busy}>
-              {state.status === 'sending' ? '发送中…' : '发送'}
+              {state.status === 'sending' ? tr('发送中…') : tr('发送')}
             </button>
           </div>
         </form>
@@ -85,11 +86,7 @@ export default function Auth() {
           </p>
         )}
 
-        <p className="muted small auth-hint">
-          点了登录链接却没回到这里？去 Supabase → Authentication → URL
-          Configuration → Redirect URLs，把 <code>{redirectTo}/**</code> 加进白名单。
-          不在白名单里的地址会被静默忽略，直接退回 Site URL。
-        </p>
+        <p className="muted small auth-hint">{tr('点了登录链接却没回到这里？去 Supabase → Authentication → URL Configuration → Redirect URLs，把')}<code>{redirectTo}/**</code>{tr('加进白名单。 不在白名单里的地址会被静默忽略，直接退回 Site URL。')}</p>
       </div>
     </div>
   )

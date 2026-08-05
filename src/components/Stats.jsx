@@ -10,6 +10,7 @@ import {
   toCsv,
 } from '../lib/stats'
 import { CompareBars, StackedWeeks, TrendLine } from './Charts'
+import { pick, tr } from '../lib/i18n'
 
 const START_KEY = 'weekly-planner:stats-start'
 const WEEK_CHOICES = [4, 8, 12, 26]
@@ -94,36 +95,29 @@ export default function Stats({ planner, onBack }) {
   return (
     <div className="stats-view">
       <div className="day-head">
-        <button className="ghost" onClick={onBack}>
-          ‹ 回到周视图
-        </button>
-        <h1>统计</h1>
+        <button className="ghost" onClick={onBack}>{tr('‹ 回到周视图')}</button>
+        <h1>{tr('统计')}</h1>
         <span className="spacer" />
-        <button onClick={exportCsv} disabled={!rollups?.length}>
-          导出 CSV
-        </button>
+        <button onClick={exportCsv} disabled={!rollups?.length}>{tr('导出 CSV')}</button>
       </div>
 
       {!stats ? (
         <section className="card">
-          <p className="muted">读取中…</p>
+          <p className="muted">{tr('读取中…')}</p>
         </section>
       ) : !stats.hasData ? (
         <section className="card">
-          <h2>还没有数据</h2>
-          <p>
-            统计从 <b>{start}</b> 开始算，那天之前的记录不计入。
-            等这一天到了、并且记了东西，这里就有数了。
-          </p>
+          <h2>{tr('还没有数据')}</h2>
+          <p>{tr('统计从')}<b>{start}</b>{tr('开始算，那天之前的记录不计入。 等这一天到了、并且记了东西，这里就有数了。')}</p>
           <StartPicker start={start} setStart={setStart} />
         </section>
       ) : (
         <>
           <section className="card">
             <div className="card-head">
-              <h2>概览</h2>
+              <h2>{tr('概览')}</h2>
               <span className="row-gap">
-                <Choice value={weeks} setValue={setWeeks} options={WEEK_CHOICES} suffix="周" />
+                <Choice value={weeks} setValue={setWeeks} options={WEEK_CHOICES} suffix={tr('周')} />
               </span>
             </div>
             <p className="muted small">
@@ -133,9 +127,9 @@ export default function Stats({ planner, onBack }) {
 
             <div className="stat-cards">
               <StatCard
-                label="记录率"
+                label={tr('记录率')}
                 value={`${Math.round(stats.recordRate * 100)}%`}
-                hint={`未记录 ${fmtHours(stats.unrecorded)}h`}
+                hint={pick(() => `未记录 ${fmtHours(stats.unrecorded)}h`, () => `${fmtHours(stats.unrecorded)}h unlogged`)}
                 warn={stats.recordRate < 0.5}
               />
               {stats.categories.slice(0, 3).map((c) => {
@@ -143,27 +137,25 @@ export default function Stats({ planner, onBack }) {
                 return (
                   <StatCard
                     key={c.key}
-                    label={`${nameOf(c.key)} 日均`}
+                    label={pick(() => `${nameOf(c.key)} 日均`, () => `${nameOf(c.key)} per day`)}
                     value={fmtHm(c.avgPerDay)}
                     color={colorFor(c.key)}
                     hint={
                       cmp
-                        ? `本周 ${fmtHours(cmp.latest)}h，${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs 均值`
-                        : `${c.days} 天做过`
+                        ? pick(() => `本周 ${fmtHours(cmp.latest)}h，${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs 均值`, () => `${fmtHours(cmp.latest)}h this week, ${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs average`)
+                        : pick(() => `${c.days} 天做过`, () => `${c.days} days done`)
                     }
                   />
                 )
               })}
             </div>
             {stats.recordRate < 0.5 && (
-              <p className="muted small">
-                记录率低于一半时，下面所有数字都要打折看 —— 没记下来的时间不知道去哪了。
-              </p>
+              <p className="muted small">{tr('记录率低于一半时，下面所有数字都要打折看 —— 没记下来的时间不知道去哪了。')}</p>
             )}
           </section>
 
           <section className="card">
-            <h2>每类花了多少（实际 vs 计划）</h2>
+            <h2>{tr('每类花了多少（实际 vs 计划）')}</h2>
             <CompareBars
               rows={stats.categories.map((c) => ({
                 key: c.key,
@@ -177,29 +169,24 @@ export default function Stats({ planner, onBack }) {
             {/* 说明得照着眼睛看到的说。原来写「粗条 / 细框」——
                 可你看到的是「实心 / 虚线」，对不上就只能靠猜 */}
             <p className="muted small">
-              <b>实心色块 = 实际</b>做了多少，<b>虚线框 = 当初计划</b>多少。
-              虚线框比色块长 = 排了没做完；短 = 做得比计划多。
-            </p>
+              <b>{tr('实心色块 = 实际')}</b>{tr('做了多少，')}<b>{tr('虚线框 = 当初计划')}</b>{tr('多少。 虚线框比色块长 = 排了没做完；短 = 做得比计划多。')}</p>
           </section>
 
           <section className="card">
-            <h2>每周的时间去哪了</h2>
+            <h2>{tr('每周的时间去哪了')}</h2>
             <StackedWeeks weeks={stats.weeks} colorFor={colorFor} nameFor={nameOf} />
-            <p className="muted small">
-              灰色是<b>未记录</b>。画出来占比才加得到 100%，
-              而「一天到底记下了多少」本身就是所有数字可信度的前提。
-            </p>
+            <p className="muted small">{tr('灰色是')}<b>{tr('未记录')}</b>{tr('。画出来占比才加得到 100%， 而「一天到底记下了多少」本身就是所有数字可信度的前提。')}</p>
           </section>
 
           {focus && (
             <section className="card">
               <div className="card-head">
-                <h2>趋势</h2>
+                <h2>{tr('趋势')}</h2>
                 <Choice
                   value={halfLife}
                   setValue={setHalfLife}
                   options={HALF_LIFE_CHOICES}
-                  suffix="周半衰期"
+                  suffix={tr('周半衰期')}
                 />
               </div>
               <div className="cat-row">
@@ -226,27 +213,27 @@ export default function Stats({ planner, onBack }) {
               />
               <p className="muted small">
                 {nameOf(focus.key)}：n 周平均 {fmtHours(focus.weekAvg)}h/周，
-                EWMA {focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。
+                EWMA {focus.ewma == null ? '—' : pick(() => `${fmtHours(focus.ewma)}h/周`, () => `${fmtHours(focus.ewma)}h/week`)}。
               </p>
             </section>
           )}
 
           <section className="card">
-            <h2>明细</h2>
+            <h2>{tr('明细')}</h2>
             <div className="table-scroll">
               <table className="habits-table stats-table">
                 <thead>
                   <tr>
-                    <th>分类</th>
-                    <th>执行天数</th>
-                    <th>总时间</th>
-                    <th>日均</th>
-                    <th>日最少</th>
-                    <th>日最多</th>
-                    <th>占比</th>
-                    <th>计划</th>
-                    <th>差值</th>
-                    <th>达成率</th>
+                    <th>{tr('分类')}</th>
+                    <th>{tr('执行天数')}</th>
+                    <th>{tr('总时间')}</th>
+                    <th>{tr('日均')}</th>
+                    <th>{tr('日最少')}</th>
+                    <th>{tr('日最多')}</th>
+                    <th>{tr('占比')}</th>
+                    <th>{tr('计划')}</th>
+                    <th>{tr('差值')}</th>
+                    <th>{tr('达成率')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,7 +262,7 @@ export default function Stats({ planner, onBack }) {
                     </tr>
                   ))}
                   <tr className="stats-total">
-                    <td>未记录</td>
+                    <td>{tr('未记录')}</td>
                     <td>—</td>
                     <td>{fmtHours(stats.unrecorded)}h</td>
                     <td colSpan="3">—</td>
@@ -286,16 +273,13 @@ export default function Stats({ planner, onBack }) {
               </table>
             </div>
             <p className="muted small">
-              <b>日均 = 总时间 ÷ 执行天数</b>（不是除以日历天数）。
-              日最少/最多也只在做过的那些天里取 —— 不然只要有一天没做，
-              最少永远是 0，这个数就废了。<b>达成率</b>对从来没排过计划的显示「—」。
-            </p>
+              <b>{tr('日均 = 总时间 ÷ 执行天数')}</b>{tr('（不是除以日历天数）。 日最少/最多也只在做过的那些天里取 —— 不然只要有一天没做， 最少永远是 0，这个数就废了。')}<b>{tr('达成率')}</b>{tr('对从来没排过计划的显示「—」。')}</p>
           </section>
 
           <TodoHabitStats planner={planner} />
 
           <section className="card">
-            <h2>统计起点</h2>
+            <h2>{tr('统计起点')}</h2>
             <StartPicker start={start} setStart={setStart} />
           </section>
         </>
@@ -355,18 +339,14 @@ function Choice({ value, setValue, options, suffix }) {
 function StartPicker({ start, setStart }) {
   return (
     <div className="row-gap">
-      <label htmlFor="stats-start" className="grow">
-        从哪天开始算
-      </label>
+      <label htmlFor="stats-start" className="grow">{tr('从哪天开始算')}</label>
       <input
         id="stats-start"
         type="date"
         value={start}
         onChange={(e) => e.target.value && setStart(e.target.value)}
       />
-      <p className="muted small">
-        这天之前的记录不计入。存在本机，换设备要再设一次。
-      </p>
+      <p className="muted small">{tr('这天之前的记录不计入。存在本机，换设备要再设一次。')}</p>
     </div>
   )
 }
@@ -396,16 +376,16 @@ function TodoHabitStats({ planner }) {
 
   return (
     <section className="card">
-      <h2>待办 / 习惯（本周）</h2>
+      <h2>{tr('待办 / 习惯（本周）')}</h2>
       <p className="muted small">
         这两块没有时间信息，只看完成度，和上面的时间统计分开。
         这里看的是当前这一周（{days.length} 天）。
       </p>
       <div className="stat-cards">
         <StatCard
-          label="待办完成"
+          label={tr('待办完成')}
           value={`${todoDone}/${todos.length}`}
-          hint={todos.length ? `${Math.round((todoDone / todos.length) * 100)}%` : '本周没有待办'}
+          hint={todos.length ? `${Math.round((todoDone / todos.length) * 100)}%` : tr('本周没有待办')}
         />
         {habitRows.map((h) => (
           <StatCard
@@ -413,7 +393,7 @@ function TodoHabitStats({ planner }) {
             label={h.title}
             color={h.color}
             value={`${h.done}/${h.logged || 0}`}
-            hint={h.logged ? `平均 ${Math.round(h.avg)}%` : '还没打卡'}
+            hint={h.logged ? pick(() => `平均 ${Math.round(h.avg)}%`, () => `${Math.round(h.avg)}% avg`) : tr('还没打卡')}
           />
         ))}
       </div>

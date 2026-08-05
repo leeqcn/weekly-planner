@@ -1,5 +1,5 @@
 import { format, isSameDay } from 'date-fns'
-import { dateKey, weekdayLabel } from '../lib/dates'
+import { dateKey, isoWeekday } from '../lib/dates'
 import { habitStatus } from '../lib/habits'
 import { nextPct } from '../lib/schedule'
 import { colorOf } from '../lib/colors'
@@ -13,6 +13,7 @@ import { colorOf } from '../lib/colors'
  *   'blank' —— 习惯用，留空白，不然满屏红色
  */
 import { useState } from 'react'
+import { pick, weekdayShort } from '../lib/i18n'
 
 export default function WeekProgressGrid({
   title,
@@ -46,7 +47,7 @@ export default function WeekProgressGrid({
                       key={dateKey(day)}
                       className={isSameDay(day, today) ? 'today' : undefined}
                     >
-                      <span className="gt-wd">{weekdayLabel(day).slice(1)}</span>
+                      <span className="gt-wd">{weekdayShort(isoWeekday(day))}</span>
                       <span className="gt-date">{format(day, 'd')}</span>
                     </th>
                   ))}
@@ -97,8 +98,8 @@ export default function WeekProgressGrid({
                             onClick={() => onSetPct(row, cell, nextPct(cell.pct))}
                             title={
                               blank
-                                ? `${row.title} 还没打卡（点一下标记完成）`
-                                : `${row.title} ${pct}% · ${status.label}（点一下切换）`
+                                ? pick(() => `${row.title} 还没打卡（点一下标记完成）`, () => `${row.title} — not logged (tap to mark done)`)
+                                : pick(() => `${row.title} ${pct}% · ${status.label}（点一下切换）`, () => `${row.title} ${pct}% · ${status.label} (tap to change)`)
                             }
                           >
                             {blank ? '' : pct}

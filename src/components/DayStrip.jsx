@@ -1,6 +1,7 @@
 import { formatClock } from '../lib/time'
 import { minutesOfDay } from '../lib/dates'
 import { isScheduled } from '../lib/schedule'
+import { tr } from '../lib/i18n'
 
 const HOUR_PX = 15
 
@@ -55,14 +56,14 @@ export default function DayStrip({ entries, editingId, draft, kind = 'plan' }) {
       </div>
       <p className="muted small strip-note">
         {clash
-          ? '和已排的时间重叠了'
+          ? tr('和已排的时间重叠了')
           : kind === 'actual'
             ? hasDraft
-              ? '这段是实际做的'
-              : '当天已排的时间'
+              ? tr('这段是实际做的')
+              : tr('当天已排的时间')
             : hasDraft
-              ? '这段是空的'
-              : '当天已排的时间'}
+              ? tr('这段是空的')
+              : tr('当天已排的时间')}
       </p>
     </div>
   )

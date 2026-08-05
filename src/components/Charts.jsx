@@ -1,4 +1,5 @@
 import { colorOf } from '../lib/colors'
+import { tr } from '../lib/i18n'
 
 /**
  * 手写 SVG，不引图表库。要的图就三种，加个库要多背一百多 KB，
@@ -97,7 +98,7 @@ export function StackedWeeks({ weeks, colorFor, nameFor }) {
                 height={Math.max(0, y)}
                 fill="var(--rule)"
               >
-                <title>{`${wk.week} 未记录 ${(wk.unrecorded / 60).toFixed(1)}h`}</title>
+                <title>{`${wk.week} ${tr('未记录')} ${(wk.unrecorded / 60).toFixed(1)}h`}</title>
               </rect>
             </g>
           )
@@ -118,7 +119,7 @@ export function StackedWeeks({ weeks, colorFor, nameFor }) {
  */
 export function TrendLine({ series, smooth, color, labels }) {
   if (series.length < 2) {
-    return <p className="muted small">至少要两周数据才画得出趋势。</p>
+    return <p className="muted small">{tr('至少要两周数据才画得出趋势。')}</p>
   }
   const W = 100
   const H = 60
@@ -169,11 +170,8 @@ export function TrendLine({ series, smooth, color, labels }) {
           <span>{shortWeek(labels.at(-1))}</span>
         </div>
       </div>
-      <p className="muted small">
-        细线是每周实际，粗线是 EWMA（平滑掉单周的意外）。
-        纵轴是 <b>{(bottom / 60).toFixed(1)}–{(top / 60).toFixed(1)}h</b>，
-        <b>不是从 0 开始</b> —— 这样才看得出变化，但也会把波动画得比实际大。
-      </p>
+      <p className="muted small">{tr('细线是每周实际，粗线是 EWMA（平滑掉单周的意外）。 纵轴是')}<b>{(bottom / 60).toFixed(1)}–{(top / 60).toFixed(1)}h</b>，
+        <b>{tr('不是从 0 开始')}</b>{tr('—— 这样才看得出变化，但也会把波动画得比实际大。')}</p>
     </div>
   )
 }

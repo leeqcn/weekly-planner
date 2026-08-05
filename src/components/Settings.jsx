@@ -8,14 +8,16 @@ import CategoryPicker from './CategoryPicker'
 import Uncategorized from './Uncategorized'
 import { colorOf } from '../lib/colors'
 import { sortCategories } from '../lib/categories'
+import { LANGS, pick, tr, weekNameList, weekdayWord } from '../lib/i18n'
+import { useLang } from '../state/LangContext'
 
-const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
+
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
 /** 常用的重复预设 —— 三餐这种每天重复的，不用一个个点七下 */
 const PRESETS = [
-  { label: '每天', days: EVERY_DAY },
-  { label: '工作日', days: [1, 2, 3, 4, 5] },
-  { label: '周末', days: [6, 7] },
+  { label: tr('每天'), days: EVERY_DAY },
+  { label: tr('工作日'), days: [1, 2, 3, 4, 5] },
+  { label: tr('周末'), days: [6, 7] },
 ]
 const TYPE_LABELS = Object.fromEntries(
   Object.entries(TYPES).map(([k, v]) => [k, v.label]),
@@ -80,30 +82,28 @@ export default function Settings({ planner, onBack }) {
   return (
     <div className="settings">
       <div className="day-head">
-        <button className="ghost" onClick={onBack}>
-          ‹ 回到周视图
-        </button>
-        <h1>设置</h1>
+        <button className="ghost" onClick={onBack}>{tr('‹ 回到周视图')}</button>
+        <h1>{tr('设置')}</h1>
         <span className="spacer" />
-        <button className="primary" onClick={startNew}>
-          ＋ 新建模板
-        </button>
+        <button className="primary" onClick={startNew}>{tr('＋ 新建模板')}</button>
       </div>
 
+      <LanguageRow />
+
       <section className="card">
-        <h2>重复模板</h2>
+        <h2>{tr('重复模板')}</h2>
         {planner.templates.length === 0 ? (
-          <p className="muted">还没有模板。建一个之后，每周的日程就会自动生成。</p>
+          <p className="muted">{tr('还没有模板。建一个之后，每周的日程就会自动生成。')}</p>
         ) : (
           <div className="table-scroll">
           <table className="tpl-table">
             <thead>
               <tr>
-                <th>标题</th>
-                <th>类型</th>
-                <th>重复</th>
-                <th>时间</th>
-                <th>状态</th>
+                <th>{tr('标题')}</th>
+                <th>{tr('类型')}</th>
+                <th>{tr('重复')}</th>
+                <th>{tr('时间')}</th>
+                <th>{tr('状态')}</th>
                 <th />
               </tr>
             </thead>
@@ -119,9 +119,9 @@ export default function Settings({ planner, onBack }) {
                     {t.title}
                   </td>
                   <td>
-                    {TYPE_LABELS[t.type]}
+                    {tr(TYPE_LABELS[t.type])}
                     {t.priority && (
-                      <span className="muted small"> · {PRIORITY_LABELS[t.priority]}</span>
+                      <span className="muted small"> · {tr(PRIORITY_LABELS[t.priority])}</span>
                     )}
                   </td>
                   <td className="small">{describeRecurrence(t)}</td>
@@ -130,25 +130,21 @@ export default function Settings({ planner, onBack }) {
                       ? `${t.start_time.slice(0, 5)}–${(t.end_time ?? '').slice(0, 5)}`
                       : '—'}
                   </td>
-                  <td className="small">{t.is_active ? '启用' : '停用'}</td>
+                  <td className="small">{t.is_active ? tr('启用') : tr('停用')}</td>
                   <td className="row-gap">
-                    <button className="ghost" onClick={() => startEdit(t)}>
-                      编辑
-                    </button>
+                    <button className="ghost" onClick={() => startEdit(t)}>{tr('编辑')}</button>
                     <button
                       className="ghost"
                       onClick={() =>
                         planner.updateTemplate(t.id, { is_active: !t.is_active })
                       }
                     >
-                      {t.is_active ? '停用' : '启用'}
+                      {t.is_active ? tr('停用') : tr('启用')}
                     </button>
                     <button
                       className="ghost danger"
                       onClick={() => planner.deleteTemplate(t.id)}
-                    >
-                      删除
-                    </button>
+                    >{tr('删除')}</button>
                   </td>
                 </tr>
               ))}
@@ -156,9 +152,7 @@ export default function Settings({ planner, onBack }) {
           </table>
           </div>
         )}
-        <p className="muted small">
-          停用只是不再生成新日程，历史记录会保留。
-        </p>
+        <p className="muted small">{tr('停用只是不再生成新日程，历史记录会保留。')}</p>
       </section>
 
       <Categories planner={planner} />
@@ -174,9 +168,9 @@ export default function Settings({ planner, onBack }) {
             onClick={(e) => e.stopPropagation()}
             onSubmit={save}
           >
-            <h2>{draft.id ? '编辑模板' : '新建模板'}</h2>
+            <h2>{draft.id ? tr('编辑模板') : tr('新建模板')}</h2>
 
-            <label htmlFor="tpl-title">标题</label>
+            <label htmlFor="tpl-title">{tr('标题')}</label>
             <input
               id="tpl-title"
               value={draft.title}
@@ -186,7 +180,7 @@ export default function Settings({ planner, onBack }) {
 
             <div className="field-row">
               <div>
-                <label htmlFor="tpl-type">类型</label>
+                <label htmlFor="tpl-type">{tr('类型')}</label>
                 <select
                   id="tpl-type"
                   value={draft.type}
@@ -211,7 +205,7 @@ export default function Settings({ planner, onBack }) {
               </div>
               {draft.type !== 'habit' && (
               <div>
-                <label htmlFor="tpl-rec">重复方式</label>
+                <label htmlFor="tpl-rec">{tr('重复方式')}</label>
                 <select
                   id="tpl-rec"
                   value={draft.recurrence}
@@ -223,20 +217,20 @@ export default function Settings({ planner, onBack }) {
                     })
                   }
                 >
-                  <option value="weekly">每周</option>
-                  <option value="monthly">每月</option>
+                  <option value="weekly">{tr('每周')}</option>
+                  <option value="monthly">{tr('每月')}</option>
                 </select>
               </div>
               )}
             </div>
 
-            <p className="muted small">{TYPES[draft.type].hint}</p>
+            <p className="muted small">{tr(TYPES[draft.type].hint)}</p>
 
             {draft.type === 'habit' ? (
-              <p className="muted small">习惯每天重复，不用选周几。</p>
+              <p className="muted small">{tr('习惯每天重复，不用选周几。')}</p>
             ) : (
             <>
-            <label>{draft.recurrence === 'weekly' ? '周几' : '每月几号'}</label>
+            <label>{draft.recurrence === 'weekly' ? tr('周几') : tr('每月几号')}</label>
             {draft.recurrence === 'weekly' && (
               <div className="day-toggles presets">
                 {PRESETS.map((p) => (
@@ -253,9 +247,7 @@ export default function Settings({ planner, onBack }) {
                   type="button"
                   className="toggle"
                   onClick={() => setDraft({ ...draft, recurrence_days: [] })}
-                >
-                  清空
-                </button>
+                >{tr('清空')}</button>
               </div>
             )}
             <div className="day-toggles">
@@ -276,7 +268,7 @@ export default function Settings({ planner, onBack }) {
                     })
                   }
                 >
-                  {draft.recurrence === 'weekly' ? WEEK_LABELS[d - 1] : d}
+                  {draft.recurrence === 'weekly' ? weekNameList()[d - 1] : d}
                 </button>
               ))}
             </div>
@@ -291,7 +283,7 @@ export default function Settings({ planner, onBack }) {
               value={draft.category_id}
               categories={planner.categories}
               onChange={(category_id) => setDraft({ ...draft, category_id })}
-              label="分类（统计按它汇总）"
+              label={tr('分类（统计按它汇总）')}
             />
 
             <ColorPicker
@@ -305,15 +297,13 @@ export default function Settings({ planner, onBack }) {
                   type="checkbox"
                   checked={Boolean(draft.keep_in_todo)}
                   onChange={(e) => setDraft({ ...draft, keep_in_todo: e.target.checked })}
-                />
-                排进时间轴后，仍然留在 To do 列表里
-              </label>
+                />{tr('排进时间轴后，仍然留在 To do 列表里')}</label>
             )}
 
             {draft.type === 'todo' && (
               <div className="field-row">
                 <div>
-                  <label htmlFor="tpl-min">最短（分钟）</label>
+                  <label htmlFor="tpl-min">{tr('最短（分钟）')}</label>
                   <input
                     id="tpl-min"
                     inputMode="numeric"
@@ -325,7 +315,7 @@ export default function Settings({ planner, onBack }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="tpl-max">最长（分钟）</label>
+                  <label htmlFor="tpl-max">{tr('最长（分钟）')}</label>
                   <input
                     id="tpl-max"
                     inputMode="numeric"
@@ -337,7 +327,7 @@ export default function Settings({ planner, onBack }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="tpl-prio">优先级</label>
+                  <label htmlFor="tpl-prio">{tr('优先级')}</label>
                   <select
                     id="tpl-prio"
                     value={draft.priority ?? 'optional'}
@@ -353,12 +343,8 @@ export default function Settings({ planner, onBack }) {
 
             <div className="modal-actions">
               <span className="spacer" />
-              <button type="button" className="ghost" onClick={() => setDraft(null)}>
-                取消
-              </button>
-              <button type="submit" className="primary">
-                保存
-              </button>
+              <button type="button" className="ghost" onClick={() => setDraft(null)}>{tr('取消')}</button>
+              <button type="submit" className="primary">{tr('保存')}</button>
             </div>
           </form>
         </div>
@@ -390,26 +376,24 @@ function Categories({ planner }) {
   return (
     <section className="card">
       <div className="card-head">
-        <h2>分类</h2>
+        <h2>{tr('分类')}</h2>
         <button
           onClick={() =>
             setDraft({ name: '', color: null, sort_order: (list.at(-1)?.sort_order ?? 0) + 10 })
           }
-        >
-          ＋ 新建分类
-        </button>
+        >{tr('＋ 新建分类')}</button>
       </div>
 
       {list.length === 0 ? (
-        <p className="muted">还没有分类。</p>
+        <p className="muted">{tr('还没有分类。')}</p>
       ) : (
         <div className="table-scroll">
           <table className="tpl-table">
             <thead>
               <tr>
-                <th>名称</th>
-                <th>排序</th>
-                <th>状态</th>
+                <th>{tr('名称')}</th>
+                <th>{tr('排序')}</th>
+                <th>{tr('状态')}</th>
                 <th />
               </tr>
             </thead>
@@ -425,18 +409,16 @@ function Categories({ planner }) {
                     {c.name}
                   </td>
                   <td className="small">{c.sort_order}</td>
-                  <td className="small">{c.is_active ? '启用' : '停用'}</td>
+                  <td className="small">{c.is_active ? tr('启用') : tr('停用')}</td>
                   <td className="row-gap">
-                    <button className="ghost" onClick={() => setDraft({ ...c })}>
-                      编辑
-                    </button>
+                    <button className="ghost" onClick={() => setDraft({ ...c })}>{tr('编辑')}</button>
                     <button
                       className="ghost"
                       onClick={() =>
                         planner.updateCategory(c.id, { is_active: !c.is_active })
                       }
                     >
-                      {c.is_active ? '停用' : '启用'}
+                      {c.is_active ? tr('停用') : tr('启用')}
                     </button>
                   </td>
                 </tr>
@@ -446,17 +428,13 @@ function Categories({ planner }) {
         </div>
       )}
 
-      <p className="muted small">
-        统计按分类汇总，不按标题 ——「地铁上班」和「打车回家」是两个标题、同一类。
-        分类的颜色会被模板和条目继承（自己另外选了就以自己的为准）。
-        <b>只能停用不能删</b>：删掉会让那段历史无处可归。
-      </p>
+      <p className="muted small">{tr('统计按分类汇总，不按标题 ——「地铁上班」和「打车回家」是两个标题、同一类。 分类的颜色会被模板和条目继承（自己另外选了就以自己的为准）。')}<b>{tr('只能停用不能删')}</b>{tr('：删掉会让那段历史无处可归。')}</p>
 
       {draft && (
         <div className="modal-backdrop" onClick={() => setDraft(null)}>
           <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-            <h2>{draft.id ? '修改分类' : '新建分类'}</h2>
-            <label htmlFor="cat-name">名称</label>
+            <h2>{draft.id ? tr('修改分类') : tr('新建分类')}</h2>
+            <label htmlFor="cat-name">{tr('名称')}</label>
             <input
               id="cat-name"
               value={draft.name}
@@ -464,7 +442,7 @@ function Categories({ planner }) {
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
               placeholder="Sleep / Work / …"
             />
-            <label htmlFor="cat-sort">排序（小的在前）</label>
+            <label htmlFor="cat-sort">{tr('排序（小的在前）')}</label>
             <input
               id="cat-sort"
               inputMode="numeric"
@@ -477,12 +455,8 @@ function Categories({ planner }) {
             />
             <div className="modal-actions">
               <span className="spacer" />
-              <button type="button" className="ghost" onClick={() => setDraft(null)}>
-                取消
-              </button>
-              <button type="submit" className="primary">
-                保存
-              </button>
+              <button type="button" className="ghost" onClick={() => setDraft(null)}>{tr('取消')}</button>
+              <button type="submit" className="primary">{tr('保存')}</button>
             </div>
           </form>
         </div>
@@ -497,10 +471,10 @@ function SpecialDays({ planner }) {
 
   return (
     <section className="card">
-      <h2>特殊日</h2>
+      <h2>{tr('特殊日')}</h2>
       <div className="field-row">
         <div>
-          <label htmlFor="sd-date">日期</label>
+          <label htmlFor="sd-date">{tr('日期')}</label>
           <input
             id="sd-date"
             type="date"
@@ -509,11 +483,11 @@ function SpecialDays({ planner }) {
           />
         </div>
         <div className="grow">
-          <label htmlFor="sd-label">标记</label>
+          <label htmlFor="sd-label">{tr('标记')}</label>
           <input
             id="sd-label"
             value={label}
-            placeholder="专注学习 / 禅修 …"
+            placeholder={tr('专注学习 / 禅修 …')}
             onChange={(e) => setLabel(e.target.value)}
           />
         </div>
@@ -525,9 +499,7 @@ function SpecialDays({ planner }) {
             await planner.goToDate(fromDateKey(date))
             setLabel('')
           }}
-        >
-          标记
-        </button>
+        >{tr('标记')}</button>
       </div>
       {planner.specialDays.length > 0 && (
         <ul className="sd-list">
@@ -536,14 +508,12 @@ function SpecialDays({ planner }) {
               <span>
                 {s.date} · {s.label}
               </span>
-              <button className="ghost" onClick={() => planner.setSpecialDay(s.date, '')}>
-                取消
-              </button>
+              <button className="ghost" onClick={() => planner.setSpecialDay(s.date, '')}>{tr('取消')}</button>
             </li>
           ))}
         </ul>
       )}
-      <p className="muted small">这里只列出当前这一周的标记。</p>
+      <p className="muted small">{tr('这里只列出当前这一周的标记。')}</p>
     </section>
   )
 }
@@ -568,10 +538,10 @@ function TemplateTime({ draft, setDraft }) {
   return (
     <TimeFields
       id="tpl"
-      label="时间"
+      label={tr('时间')}
       value={value}
       onChange={apply}
-      hint="填两个就行。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。"
+      hint={tr('填两个就行。9 / 930 / 9:30 都认，时长可以写 90 或 1.5h。')}
     />
   )
 }
@@ -586,7 +556,33 @@ function describeRecurrence(t) {
   const days = t.recurrence_days ?? []
   if (!days.length) return '—'
   return t.recurrence === 'weekly'
-    ? days.map((d) => `周${WEEK_LABELS[d - 1]}`).join(' ')
-    : days.map((d) => `${d} 号`).join(' ')
+    ? days.map((d) => weekdayWord(d)).join(' ')
+    : days.map((d) => pick(() => `${d} 号`, () => `day ${d}`)).join(' ')
 }
 
+
+/**
+ * 语言。默认跟浏览器走（非中文直接进英文），所以英文用户不会先撞见一屏中文；
+ * 这里是给「浏览器是中文但想看英文」或者反过来的人用的。
+ */
+function LanguageRow() {
+  const { lang, setLang } = useLang()
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h2>{tr('语言')}</h2>
+        <span className="row-gap">
+          {Object.entries(LANGS).map(([code, label]) => (
+            <button
+              key={code}
+              className={`chip${lang === code ? ' selected' : ''}`}
+              onClick={() => setLang(code)}
+            >
+              {label}
+            </button>
+          ))}
+        </span>
+      </div>
+    </section>
+  )
+}

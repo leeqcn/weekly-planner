@@ -11,6 +11,7 @@ import ProgressTable from './ProgressTable'
 import QuickAdd from './QuickAdd'
 import { useDragBlock } from './useDragBlock'
 import { useEmptyPress } from './useEmptyPress'
+import { dateFmt, pick, tr } from '../lib/i18n'
 
 // 完整 24 小时一次画完，不在卡片里再套滚动
 const HOUR_PX = 44
@@ -104,10 +105,10 @@ export default function DayView({ planner, date, onBack }) {
           },
         }
       })
-      const verb = mode === 'resize' ? '调整时长' : '拖动'
+      const verb = mode === 'resize' ? tr('调整时长') : tr('拖动')
       planner.updateEntries(
         updates,
-        changed.length > 1 ? `${verb} ${changed.length} 项` : verb,
+        changed.length > 1 ? pick(() => `${verb} ${changed.length} 项`, () => `${verb} ${changed.length} items`) : verb,
       )
     },
     [planner, key],
@@ -167,7 +168,7 @@ export default function DayView({ planner, date, onBack }) {
     planner.updateEntry(
       entry.id,
       { status: 'in_progress', actual_start: new Date().toISOString(), actual_end: null },
-      `开始「${entry.title}」`,
+      pick(() => `开始「${entry.title}」`, () => `Start “${entry.title}”`),
     )
   }
 
@@ -175,7 +176,7 @@ export default function DayView({ planner, date, onBack }) {
     planner.updateEntry(
       entry.id,
       { status: 'done', actual_end: new Date().toISOString() },
-      `结束「${entry.title}」`,
+      pick(() => `结束「${entry.title}」`, () => `Stop “${entry.title}”`),
     )
   }
 
@@ -249,7 +250,7 @@ export default function DayView({ planner, date, onBack }) {
     planner.updateEntry(
       entry.id,
       quickTimes(quick.field, at, minutes),
-      `${quick.field === 'actual' ? '记下' : '排入'}「${entry.title}」`,
+      pick(() => `${quick.field === 'actual' ? '记下' : '排入'}「${entry.title}」`, () => `${quick.field === 'actual' ? 'Log' : 'Schedule'} “${entry.title}”`),
     )
     setQuick(null)
   }
@@ -318,7 +319,7 @@ export default function DayView({ planner, date, onBack }) {
         planned_start: minutesToIso(key, at),
         planned_end: minutesToIso(key, at + minutes),
       },
-      `排入「${entry.title}」`,
+      pick(() => `排入「${entry.title}」`, () => `Schedule “${entry.title}”`),
     )
   }
 
@@ -394,16 +395,16 @@ export default function DayView({ planner, date, onBack }) {
     <div className="day-view">
       <div className="day-head">
         <div className="row-gap">
-          <button className="ghost" onClick={onBack}>‹ 回到周视图</button>
+          <button className="ghost" onClick={onBack}>{tr('‹ 回到周视图')}</button>
           <h1>
-            {format(date, 'M 月 d 日')} <span className="muted">{weekdayLabel(date)}</span>
+            {format(date, dateFmt('monthDay'))} <span className="muted">{weekdayLabel(date)}</span>
           </h1>
           {special && <span className="special-badge">{special.label}</span>}
         </div>
         <div className="row-gap">
           <input
             className="special-input"
-            placeholder="标记特殊日（如 专注学习）"
+            placeholder={tr('标记特殊日（如 专注学习）')}
             defaultValue={special?.label ?? ''}
             key={special?.label ?? key}
             onBlur={(e) => {
@@ -411,9 +412,7 @@ export default function DayView({ planner, date, onBack }) {
               if (label !== (special?.label ?? '')) planner.setSpecialDay(key, label)
             }}
           />
-          <button className="primary" onClick={() => setEditing({ entry: null })}>
-            ＋ 新增
-          </button>
+          <button className="primary" onClick={() => setEditing({ entry: null })}>{tr('＋ 新增')}</button>
         </div>
       </div>
 
@@ -423,7 +422,7 @@ export default function DayView({ planner, date, onBack }) {
           <b>{running.title}</b>
           <span className="muted small">{elapsedText(running.actual_start, now)}</span>
           <span className="spacer" />
-          <button className="primary" onClick={() => stopTimer(running)}>结束</button>
+          <button className="primary" onClick={() => stopTimer(running)}>{tr('结束')}</button>
         </div>
       )}
 
@@ -432,24 +431,20 @@ export default function DayView({ planner, date, onBack }) {
           <span className="selected-title">
             {picked.length === 1
               ? dayEntries.find((e) => e.id === picked[0])?.title
-              : `选中 ${picked.length} 项`}
+              : pick(() => `选中 ${picked.length} 项`, () => `${picked.length} selected`)}
           </span>
           {/* 「拖把手可以一起挪」那句话搬走了：浮条要一行放得下，
               手机上一换行就摞成四层，挡住半个时间轴。这句在时间轴下面的说明里有 */}
           {picked.length === 1 && (
             <>
-              <button onClick={() => setEditing({ entry: dayEntries.find((e) => e.id === picked[0]) })}>
-                编辑
-              </button>
+              <button onClick={() => setEditing({ entry: dayEntries.find((e) => e.id === picked[0]) })}>{tr('编辑')}</button>
               <button
                 className="danger"
                 onClick={() => removeEntry(dayEntries.find((e) => e.id === picked[0]))}
-              >
-                删除
-              </button>
+              >{tr('删除')}</button>
             </>
           )}
-          <button className="ghost" onClick={() => setPicked([])} title="取消选中" aria-label="取消选中">
+          <button className="ghost" onClick={() => setPicked([])} title={tr('取消选中')} aria-label={tr('取消选中')}>
             ✕
           </button>
         </div>
@@ -472,13 +467,13 @@ export default function DayView({ planner, date, onBack }) {
         onOpen={(id) => setEditing({ entry: todos.find((e) => e.id === id) })}
         onPlace={(id) => placeTodo(todos.find((e) => e.id === id))}
         onToggleKeep={(id, keep) =>
-          planner.updateEntry(id, { keep_in_todo: keep }, keep ? '保留在待办' : '排入后移出待办')
+          planner.updateEntry(id, { keep_in_todo: keep }, keep ? tr('保留在待办') : tr('排入后移出待办'))
         }
         onStart={(id) => startTimer(todos.find((e) => e.id === id))}
         onStop={(id) => stopTimer(todos.find((e) => e.id === id))}
         runningId={running?.id}
         footer={capacity.count > 0 ? <Capacity capacity={capacity} /> : null}
-        emptyText="今天没有待办。"
+        emptyText={tr('今天没有待办。')}
       />
 
       <section className="card timeline-card">
@@ -489,9 +484,7 @@ export default function DayView({ planner, date, onBack }) {
               type="checkbox"
               checked={cascade}
               onChange={(e) => setCascade(e.target.checked)}
-            />
-            拖一个，后面的跟着顺延
-          </label>
+            />{tr('拖一个，后面的跟着顺延')}</label>
         </div>
         <div className="timeline-head">
           <span className="row-gap col-head">
@@ -499,7 +492,7 @@ export default function DayView({ planner, date, onBack }) {
             <button
               className="ghost small-btn"
               onClick={() => openQuick('planned', anchorFor(key))}
-              title="加一件要做的事"
+              title={tr('加一件要做的事')}
             >
               ＋
             </button>
@@ -510,7 +503,7 @@ export default function DayView({ planner, date, onBack }) {
             <button
               className="ghost small-btn"
               onClick={() => openQuick('actual', anchorFor(key))}
-              title="记一件没排过计划、但确实做了的事"
+              title={tr('记一件没排过计划、但确实做了的事')}
             >
               ＋
             </button>
@@ -566,14 +559,7 @@ export default function DayView({ planner, date, onBack }) {
           </div>
         </div>
         <p className="muted small">
-          <b>长按空白处</b>（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件，
-          或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。
-          拖块左边的竖条挪时间，拖底边改时长。<b>长按块</b>打开编辑 ——
-          从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的），
-          记实际时间时点开始/结束那一格可以一下填「现在」。单击选中
-          （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。
-          <b>半透明</b>是时长还没定死，<b>红色</b>是撞车。
-        </p>
+          <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</p>
       </section>
 
       <ProgressTable
@@ -589,7 +575,7 @@ export default function DayView({ planner, date, onBack }) {
           }
         })}
         onSave={saveHabit}
-        emptyText="今天没有需要打卡的习惯。"
+        emptyText={tr('今天没有需要打卡的习惯。')}
       />
 
       {editing && (
@@ -683,7 +669,7 @@ function EntryBlock({
     >
       <span
         className="block-grip"
-        title="拖我挪时间"
+        title={tr('拖我挪时间')}
         onPointerDown={(e) => onGrip(e, 'move')}
       />
       <button className="block-body" onClick={onClick} onDoubleClick={onDoubleClick}>
@@ -698,7 +684,7 @@ function EntryBlock({
       </button>
       <span
         className="block-resize"
-        title="拖我改时长"
+        title={tr('拖我改时长')}
         onPointerDown={(e) => onGrip(e, 'resize')}
       />
     </div>
@@ -712,12 +698,11 @@ function EntryBlock({
 function Capacity({ capacity }) {
   const { free, min, max, count, fits, short } = capacity
   return (
-    <p className={`capacity${fits ? '' : ' over'}`}>
-      剩下的时间还空着 <b>{describeDuration(free)}</b>；
+    <p className={`capacity${fits ? '' : ' over'}`}>{tr('剩下的时间还空着')}<b>{describeDuration(free)}</b>；
       还没排的 {count} 件待办需要{' '}
       <b>{min === max ? describeDuration(max) : `${describeDuration(min)} – ${describeDuration(max)}`}</b>
       {' — '}
-      {fits ? '装得下。' : <b>差 {describeDuration(short)}，得砍一件或者压缩一下。</b>}
+      {fits ? tr('装得下。') : <b>差 {describeDuration(short)}，得砍一件或者压缩一下。</b>}
     </p>
   )
 }
@@ -725,5 +710,5 @@ function Capacity({ capacity }) {
 /** 刚点开始的时候别说「已经 1 分钟」。 */
 function elapsedText(startIso, now) {
   const mins = Math.floor((now - new Date(startIso)) / 60000)
-  return mins < 1 ? '刚开始' : `已经 ${describeDuration(mins)}`
+  return mins < 1 ? tr('刚开始') : pick(() => `已经 ${describeDuration(mins)}`, () => `${describeDuration(mins)} so far`)
 }

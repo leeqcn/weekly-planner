@@ -5,6 +5,7 @@ import DayView from './DayView'
 import Settings from './Settings'
 import Help from './Help'
 import Stats from './Stats'
+import { tr } from '../lib/i18n'
 
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
@@ -27,31 +28,23 @@ export default function Planner({ repo, onSignOut }) {
       <header className="app-bar">
         <span className="brand">Weekly Planner</span>
         {planner.mode === 'mock' && (
-          <span className="badge" title="没有配置 .env.local，数据存在浏览器本地">
-            本地模式
-          </span>
+          <span className="badge" title={tr('没有配置 .env.local，数据存在浏览器本地')}>{tr('本地模式')}</span>
         )}
         <span className="spacer" />
-        {planner.loading && <span className="muted small">载入中…</span>}
+        {planner.loading && <span className="muted small">{tr('载入中…')}</span>}
 
-        <button className="ghost" onClick={() => setView({ name: 'stats' })}>
-          统计
-        </button>
+        <button className="ghost" onClick={() => setView({ name: 'stats' })}>{tr('统计')}</button>
         <button
           className="ghost help-btn"
           onClick={() => setView({ name: 'help' })}
-          title="手势和功能说明"
-          aria-label="帮助"
+          title={tr('手势和功能说明')}
+          aria-label={tr('帮助')}
         >
           ?
         </button>
-        <button className="ghost" onClick={() => setView({ name: 'settings' })}>
-          设置
-        </button>
+        <button className="ghost" onClick={() => setView({ name: 'settings' })}>{tr('设置')}</button>
         {onSignOut && (
-          <button className="ghost" onClick={onSignOut}>
-            退出
-          </button>
+          <button className="ghost" onClick={onSignOut}>{tr('退出')}</button>
         )}
       </header>
 
@@ -92,8 +85,8 @@ export default function Planner({ repo, onSignOut }) {
         <button
           className="undo-fab"
           onClick={planner.undo}
-          title={`撤销：${planner.undoLabel}`}
-          aria-label={`撤销：${planner.undoLabel}`}
+          title={`${tr('撤销')}：${planner.undoLabel}`}
+          aria-label={`${tr('撤销')}：${planner.undoLabel}`}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
             <path

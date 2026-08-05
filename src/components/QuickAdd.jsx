@@ -4,6 +4,7 @@ import { describeRange } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
 import { placementMinutes } from '../lib/place'
 import CategoryPicker from './CategoryPicker'
+import { tr } from '../lib/i18n'
 
 const DEFAULT_MINUTES = 60
 /** 自动补全最多给几条。给多了就成了另一个要读的列表。 */
@@ -85,13 +86,13 @@ export default function QuickAdd({
   return (
     <div className="modal-backdrop" onClick={() => armed && onClose()}>
       <div className="card modal quick-add" onClick={(e) => e.stopPropagation()}>
-        <h2>加到「{isActual ? '实际' : '计划'}」</h2>
+        <h2>加到「{isActual ? tr('实际') : tr('计划')}」</h2>
 
         {/* 开始时间做成可以打的输入框。手指在手机上根本点不准，
             光靠按下去那个位置定时间太碰运气；默认值也不用手指位置，
             用**上一件事的结束时间**，因为绝大多数时候下一件就是接着上一件做的 */}
         <div className="quick-start">
-          <label htmlFor="quick-start">几点开始</label>
+          <label htmlFor="quick-start">{tr('几点开始')}</label>
           <input
             id="quick-start"
             inputMode="numeric"
@@ -114,19 +115,17 @@ export default function QuickAdd({
               type="button"
               className="ghost small-btn"
               onClick={() => setStartBoth(pressedAt)}
-              title="改用刚才按下去的那个位置"
+              title={tr('改用刚才按下去的那个位置')}
             >
               按的位置 {formatClock(pressedAt)}
             </button>
           )}
         </div>
-        <p className="muted small">
-          9 / 930 / 9:30 都认。时长不对也没关系，加上去之后拖块底边就能改。
-        </p>
+        <p className="muted small">{tr('9 / 930 / 9:30 都认。时长不对也没关系，加上去之后拖块底边就能改。')}</p>
 
         {candidates.length > 0 && (
           <div className="quick-group">
-            <label>今天还没{isActual ? '记的' : '排的'}</label>
+            <label>今天还没{isActual ? tr('记的') : tr('排的')}</label>
             <div className="quick-list">
               {candidates.map((e) => (
                 <button
@@ -151,7 +150,7 @@ export default function QuickAdd({
         )}
 
         <form className="quick-group" onSubmit={submit}>
-          <label htmlFor="quick-title">新加一件</label>
+          <label htmlFor="quick-title">{tr('新加一件')}</label>
           <div className="quick-new">
             <div className="quick-title-cell">
               <input
@@ -160,7 +159,7 @@ export default function QuickAdd({
                 // 有候选列表时不抢焦点：手机上键盘一弹就把列表盖住了
                 autoFocus={candidates.length === 0}
                 autoComplete="off"
-                placeholder={isActual ? '做了什么' : '要做什么'}
+                placeholder={isActual ? tr('做了什么') : tr('要做什么')}
                 onChange={(e) => {
                   setTitle(e.target.value)
                   setPicking(true)
@@ -191,27 +190,23 @@ export default function QuickAdd({
               className="quick-dur"
               inputMode="numeric"
               value={minutes}
-              aria-label="时长（分钟）"
+              aria-label={tr('时长（分钟）')}
               onChange={(e) => setMinutes(e.target.value)}
             />
-            <span className="muted small">分钟</span>
-            <button type="submit" className="primary" disabled={!title.trim()}>
-              加上
-            </button>
+            <span className="muted small">{tr('分钟')}</span>
+            <button type="submit" className="primary" disabled={!title.trim()}>{tr('加上')}</button>
           </div>
           <CategoryPicker
             value={categoryId}
             categories={categories}
             onChange={setCategoryId}
-            label="归到哪一类（统计用）"
+            label={tr('归到哪一类（统计用）')}
           />
         </form>
 
         <div className="modal-actions">
           <span className="spacer" />
-          <button type="button" className="ghost" onClick={onClose}>
-            取消
-          </button>
+          <button type="button" className="ghost" onClick={onClose}>{tr('取消')}</button>
         </div>
       </div>
     </div>

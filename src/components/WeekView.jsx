@@ -5,6 +5,7 @@ import MiniCalendar from './MiniCalendar'
 import WeeklyFocusPanel from './WeeklyFocusPanel'
 import WeekProgressGrid from './WeekProgressGrid'
 import WeekTimeline from './WeekTimeline'
+import { dateFmt, pick, tr } from '../lib/i18n'
 
 export default function WeekView({ planner, onOpenDay }) {
   const {
@@ -34,20 +35,20 @@ export default function WeekView({ planner, onOpenDay }) {
     <div className="week-view">
       <div className="week-head">
         <div className="row-gap">
-          <button className="ghost" onClick={() => shiftWeek(-1)}>‹ 上一周</button>
-          <h1>{format(days[0], 'M 月 d 日')} – {format(days[6], 'M 月 d 日')}</h1>
-          <button className="ghost" onClick={() => shiftWeek(1)}>下一周 ›</button>
+          <button className="ghost" onClick={() => shiftWeek(-1)}>{tr('‹ 上一周')}</button>
+          <h1>{format(days[0], dateFmt('monthDay'))} – {format(days[6], dateFmt('monthDay'))}</h1>
+          <button className="ghost" onClick={() => shiftWeek(1)}>{tr('下一周 ›')}</button>
           {isCurrentWeek ? (
-            <span className="badge">本周</span>
+            <span className="badge">{tr('本周')}</span>
           ) : (
-            <button className="ghost" onClick={() => goToDate(new Date())}>回到本周</button>
+            <button className="ghost" onClick={() => goToDate(new Date())}>{tr('回到本周')}</button>
           )}
         </div>
         {/* 平时切到某一周会自动按模板生成，这个按钮只在真的还有东西可补时才出现
             （刚建完模板、或者在看过去的周 —— 那里故意不自动回填） */}
         {pendingCount > 0 && (
-          <button onClick={generateWeek} title={`按模板补 ${pendingCount} 条还没生成的安排`}>
-            按模板补 {pendingCount} 条
+          <button onClick={generateWeek} title={pick(() => `按模板补 ${pendingCount} 条还没生成的安排`, () => `Fill in ${pendingCount} entries your templates have not generated yet`)}>
+            {pick(() => `按模板补 ${pendingCount} 条`, () => `Fill in ${pendingCount} from templates`)}
           </button>
         )}
       </div>
@@ -64,8 +65,8 @@ export default function WeekView({ planner, onOpenDay }) {
         days={days}
         emptyStyle="zero"
         onSetPct={setTodoPct}
-        hint="点一下在 100 / 50 / 0 之间循环。红色 = 那天有任务还没做。"
-        emptyText="这周没有待办。在「设置」里建一个待办模板，或者在某一天里加一条不填时间的安排。"
+        hint={tr('点一下在 100 / 50 / 0 之间循环。红色 = 那天有任务还没做。')}
+        emptyText={tr('这周没有待办。在「设置」里建一个待办模板，或者在某一天里加一条不填时间的安排。')}
       />
 
       <WeekTimeline
@@ -83,8 +84,8 @@ export default function WeekView({ planner, onOpenDay }) {
         days={days}
         emptyStyle="blank"
         onSetPct={setHabitPct}
-        hint="点一下在 100 / 50 / 0 之间循环。空白 = 还没打卡。"
-        emptyText="还没有习惯。在「设置」里建一个习惯模板（比如运动、早睡），它会每天重复。"
+        hint={tr('点一下在 100 / 50 / 0 之间循环。空白 = 还没打卡。')}
+        emptyText={tr('还没有习惯。在「设置」里建一个习惯模板（比如运动、早睡），它会每天重复。')}
       />
     </div>
   )

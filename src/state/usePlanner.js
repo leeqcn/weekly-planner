@@ -3,6 +3,7 @@ import { buildEntriesFor } from '../lib/generate'
 import { addDays, dateKey, retentionCutoff, weekDays, weekStart } from '../lib/dates'
 import { DEFAULT_CATEGORIES } from '../lib/categories'
 import { buildRollups, staleRollupKeys } from '../lib/rollup'
+import { tr } from '../lib/i18n'
 
 /**
  * 流水明细保留 4 周，超期删除，数据库不会一直变大。
@@ -339,7 +340,7 @@ export function usePlanner(repo) {
     saveFocus: (items) => {
       const before = focus.map((f) => f.title)
       return act(
-        '修改本周关注',
+        tr('修改本周关注'),
         () => repo.saveWeeklyFocus(fromKey, items),
         () => repo.saveWeeklyFocus(fromKey, before),
       )
@@ -348,7 +349,7 @@ export function usePlanner(repo) {
     setSpecialDay: (date, label) => {
       const before = specialDays.find((s) => s.date === date)?.label ?? ''
       return act(
-        label ? `标记「${label}」` : '取消特殊日',
+        label ? `标记「${label}」` : tr('取消特殊日'),
         () => repo.setSpecialDay(date, label),
         () => repo.setSpecialDay(date, before),
       )

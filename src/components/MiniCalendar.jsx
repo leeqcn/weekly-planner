@@ -9,8 +9,9 @@ import {
   startOfMonth,
 } from 'date-fns'
 import { dateKey, weekStart } from '../lib/dates'
+import { dateFmt, weekLetterList } from '../lib/i18n'
 
-const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日']
+// 七列很窄，中文一个字、英文一个字母
 
 /** 角落的小月历：点某一天直接进那天的 Day View。 */
 export default function MiniCalendar({ monday, onPick, onOpenDay }) {
@@ -33,14 +34,15 @@ export default function MiniCalendar({ monday, onPick, onOpenDay }) {
         <button className="ghost" onClick={() => setCursor(addMonths(cursor, -1))}>
           ‹
         </button>
-        <span>{format(cursor, 'yyyy 年 M 月')}</span>
+        <span>{format(cursor, dateFmt('monthYear'))}</span>
         <button className="ghost" onClick={() => setCursor(addMonths(cursor, 1))}>
           ›
         </button>
       </div>
       <div className="mini-cal-grid">
-        {WEEK_LABELS.map((w) => (
-          <span key={w} className="mini-cal-wd">
+        {/* 英文是 M T W T F S S，字母会重复，只能用下标当 key */}
+        {weekLetterList().map((w, i) => (
+          <span key={i} className="mini-cal-wd">
             {w}
           </span>
         ))}

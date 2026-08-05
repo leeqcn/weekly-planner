@@ -6,6 +6,7 @@ import DayStrip from './DayStrip'
 import ColorPicker from './ColorPicker'
 import CategoryPicker from './CategoryPicker'
 import { colorOf } from '../lib/colors'
+import { tr } from '../lib/i18n'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -67,7 +68,7 @@ export default function EntryEditor({
     categories.find((c) => c.id === categoryId)?.name,
     minDur || maxDur ? `${minDur || maxDur}–${maxDur || minDur}′` : null,
     color ? colorOf(color).label : null,
-    keep ? '留在待办' : null,
+    keep ? tr('留在待办') : null,
   ]
     .filter(Boolean)
     .join(' · ')
@@ -129,20 +130,18 @@ export default function EntryEditor({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form className="card modal wide" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{actualOnly ? '记录实际做了什么' : isNew ? '新增一条安排' : '修改安排'}</h2>
+        <h2>{actualOnly ? tr('记录实际做了什么') : isNew ? tr('新增一条安排') : tr('修改安排')}</h2>
         {actualOnly && (
-          <p className="muted small">
-            没排过计划、但确实做了的事 —— 只填「实际」就行，左边计划栏会留空。
-          </p>
+          <p className="muted small">{tr('没排过计划、但确实做了的事 —— 只填「实际」就行，左边计划栏会留空。')}</p>
         )}
 
-        <label htmlFor="entry-title">标题</label>
+        <label htmlFor="entry-title">{tr('标题')}</label>
         <input
           id="entry-title"
           value={title}
           autoFocus={isNew}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="做什么"
+          placeholder={tr('做什么')}
         />
 
         <div className="editor-body">
@@ -150,7 +149,7 @@ export default function EntryEditor({
             {actualFirst && (
               <TimeFields
                 id="actual"
-                label="实际"
+                label={tr('实际')}
                 tone="actual"
                 value={actual}
                 onChange={setActual}
@@ -158,32 +157,32 @@ export default function EntryEditor({
                 // 实际那组光标落在**结束**：从 Actually 栏进来通常就是
                 // 「刚做完，补一下几点结束的」。聚焦那一下「现在」浮层跟着弹出来
                 autoFocusField={!isNew ? 'end' : null}
-                hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
+                hint={now != null ? tr('点开始或结束那一格，可以一下填「现在」。') : undefined}
               />
             )}
 
             {!actualOnly && (
               <TimeFields
                 id="plan"
-                label="计划"
+                label={tr('计划')}
                 tone="plan"
                 value={plan}
                 onChange={setPlan}
                 // 计划那组落在**开始**：改计划多半是把它挪个起点
                 autoFocusField={!isNew && !actualFirst ? 'start' : null}
-                hint="三个都留空就是一条待办，可以之后再「排入」时间轴。"
+                hint={tr('三个都留空就是一条待办，可以之后再「排入」时间轴。')}
               />
             )}
 
             {!actualFirst && (
               <TimeFields
                 id="actual"
-                label="实际"
+                label={tr('实际')}
                 tone="actual"
                 value={actual}
                 onChange={setActual}
                 suggest={now}
-                hint={now != null ? '点开始或结束那一格，可以一下填「现在」。' : undefined}
+                hint={now != null ? tr('点开始或结束那一格，可以一下填「现在」。') : undefined}
               />
             )}
 
@@ -204,10 +203,10 @@ export default function EntryEditor({
               </summary>
 
             <fieldset className="time-fields">
-              <legend>预计时长</legend>
+              <legend>{tr('预计时长')}</legend>
               <div className="time-row">
                 <div>
-                  <label htmlFor="dur-min">最短（分钟）</label>
+                  <label htmlFor="dur-min">{tr('最短（分钟）')}</label>
                   <input
                     id="dur-min"
                     inputMode="numeric"
@@ -217,7 +216,7 @@ export default function EntryEditor({
                   />
                 </div>
                 <div>
-                  <label htmlFor="dur-max">最长（分钟）</label>
+                  <label htmlFor="dur-max">{tr('最长（分钟）')}</label>
                   <input
                     id="dur-max"
                     inputMode="numeric"
@@ -227,10 +226,7 @@ export default function EntryEditor({
                   />
                 </div>
               </div>
-              <p className="muted small">
-                「排入」按上限找空档。两个填不一样（比如购物 30–60）时，
-                块会画成半透明，表示还没定死。
-              </p>
+              <p className="muted small">{tr('「排入」按上限找空档。两个填不一样（比如购物 30–60）时， 块会画成半透明，表示还没定死。')}</p>
             </fieldset>
 
             <CategoryPicker
@@ -247,9 +243,7 @@ export default function EntryEditor({
                 type="checkbox"
                 checked={keep}
                 onChange={(e) => setKeep(e.target.checked)}
-              />
-              排进时间轴后，仍然留在 To do 列表里
-            </label>
+              />{tr('排进时间轴后，仍然留在 To do 列表里')}</label>
             {(plan.start !== null || actual.start !== null) && (
               <button
                 type="button"
@@ -258,9 +252,7 @@ export default function EntryEditor({
                   setPlan({ ...empty })
                   setActual({ ...empty })
                 }}
-              >
-                清空时间（变成待办）
-              </button>
+              >{tr('清空时间（变成待办）')}</button>
             )}
             </details>
             {entry?.rescheduled_from && (
@@ -285,17 +277,11 @@ export default function EntryEditor({
 
         <div className="modal-actions">
           {!isNew && (
-            <button type="button" className="danger" onClick={onDelete}>
-              删除
-            </button>
+            <button type="button" className="danger" onClick={onDelete}>{tr('删除')}</button>
           )}
           <span className="spacer" />
-          <button type="button" className="ghost" onClick={onClose}>
-            取消
-          </button>
-          <button type="submit" className="primary">
-            保存
-          </button>
+          <button type="button" className="ghost" onClick={onClose}>{tr('取消')}</button>
+          <button type="submit" className="primary">{tr('保存')}</button>
         </div>
       </form>
     </div>
