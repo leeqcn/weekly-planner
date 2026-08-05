@@ -422,7 +422,9 @@ export default function DayView({ planner, date, onBack }) {
           <b>{running.title}</b>
           <span className="muted small">{elapsedText(running.actual_start, now)}</span>
           <span className="spacer" />
-          <button className="primary" onClick={() => stopTimer(running)}>{tr('结束')}</button>
+          {/* 「结束」在中文里一词两用：这里是「停止计时」，
+              时间输入框那个是「结束时刻」。英文分得开，所以用不同的 key */}
+          <button className="primary" onClick={() => stopTimer(running)}>{tr('结束计时')}</button>
         </div>
       )}
 
@@ -698,11 +700,22 @@ function EntryBlock({
 function Capacity({ capacity }) {
   const { free, min, max, count, fits, short } = capacity
   return (
-    <p className={`capacity${fits ? '' : ' over'}`}>{tr('剩下的时间还空着')}<b>{describeDuration(free)}</b>；
-      还没排的 {count} 件待办需要{' '}
+    <p className={`capacity${fits ? '' : ' over'}`}>
+      {tr('剩下的时间还空着')}
+      <b>{describeDuration(free)}</b>
+      {pick(() => `；还没排的 ${count} 件待办需要 `, () => `; ${count} unscheduled to-dos need `)}
       <b>{min === max ? describeDuration(max) : `${describeDuration(min)} – ${describeDuration(max)}`}</b>
       {' — '}
-      {fits ? tr('装得下。') : <b>差 {describeDuration(short)}，得砍一件或者压缩一下。</b>}
+      {fits ? (
+        tr('装得下。')
+      ) : (
+        <b>
+          {pick(
+            () => `差 ${describeDuration(short)}，得砍一件或者压缩一下。`,
+            () => `${describeDuration(short)} short — drop one or shorten something.`,
+          )}
+        </b>
+      )}
     </p>
   )
 }

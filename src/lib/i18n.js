@@ -118,7 +118,8 @@ const EN = {
   '拖我改时长': 'Drag to resize',
   '装得下。': 'It fits.',
   '刚开始': 'just started',
-  '结束': 'End',
+  '结束': 'End', // 时间输入框那一格
+  '结束计时': 'Stop', // 计时横幅上的按钮，和表格里的 ■ Stop 保持一致
   '开始': 'Start',
   '时长': 'Duration',
   '取消选中': 'Deselect',
@@ -287,7 +288,6 @@ const EN = {
   '统计从': 'Stats count from ',
   '做了多少，': ' — how much you did; ',
   '灰色是': 'The grey band is ',
-  '剩下的时间还空着': 'Free time left:',
   '显示的是': 'Showing ',
   '停用只是不再生成新日程，历史记录会保留。':
     'Disabling only stops new entries being generated — the history stays.',
@@ -352,6 +352,8 @@ const EN = {
   '专注学习': 'Deep work',
   '23:00 睡的': 'lights out at 23:00',
   '只走了 20 分钟': 'only walked 20 min',
+  '剩下的时间还空着': 'Free time left: ',
+  '点名称可以改标题、时长或删除。': 'Tap a name to rename it, change its length or delete it.',
 
 }
 

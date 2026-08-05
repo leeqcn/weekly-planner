@@ -191,7 +191,7 @@ export default function ProgressTable({
       {footer}
       {onOpen && (
         <p className="muted small">
-          点名称可以改标题、时长或删除。
+          {tr('点名称可以改标题、时长或删除。')}{' '}
           {onPlace &&
             tr('「排入」会自动找第一个装得下的空档，排不下也会排上去并标红。勾上「留」，排进时间轴后也继续留在这张表里。')}
         </p>

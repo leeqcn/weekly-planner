@@ -1,3 +1,4 @@
+import { pick } from './i18n'
 /**
  * 时间输入：全部手打，不用 <input type="time"> 那个时钟控件。
  * 开始 / 结束 / 时长三个里填两个，第三个自动算出来。
@@ -83,9 +84,11 @@ export function describeDuration(minutes) {
   if (!minutes) return ''
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  if (h && m) return `${h} 小时 ${m} 分`
-  if (h) return `${h} 小时`
-  return `${m} 分钟`
+  // 这串会出现在容量提示、计时横幅和编辑器里，也得跟着语言走
+  return pick(
+    () => (h && m ? `${h} 小时 ${m} 分` : h ? `${h} 小时` : `${m} 分钟`),
+    () => (h && m ? `${h}h ${m}m` : h ? `${h}h` : `${m} min`),
+  )
 }
 
 /**
