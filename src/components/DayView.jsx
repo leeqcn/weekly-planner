@@ -621,7 +621,7 @@ function PressHint({ hint, field }) {
   if (!hint || hint.field !== field) return null
   return (
     <div className="press-hint" style={{ top: (hint.at / 60) * HOUR_PX }}>
-      <span>{formatClock(hint.at)} 起</span>
+      <span>{pick(() => `${formatClock(hint.at)} 起`, () => `from ${formatClock(hint.at)}`)}</span>
     </div>
   )
 }

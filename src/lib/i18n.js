@@ -354,7 +354,7 @@ const EN = {
   '只走了 20 分钟': 'only walked 20 min',
   '剩下的时间还空着': 'Free time left: ',
   '点名称可以改标题、时长或删除。': 'Tap a name to rename it, change its length or delete it.',
-
+  '更多设置': 'More',
 }
 
 /** 返回翻译函数。查不到就原样回落 —— 漏翻只是那句是中文，不会炸。 */

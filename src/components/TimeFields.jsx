@@ -120,7 +120,7 @@ export default function TimeFields({
       />
       {suggest != null && name !== 'duration' && focused === name && (
         <div className="now-pop">
-          <span>现在 {formatClock(suggest)}</span>
+          <span>{pick(() => `现在 ${formatClock(suggest)}`, () => `now ${formatClock(suggest)}`)}</span>
           {/* pointerdown 而不是 click：click 之前输入框会先失焦，
               手机上那一下会把浮层收掉，点不中 */}
           <button

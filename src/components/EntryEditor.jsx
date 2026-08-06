@@ -6,7 +6,7 @@ import DayStrip from './DayStrip'
 import ColorPicker from './ColorPicker'
 import CategoryPicker from './CategoryPicker'
 import { colorOf } from '../lib/colors'
-import { tr } from '../lib/i18n'
+import { pick, tr } from '../lib/i18n'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -196,7 +196,7 @@ export default function EntryEditor({
               onToggle={(e) => setShowMore(e.currentTarget.open)}
             >
               <summary>
-                更多设置
+                {tr('更多设置')}
                 {!showMore && moreSummary && (
                   <span className="muted small">（{moreSummary}）</span>
                 )}
@@ -257,7 +257,10 @@ export default function EntryEditor({
             </details>
             {entry?.rescheduled_from && (
               <p className="muted small">
-                原计划 {formatClock(minutesOfDay(entry.rescheduled_from))}，已改期。
+                {pick(
+                () => `原计划 ${formatClock(minutesOfDay(entry.rescheduled_from))}，已改期。`,
+                () => `Originally planned for ${formatClock(minutesOfDay(entry.rescheduled_from))}; rescheduled.`,
+              )}
               </p>
             )}
           </div>

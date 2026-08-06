@@ -121,8 +121,11 @@ export default function Stats({ planner, onBack }) {
               </span>
             </div>
             <p className="muted small">
-              {stats.fromKey} → {stats.toKey}，共 {stats.dayCount} 天。
-              本周还没过完，最后一根柱子天生短一截。
+              {stats.fromKey} → {stats.toKey}
+              {pick(
+                () => `，共 ${stats.dayCount} 天。本周还没过完，最后一根柱子天生短一截。`,
+                () => `, ${stats.dayCount} days. This week is not over yet, so the last bar is short by nature.`,
+              )}
             </p>
 
             <div className="stat-cards">
@@ -212,8 +215,12 @@ export default function Stats({ planner, onBack }) {
                 labels={stats.weeks.map((w) => w.week)}
               />
               <p className="muted small">
-                {nameOf(focus.key)}：n 周平均 {fmtHours(focus.weekAvg)}h/周，
-                EWMA {focus.ewma == null ? '—' : pick(() => `${fmtHours(focus.ewma)}h/周`, () => `${fmtHours(focus.ewma)}h/week`)}。
+                {pick(
+                  () =>
+                    `${nameOf(focus.key)}：n 周平均 ${fmtHours(focus.weekAvg)}h/周，EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。`,
+                  () =>
+                    `${nameOf(focus.key)}: ${fmtHours(focus.weekAvg)}h/week over n weeks, EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/week`}.`,
+                )}
               </p>
             </section>
           )}
@@ -378,8 +385,11 @@ function TodoHabitStats({ planner }) {
     <section className="card">
       <h2>{tr('待办 / 习惯（本周）')}</h2>
       <p className="muted small">
-        这两块没有时间信息，只看完成度，和上面的时间统计分开。
-        这里看的是当前这一周（{days.length} 天）。
+        {pick(
+          () => `这两块没有时间信息，只看完成度，和上面的时间统计分开。这里看的是当前这一周（${days.length} 天）。`,
+          () =>
+            `These two have no times attached — only completion — so they are kept apart from the hours above. This is the current week (${days.length} days).`,
+        )}
       </p>
       <div className="stat-cards">
         <StatCard

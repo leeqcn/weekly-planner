@@ -1,3 +1,4 @@
+import { pick } from './i18n'
 export const DAY_MINUTES = 24 * 60
 
 /**
@@ -175,7 +176,11 @@ export function fmtHm(minutes) {
  * 开头那个 ﻿ 是 UTF-8 BOM：不加的话中文在 Excel 里是乱码。
  */
 export function toCsv(rollups, nameOf) {
-  const head = ['日期', '周', '分类', '计划分钟', '实际分钟', '次数']
+  // 导出的表头也跟着界面语言走 —— 拿去 Sheets 里看的人和用 App 的是同一个人
+  const head = pick(
+    () => ['日期', '周', '分类', '计划分钟', '实际分钟', '次数'],
+    () => ['date', 'week', 'category', 'planned_minutes', 'actual_minutes', 'sessions'],
+  )
   const lines = [...rollups]
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((r) => [

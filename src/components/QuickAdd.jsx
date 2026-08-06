@@ -4,7 +4,7 @@ import { describeRange } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
 import { placementMinutes } from '../lib/place'
 import CategoryPicker from './CategoryPicker'
-import { tr } from '../lib/i18n'
+import { pick, tr } from '../lib/i18n'
 
 const DEFAULT_MINUTES = 60
 /** 自动补全最多给几条。给多了就成了另一个要读的列表。 */
@@ -86,7 +86,7 @@ export default function QuickAdd({
   return (
     <div className="modal-backdrop" onClick={() => armed && onClose()}>
       <div className="card modal quick-add" onClick={(e) => e.stopPropagation()}>
-        <h2>加到「{isActual ? tr('实际') : tr('计划')}」</h2>
+        <h2>{pick(() => `加到「${isActual ? '实际' : '计划'}」`, () => `Add to ${isActual ? 'Actually' : 'Plan'}`)}</h2>
 
         {/* 开始时间做成可以打的输入框。手指在手机上根本点不准，
             光靠按下去那个位置定时间太碰运气；默认值也不用手指位置，
@@ -107,7 +107,7 @@ export default function QuickAdd({
           />
           {now != null && now !== start && (
             <button type="button" className="ghost small-btn" onClick={() => setStartBoth(now)}>
-              现在 {formatClock(now)}
+              {pick(() => `现在 ${formatClock(now)}`, () => `now ${formatClock(now)}`)}
             </button>
           )}
           {pressedAt != null && pressedAt !== start && (
@@ -117,7 +117,7 @@ export default function QuickAdd({
               onClick={() => setStartBoth(pressedAt)}
               title={tr('改用刚才按下去的那个位置')}
             >
-              按的位置 {formatClock(pressedAt)}
+              {pick(() => `按的位置 ${formatClock(pressedAt)}`, () => `where you pressed: ${formatClock(pressedAt)}`)}
             </button>
           )}
         </div>
@@ -125,7 +125,12 @@ export default function QuickAdd({
 
         {candidates.length > 0 && (
           <div className="quick-group">
-            <label>今天还没{isActual ? tr('记的') : tr('排的')}</label>
+            <label>
+            {pick(
+              () => `今天还没${isActual ? '记的' : '排的'}`,
+              () => (isActual ? 'Not logged yet today' : 'Not scheduled yet today'),
+            )}
+          </label>
             <div className="quick-list">
               {candidates.map((e) => (
                 <button
