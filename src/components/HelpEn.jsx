@@ -260,7 +260,8 @@ export default function HelpEn({ onBack }) {
         <ul>
           <li>
             To do and Habits are n×8 grids: one row per thing, one column per day.{' '}
-            <b>Tap a cell to cycle 100 / 50 / 0</b>.
+            <b>Tap a cell to cycle 100 / 50 / 0</b>. For a number like 80, open the day
+            view — the percentage there can be typed.
           </li>
           <li>
             An unscored to-do counts as <b>0 and shows red</b>, so you can see at a glance
@@ -431,6 +432,20 @@ export default function HelpEn({ onBack }) {
       </section>
 
       <section className="card">
+        <h2>Entering a completion figure</h2>
+        <ul>
+          <li>
+            Each row in the day view has a <b>bar and a number box</b>. Drag the bar for a
+            rough estimate, or <b>type the number</b> when you want it exact — 80 means 80,
+            with no fighting a slider. The box does not look like a field until you tap it;
+            seven or eight visible boxes in a column would be noise.
+          </li>
+          <li>
+            In the week view a tap cycles <b>100 / 50 / 0</b> — fast, but only three
+            steps. Anything in between goes in from the day view.
+          </li>
+        </ul>
+
         <h2>The gear in the top-right</h2>
         <p className="muted small">
           Settings, help, language and the how-to notes switch all live in there, so the

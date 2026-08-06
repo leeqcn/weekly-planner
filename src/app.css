@@ -1195,10 +1195,40 @@ th.gt-name.expanded .gt-name-label {
   accent-color: var(--accent);
 }
 
-.pct-value {
+/* 数字这一格能打字了：滑杆管「大概」，输入框管「就是 80」 */
+.pct-box {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.pct-input {
+  width: 2.1rem;
+  padding: 0.1rem 0.2rem;
   font-size: 0.78rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 4px;
   color: var(--ink-soft);
-  width: 2.6rem;
+}
+
+/* 平时看不出是输入框（不然一行七八个框太吵），点进去才显形 */
+.pct-input:hover {
+  border-color: var(--rule);
+}
+
+.pct-input:focus {
+  border-color: var(--accent);
+  background: var(--paper-2);
+  color: var(--ink);
+  outline: none;
+}
+
+.pct-pct {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
 }
 
 .status-pill {

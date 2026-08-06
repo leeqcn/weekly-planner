@@ -418,19 +418,9 @@ export default function DayView({ planner, date, onBack }) {
           <h1>
             {format(date, dateFmt('monthDay'))} <span className="muted">{weekdayLabel(date)}</span>
           </h1>
+          {/* 只显示，不在这里编辑 —— 标记特殊日一个月用不到一次，
+              却在日视图顶上独占一行。设置页里有完整的增删 */}
           {special && <span className="special-badge">{special.label}</span>}
-        </div>
-        <div className="row-gap">
-          <input
-            className="special-input"
-            placeholder={tr('标记特殊日（如 专注学习）')}
-            defaultValue={special?.label ?? ''}
-            key={special?.label ?? key}
-            onBlur={(e) => {
-              const label = e.target.value.trim()
-              if (label !== (special?.label ?? '')) planner.setSpecialDay(key, label)
-            }}
-          />
         </div>
       </div>
 

@@ -155,6 +155,9 @@ export default function ProgressTable({
                     </td>
                   )}
                   <td>
+                    {/* 拖动负责「随手估个大概」，输入框负责「就是 80」。
+                        两个都要：只有滑杆时手机上很难拖准，只有数字时
+                        一行扫过去看不出哪个满哪个空 */}
                     <div className="pct-cell">
                       <input
                         type="range"
@@ -167,7 +170,25 @@ export default function ProgressTable({
                         onKeyUp={() => commit(r.id)}
                         onTouchEnd={() => commit(r.id)}
                       />
-                      <span className="pct-value">{row.pct}%</span>
+                      <span className="pct-box">
+                        <input
+                          className="pct-input"
+                          // 用 text + inputMode 而不是 type=number：手机上照样出数字键盘，
+                          // 但没有那对没人点的小箭头，也不会因为「删空了」被浏览器塞回旧值
+                          type="text"
+                          inputMode="numeric"
+                          value={row.pct}
+                          onChange={(e) => {
+                            const n = e.target.value.replace(/\D/g, '').slice(0, 3)
+                            set(r.id, { pct: n === '' ? '' : Math.min(100, Number(n)) })
+                          }}
+                          onFocus={(e) => e.target.select()}
+                          onBlur={() => commit(r.id)}
+                          onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                          aria-label={tr('完成度')}
+                        />
+                        <span className="pct-pct">%</span>
+                      </span>
                     </div>
                   </td>
                   <td>
