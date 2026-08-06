@@ -23,6 +23,7 @@ export default function ProgressTable({
   runningId,
   footer,
   emptyText,
+  onAdd,
 }) {
   const [draft, setDraft] = useState({})
 
@@ -39,10 +40,21 @@ export default function ProgressTable({
     )
   }, [rows])
 
+  const cardHead = (
+    <div className="card-head">
+      <h2>{title}</h2>
+      {onAdd && (
+        <button className="add-btn" onClick={onAdd} title={tr('加一件要做的事')} aria-label={tr('加一件要做的事')}>
+          ＋
+        </button>
+      )}
+    </div>
+  )
+
   if (!rows.length) {
     return (
       <section className="card">
-        <h2>{title}</h2>
+        {cardHead}
         <p className="muted">{emptyText}</p>
       </section>
     )
@@ -62,7 +74,7 @@ export default function ProgressTable({
 
   return (
     <section className="card">
-      <h2>{title}</h2>
+      {cardHead}
       <div className="table-scroll">
         <table className="habits-table">
           <thead>

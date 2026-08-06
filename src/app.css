@@ -2262,3 +2262,17 @@ th.gt-name.expanded .gt-name-label {
   gap: 0.35rem;
   padding: 0 0.5rem 0.15rem;
 }
+
+/* 卡头右边的「＋」。新增入口从页面顶部挪到 To do 自己的卡头上 ——
+   顶部那个按钮和「加一件待办」中间隔着一整张卡，看不出是一回事 */
+.add-btn {
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+}

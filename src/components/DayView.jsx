@@ -431,7 +431,6 @@ export default function DayView({ planner, date, onBack }) {
               if (label !== (special?.label ?? '')) planner.setSpecialDay(key, label)
             }}
           />
-          <button className="primary" onClick={() => setEditing({ entry: null })}>{tr('＋ 新增')}</button>
         </div>
       </div>
 
@@ -474,6 +473,7 @@ export default function DayView({ planner, date, onBack }) {
       {/* 顺序：待办 -> 时间轴 -> 习惯 */}
       <ProgressTable
         title="To do"
+        onAdd={() => setEditing({ entry: null })}
         rows={todos.map((e) => ({
           id: e.id,
           title: e.title,

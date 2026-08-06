@@ -34,8 +34,9 @@ export default function HelpEn({ onBack }) {
           </li>
         </ol>
         <p className="muted small">
-          You can skip templates entirely: open a day and tap the <b>+</b> in a column
-          header to add a one-off.
+          You can skip templates entirely: open a day and tap the <b>+</b> on the To do
+          card for something without a time, or the <b>+</b> in a timeline column header
+          to put it straight onto the clock.
         </p>
       </section>
 

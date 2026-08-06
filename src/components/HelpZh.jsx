@@ -36,7 +36,8 @@ export default function HelpZh({ onBack }) {
           </li>
         </ol>
         <p className="muted small">
-          不想建模板也行：进某一天，点时间轴栏头的 <b>＋</b> 直接加临时的事。
+          不想建模板也行：进某一天，点 <b>To do 卡头的 ＋</b> 加一件没时间的待办，
+          或者点时间轴栏头的 <b>＋</b> 直接加到某个时间上。
         </p>
       </section>
 
