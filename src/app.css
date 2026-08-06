@@ -1245,9 +1245,16 @@ th.gt-name.expanded .gt-name-label {
 }
 
 /* -------------------------------------------------------------- 弹窗 / 设置 */
+/* 只铺在**看得见**的那块上，不是整个布局视口。
+   手机上键盘弹出时布局视口不缩，用 inset: 0 的话弹窗还是按整屏居中，
+   底下那条「保存」正好躲在键盘后面 —— 每次改时间都要先收键盘。
+   --vv-* 由 lib/viewport.js 从 visualViewport 量出来写进来。 */
 .modal-backdrop {
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: var(--vv-top, 0px);
+  height: var(--vv-h, 100%);
   background: rgba(60, 55, 51, 0.32);
   display: grid;
   place-items: center;
@@ -1259,7 +1266,8 @@ th.gt-name.expanded .gt-name-label {
   width: min(420px, 100%);
   display: grid;
   gap: 0.45rem;
-  max-height: 90vh;
+  /* 跟着可见区域走，不写 90vh —— vh 算的是布局视口，键盘弹出后并不会变小 */
+  max-height: 100%;
   overflow-y: auto;
 }
 

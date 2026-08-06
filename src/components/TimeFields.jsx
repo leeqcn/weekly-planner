@@ -129,6 +129,9 @@ export default function TimeFields({
             onPointerDown={(e) => {
               e.preventDefault()
               fillNow(name)
+              // 填完就收键盘：点 OK 就意味着这一格不用再打字了，
+              // 而键盘占着半屏，下面的「保存」够不着
+              document.activeElement?.blur?.()
             }}
           >
             OK

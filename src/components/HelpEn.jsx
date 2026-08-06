@@ -153,8 +153,8 @@ export default function HelpEn({ onBack }) {
             <li>
               <b>Filling it in afterwards:</b> long-press the block on the right. The
               cursor lands on <b>End</b> and a “now 19:42” bubble pops up — tap OK, tap
-              Save, done in three taps. Save is pinned to the bottom of the dialog, so
-              there is nothing to scroll for.
+              Save, done in three taps. Tapping OK closes the keyboard, and Save is pinned
+              to the bottom of the dialog, <b>above the keyboard even while it is up</b>.
             </li>
             <li>
               <b>Never planned it at all:</b> long-press empty space in the right column

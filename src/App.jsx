@@ -6,11 +6,15 @@ import { buildSeed } from './lib/mockSeed'
 import Auth from './components/Auth'
 import Planner from './components/Planner'
 import { LangProvider, useLang } from './state/LangContext'
+import { trackVisualViewport } from './lib/viewport'
 import './app.css'
 
 export default function App() {
   const [session, setSession] = useState(null)
   const [checking, setChecking] = useState(isSupabaseConfigured)
+
+  // 键盘弹出时把「看得见的那块」量给 CSS，弹窗才不会被键盘盖住底部
+  useEffect(trackVisualViewport, [])
 
   useEffect(() => {
     if (!isSupabaseConfigured) return
