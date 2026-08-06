@@ -5,6 +5,7 @@ import { formatClock, parseClock } from '../lib/time'
 import { placementMinutes } from '../lib/place'
 import CategoryPicker from './CategoryPicker'
 import { pick, tr } from '../lib/i18n'
+import Hint from './Hint'
 
 const DEFAULT_MINUTES = 60
 /** 自动补全最多给几条。给多了就成了另一个要读的列表。 */
@@ -121,7 +122,7 @@ export default function QuickAdd({
             </button>
           )}
         </div>
-        <p className="muted small">{tr('9 / 930 / 9:30 都认。时长不对也没关系，加上去之后拖块底边就能改。')}</p>
+        <Hint>{tr('9 / 930 / 9:30 都认。时长不对也没关系，加上去之后拖块底边就能改。')}</Hint>
 
         {candidates.length > 0 && (
           <div className="quick-group">

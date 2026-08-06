@@ -375,6 +375,22 @@ export default function HelpZh({ onBack }) {
       </section>
 
       <section className="card">
+        <h2>右上角的齿轮</h2>
+        <p className="muted small">
+          设置、帮助、语言、操作提示开关都在里面 —— 顶栏只留「统计」和齿轮两个。
+        </p>
+        <ul>
+          <li>
+            <b>操作提示</b>：像这种「怎么用」的说明，头几天有用，熟了就占地方。
+            每段右上角有个 <b>×</b>，点一下**以后都不显示**；想找回来在齿轮里开。
+          </li>
+          <li>
+            关掉的只有操作教学。<b>数据说明不受影响</b> ——
+            「日均 = 总时间 ÷ 执行天数」「灰色是未记录」这些一直都在，
+            它们防的是把数字看错，用一年也还需要。
+          </li>
+        </ul>
+
         <h2>设置里有什么</h2>
         <ul>
           <li>
@@ -402,6 +418,10 @@ export default function HelpZh({ onBack }) {
             <b>习惯模板</b>不生成条目，改了立刻全周生效，历史打卡也照常挂着。
           </li>
         </ul>
+        <p className="muted small">
+          另外：<b>打开某一天时会自动滚到「现在」</b>（别的日子滚到第一个块）——
+          时间轴是完整 24 小时，不滚的话每次都停在 00:00 那片空白。
+        </p>
       </section>
 
       <section className="card">

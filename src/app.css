@@ -2155,3 +2155,110 @@ th.gt-name.expanded .gt-name-label {
   font-variant-numeric: tabular-nums;
   font-size: 1rem;
 }
+
+/* ---------------------------------------------------------- 可关闭的操作提示 */
+/* 「怎么用」那类说明。头几天有用，之后一个 × 全部收起。
+   数据说明（日均口径、灰色=未记录）不走这里 —— 那些一直都要看得见 */
+.hint {
+  position: relative;
+  padding-right: 1.4rem;
+}
+
+.hint-x {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.3rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.hint-x:hover,
+.hint-x:focus-visible {
+  background: var(--paper);
+  color: var(--ink-soft);
+}
+
+/* ------------------------------------------------------------ 顶栏齿轮菜单 */
+/* 用 <details>：开合、键盘、Esc 浏览器都管好了，不用自己实现一套 */
+.gear {
+  position: relative;
+  flex: none;
+}
+
+.gear-btn {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  list-style: none; /* 去掉 <summary> 默认那个三角 */
+}
+
+.gear-btn::-webkit-details-marker {
+  display: none;
+}
+
+.gear[open] .gear-btn {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.gear-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 20;
+  min-width: 11rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.6rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(90, 70, 55, 0.16);
+}
+
+.gear-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  font: inherit;
+  color: inherit;
+}
+
+.gear-item:hover,
+.gear-item:focus-visible {
+  background: var(--paper);
+}
+
+.gear-sep {
+  height: 1px;
+  background: var(--rule);
+  margin: 0.15rem 0;
+}
+
+.gear-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.5rem;
+}
+
+.gear-row {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0 0.5rem 0.15rem;
+}

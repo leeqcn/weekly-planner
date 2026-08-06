@@ -430,6 +430,24 @@ export default function HelpEn({ onBack }) {
       </section>
 
       <section className="card">
+        <h2>The gear in the top-right</h2>
+        <p className="muted small">
+          Settings, help, language and the how-to notes switch all live in there, so the
+          top bar only carries “Stats” and the gear.
+        </p>
+        <ul>
+          <li>
+            <b>How-to notes</b>: explanations like this one earn their place for the first
+            few days and then just take up room. Each has an <b>×</b> in the corner — tap
+            it and they all stay hidden; turn them back on from the gear.
+          </li>
+          <li>
+            Only the how-to notes go away. <b>Explanations of the numbers stay</b> — “daily
+            average = total ÷ days you did it”, “the grey band is unlogged” and so on are
+            there to stop you misreading a figure, and they earn their place forever.
+          </li>
+        </ul>
+
         <h2>What lives in Settings</h2>
         <ul>
           <li>

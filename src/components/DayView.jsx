@@ -12,6 +12,7 @@ import QuickAdd from './QuickAdd'
 import { useDragBlock } from './useDragBlock'
 import { useEmptyPress } from './useEmptyPress'
 import { dateFmt, pick, tr } from '../lib/i18n'
+import Hint from './Hint'
 
 // 完整 24 小时一次画完，不在卡片里再套滚动
 const HOUR_PX = 44
@@ -40,6 +41,24 @@ export default function DayView({ planner, date, onBack }) {
   const [editing, setEditing] = useState(null)
   const [quick, setQuick] = useState(null) // 空白处长按：{ field, at }
   const [cascade, setCascade] = useState(true) // 拖一个块，后面的跟着顺延
+  const timelineRef = useRef(null)
+
+  /**
+   * 打开日视图先滚到有内容的地方。
+   *
+   * 时间轴是完整 24 小时，不滚的话每次都停在 00:00 —— 一片空白，
+   * 每天都要手动往下划到现在几点。今天滚到 now 线，别的日子滚到第一个块。
+   * 放在 1/3 高度而不是顶端：上面留一点，看得见「刚才」发生了什么。
+   */
+  useEffect(() => {
+    const el = timelineRef.current
+    if (!el) return
+    const anchor = el.querySelector('.now-line') ?? el.querySelector('.entry-block')
+    if (!anchor) return
+    const top = anchor.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: Math.max(0, top - window.innerHeight / 3), behavior: 'auto' })
+    // 只在换了日子时滚一次 —— 每次数据变化都滚会把人从正在编辑的地方拽走
+  }, [key])
 
   const dayEntries = planner.entries.filter((e) => e.date === key)
   const planned = dayEntries.filter(isScheduled)
@@ -512,6 +531,7 @@ export default function DayView({ planner, date, onBack }) {
           </span>
         </div>
         <div
+          ref={timelineRef}
           className={`timeline${drag.isDragging ? ' dragging' : ''}`}
           style={{ height: 24 * HOUR_PX, '--hour-px': `${HOUR_PX}px` }}
           {...drag.handlers}
@@ -560,8 +580,8 @@ export default function DayView({ planner, date, onBack }) {
             <PressHint hint={empty.hint} field="actual" />
           </div>
         </div>
-        <p className="muted small">
-          <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</p>
+        <Hint>
+          <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</Hint>
       </section>
 
       <ProgressTable

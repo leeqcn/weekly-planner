@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { habitStatus } from '../lib/habits'
 import { colorOf } from '../lib/colors'
 import { tr } from '../lib/i18n'
+import Hint from './Hint'
 
 /**
  * Day View 里 To do 和 Habits 共用的表格：一行一件事，
@@ -190,11 +191,11 @@ export default function ProgressTable({
       </div>
       {footer}
       {onOpen && (
-        <p className="muted small">
+        <Hint>
           {tr('点名称可以改标题、时长或删除。')}{' '}
           {onPlace &&
             tr('「排入」会自动找第一个装得下的空档，排不下也会排上去并标红。勾上「留」，排进时间轴后也继续留在这张表里。')}
-        </p>
+        </Hint>
       )}
     </section>
   )

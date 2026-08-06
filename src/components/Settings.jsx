@@ -8,8 +8,7 @@ import CategoryPicker from './CategoryPicker'
 import Uncategorized from './Uncategorized'
 import { colorOf } from '../lib/colors'
 import { sortCategories } from '../lib/categories'
-import { LANGS, pick, tr, weekNameList, weekdayWord } from '../lib/i18n'
-import { useLang } from '../state/LangContext'
+import { pick, tr, weekNameList, weekdayWord } from '../lib/i18n'
 
 
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
@@ -88,7 +87,6 @@ export default function Settings({ planner, onBack }) {
         <button className="primary" onClick={startNew}>{tr('＋ 新建模板')}</button>
       </div>
 
-      <LanguageRow />
 
       <section className="card">
         <h2>{tr('重复模板')}</h2>
@@ -558,31 +556,4 @@ function describeRecurrence(t) {
   return t.recurrence === 'weekly'
     ? days.map((d) => weekdayWord(d)).join(' ')
     : days.map((d) => pick(() => `${d} 号`, () => `day ${d}`)).join(' ')
-}
-
-
-/**
- * 语言。默认跟浏览器走（非中文直接进英文），所以英文用户不会先撞见一屏中文；
- * 这里是给「浏览器是中文但想看英文」或者反过来的人用的。
- */
-function LanguageRow() {
-  const { lang, setLang } = useLang()
-  return (
-    <section className="card">
-      <div className="card-head">
-        <h2>{tr('语言')}</h2>
-        <span className="row-gap">
-          {Object.entries(LANGS).map(([code, label]) => (
-            <button
-              key={code}
-              className={`chip${lang === code ? ' selected' : ''}`}
-              onClick={() => setLang(code)}
-            >
-              {label}
-            </button>
-          ))}
-        </span>
-      </div>
-    </section>
-  )
 }

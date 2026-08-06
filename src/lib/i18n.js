@@ -313,10 +313,10 @@ const EN = {
     ' to the allow-list. Addresses that are not on it are silently ignored and you land on the Site URL instead.',
   '长按空白处': 'Long-press empty space',
   '（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。':
-    ' (or tap the + in the column header) to add an entry at that time: pick something still unscheduled today, or write a new one. Either column works — on the right it means “did it”, on the left “plan to”. Drag the strip on a block’s left edge to move it, drag the bottom edge to resize.',
+    ' (or tap the + in the column header) to add an entry at that time: pick something still unscheduled today, or write a new one. Either column works — on the right it means “did it”, on the left “plan to”. Drag the strip on a block’s left edge to move it, drag the bottom edge to resize. ',
   '长按块': 'Long-press a block',
   '打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。':
-    ' to edit it. Whichever column you press from, the editor puts that set of times on top (plan is orange, actual is green); when logging actual times, tap the start or end field to fill in “now”. A single tap selects (you can select several and drag them together); double-tap a plan block to complete it, double-tap a block on the right to undo.',
+    ' to edit it. Whichever column you press from, the editor puts that set of times on top (plan is orange, actual is green); when logging actual times, tap the start or end field to fill in “now”. A single tap selects (you can select several and drag them together); double-tap a plan block to complete it, double-tap a block on the right to undo. ',
   '半透明': 'Semi-transparent',
   '是时长还没定死，': ' means the duration is not settled yet; ',
   '红色': 'red',
@@ -354,7 +354,12 @@ const EN = {
   '只走了 20 分钟': 'only walked 20 min',
   '剩下的时间还空着': 'Free time left: ',
   '点名称可以改标题、时长或删除。': 'Tap a name to rename it, change its length or delete it.',
-  '更多设置': 'More',
+  '更多设置': 'More',  '以后不再显示这些操作说明（右上角齿轮里可以打开）': 'Stop showing these how-to notes (turn them back on in the gear menu)',
+  '操作提示': 'How-to notes',
+  '显示「怎么用」那类说明。数据说明（日均怎么算之类）不受影响，一直都在。':
+    'Show the how-to notes. Explanations of what the numbers mean are unaffected — those always stay.',
+  '开': 'On',
+  '关': 'Off',
 }
 
 /** 返回翻译函数。查不到就原样回落 —— 漏翻只是那句是中文，不会炸。 */

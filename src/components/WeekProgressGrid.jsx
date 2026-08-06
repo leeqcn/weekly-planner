@@ -14,6 +14,7 @@ import { colorOf } from '../lib/colors'
  */
 import { useState } from 'react'
 import { pick, weekdayShort } from '../lib/i18n'
+import Hint from './Hint'
 
 export default function WeekProgressGrid({
   title,
@@ -112,7 +113,7 @@ export default function WeekProgressGrid({
               </tbody>
             </table>
           </div>
-          <p className="muted small">{hint}</p>
+          <Hint>{hint}</Hint>
         </>
       )}
     </section>

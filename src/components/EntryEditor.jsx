@@ -7,6 +7,7 @@ import ColorPicker from './ColorPicker'
 import CategoryPicker from './CategoryPicker'
 import { colorOf } from '../lib/colors'
 import { pick, tr } from '../lib/i18n'
+import Hint from './Hint'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -132,7 +133,7 @@ export default function EntryEditor({
       <form className="card modal wide" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{actualOnly ? tr('记录实际做了什么') : isNew ? tr('新增一条安排') : tr('修改安排')}</h2>
         {actualOnly && (
-          <p className="muted small">{tr('没排过计划、但确实做了的事 —— 只填「实际」就行，左边计划栏会留空。')}</p>
+          <Hint>{tr('没排过计划、但确实做了的事 —— 只填「实际」就行，左边计划栏会留空。')}</Hint>
         )}
 
         <label htmlFor="entry-title">{tr('标题')}</label>
@@ -226,7 +227,7 @@ export default function EntryEditor({
                   />
                 </div>
               </div>
-              <p className="muted small">{tr('「排入」按上限找空档。两个填不一样（比如购物 30–60）时， 块会画成半透明，表示还没定死。')}</p>
+              <Hint>{tr('「排入」按上限找空档。两个填不一样（比如购物 30–60）时， 块会画成半透明，表示还没定死。')}</Hint>
             </fieldset>
 
             <CategoryPicker

@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { usePlanner } from '../state/usePlanner'
 import WeekView from './WeekView'
 import DayView from './DayView'
 import Settings from './Settings'
 import Help from './Help'
 import Stats from './Stats'
-import { tr } from '../lib/i18n'
+import { LANGS, tr } from '../lib/i18n'
+import { useLang } from '../state/LangContext'
+import { getHints, setHints, subscribeHints } from '../lib/prefs'
 
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
@@ -33,19 +35,10 @@ export default function Planner({ repo, onSignOut }) {
         <span className="spacer" />
         {planner.loading && <span className="muted small">{tr('载入中…')}</span>}
 
+        {/* 「统计」是每周都会去的地方，留成文字；设置 / 帮助 / 语言 / 退出
+            都是偶尔一次，收进齿轮里 —— 顶栏在 320px 上本来就快挤不下了 */}
         <button className="ghost" onClick={() => setView({ name: 'stats' })}>{tr('统计')}</button>
-        <button
-          className="ghost help-btn"
-          onClick={() => setView({ name: 'help' })}
-          title={tr('手势和功能说明')}
-          aria-label={tr('帮助')}
-        >
-          ?
-        </button>
-        <button className="ghost" onClick={() => setView({ name: 'settings' })}>{tr('设置')}</button>
-        {onSignOut && (
-          <button className="ghost" onClick={onSignOut}>{tr('退出')}</button>
-        )}
+        <GearMenu setView={setView} onSignOut={onSignOut} />
       </header>
 
       {planner.error && (
@@ -108,5 +101,80 @@ export default function Planner({ repo, onSignOut }) {
         </button>
       )}
     </div>
+  )
+}
+
+/**
+ * 齿轮菜单。图标比文字省地方，也比「设置」两个字更容易一眼认出来。
+ *
+ * 用 <details> 而不是自己写一套开合 + 点外面关闭：浏览器原生就管好了
+ * 键盘、焦点和 Esc，少写一堆容易出错的代码。
+ */
+function GearMenu({ setView, onSignOut }) {
+  const { lang, setLang } = useLang()
+  const hints = useSyncExternalStore(subscribeHints, getHints, getHints)
+  const box = useRef(null)
+  const close = () => box.current?.removeAttribute('open')
+
+  // 点菜单外面就收起来
+  useEffect(() => {
+    const onDown = (e) => {
+      if (box.current?.hasAttribute('open') && !box.current.contains(e.target)) close()
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [])
+
+  const go = (name) => {
+    close()
+    setView({ name })
+  }
+
+  return (
+    <details className="gear" ref={box}>
+      <summary className="ghost gear-btn" title={tr('设置')} aria-label={tr('设置')}>
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
+          />
+          <path
+            fill="currentColor"
+            d="m19.4 13-.1-1 .1-1 1.7-1.3a.7.7 0 0 0 .2-.9l-1.7-2.9a.7.7 0 0 0-.8-.3l-2 .8a7.4 7.4 0 0 0-1.7-1l-.3-2.1a.7.7 0 0 0-.7-.6h-3.4a.7.7 0 0 0-.7.6l-.3 2.1c-.6.2-1.2.6-1.7 1l-2-.8a.7.7 0 0 0-.8.3L2.7 8.8a.7.7 0 0 0 .2.9L4.6 11l-.1 1 .1 1-1.7 1.3a.7.7 0 0 0-.2.9l1.7 2.9c.2.3.5.4.8.3l2-.8c.5.4 1.1.8 1.7 1l.3 2.1c0 .3.4.6.7.6h3.4c.3 0 .6-.3.7-.6l.3-2.1c.6-.2 1.2-.6 1.7-1l2 .8c.3.1.6 0 .8-.3l1.7-2.9a.7.7 0 0 0-.2-.9L19.4 13Zm-1.9 3.5-1.6-.6-.7.6c-.4.3-.9.6-1.4.8l-.9.3-.2 1.7h-1.4l-.2-1.7-.9-.3c-.5-.2-1-.5-1.4-.8l-.7-.6-1.6.6-.7-1.2 1.4-1v-.9l-.1-.9.1-.9v-.9l-1.4-1 .7-1.2 1.6.6.7-.6c.4-.3.9-.6 1.4-.8l.9-.3.2-1.7h1.4l.2 1.7.9.3c.5.2 1 .5 1.4.8l.7.6 1.6-.6.7 1.2-1.4 1v1.8l.1.9-.1.9v.9l1.4 1-.7 1.2Z"
+          />
+        </svg>
+      </summary>
+      <div className="gear-menu">
+        <button className="gear-item" onClick={() => go('settings')}>{tr('设置')}</button>
+        <button className="gear-item" onClick={() => go('help')}>{tr('帮助')}</button>
+
+        <div className="gear-sep" />
+        <span className="gear-label">{tr('语言')}</span>
+        <div className="gear-row">
+          {Object.entries(LANGS).map(([code, label]) => (
+            <button
+              key={code}
+              className={`chip${lang === code ? ' selected' : ''}`}
+              onClick={() => setLang(code)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <span className="gear-label">{tr('操作提示')}</span>
+        <div className="gear-row">
+          <button className={`chip${hints ? ' selected' : ''}`} onClick={() => setHints(true)}>{tr('开')}</button>
+          <button className={`chip${hints ? '' : ' selected'}`} onClick={() => setHints(false)}>{tr('关')}</button>
+        </div>
+
+        {onSignOut && (
+          <>
+            <div className="gear-sep" />
+            <button className="gear-item" onClick={onSignOut}>{tr('退出')}</button>
+          </>
+        )}
+      </div>
+    </details>
   )
 }
