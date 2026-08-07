@@ -120,8 +120,10 @@ export function usePlanner(repo) {
       try {
         const loaded = await load()
         if (cancelled || !loaded) return
-        if (toKey < dateKey(new Date())) return // 过去的周不回填，避免凭空造历史
-        const rows = buildEntriesFor(loaded.templates, days, loaded.entryKeys)
+        const today = dateKey(new Date())
+        if (toKey < today) return // 过去的周不回填，避免凭空造历史
+        // 本周里已经过去的那几天同样不回填 —— 同一条原则，粒度细到天
+        const rows = buildEntriesFor(loaded.templates, days, loaded.entryKeys, today)
         if (!rows.length) return
         await repo.createEntries(rows)
         if (!cancelled) await load()
@@ -138,7 +140,7 @@ export function usePlanner(repo) {
 
   const generateWeek = useCallback(async () => {
     try {
-      const rows = buildEntriesFor(templates, days, entryKeys)
+      const rows = buildEntriesFor(templates, days, entryKeys, dateKey(new Date()))
       if (rows.length) await repo.createEntries(rows)
       await load()
       return rows.length

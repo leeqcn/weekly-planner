@@ -288,8 +288,11 @@ export default function HelpEn({ onBack }) {
             dashed to the right.
           </li>
           <li>
-            <b>Tap a date</b> to open that day. On a narrow screen the blocks shrink to
-            coloured bars that show the shape of the day; open the day view to read them.
+            <b>Tap a date</b> to open that day — the row above the timelines and the date
+            headers of both grids all work. Inside, <b>‹ ›</b> either side of the title
+            step a day at a time, so you need not go back to the week. On a narrow screen
+            the blocks shrink to coloured bars that show the shape of the day; open the day
+            view to read them.
           </li>
         </ul>
       </section>
@@ -491,6 +494,11 @@ export default function HelpEn({ onBack }) {
             Changing which weekdays a template repeats on, or <b>disabling</b> it, does{' '}
             <b>not remove entries already generated</b> — it only affects what gets
             generated from now on. Delete the leftovers yourself if you do not want them.
+          </li>
+          <li>
+            A new template <b>only generates from today onwards</b>. Add a daily to-do on
+            Wednesday and Monday and Tuesday stay as they were — those days are over, and
+            filing them as “not done” would say nothing true.
           </li>
           <li>
             <b>Habit templates</b> generate no entries, so edits take effect across the

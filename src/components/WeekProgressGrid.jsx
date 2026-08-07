@@ -13,7 +13,7 @@ import { colorOf } from '../lib/colors'
  *   'blank' —— 习惯用，留空白，不然满屏红色
  */
 import { useState } from 'react'
-import { pick, weekdayShort } from '../lib/i18n'
+import { pick, tr, weekdayShort } from '../lib/i18n'
 import Hint from './Hint'
 
 export default function WeekProgressGrid({
@@ -23,6 +23,7 @@ export default function WeekProgressGrid({
   emptyStyle,
   emptyText,
   hint,
+  onOpenDay,
   onSetPct,
 }) {
   const today = new Date()
@@ -48,8 +49,17 @@ export default function WeekProgressGrid({
                       key={dateKey(day)}
                       className={isSameDay(day, today) ? 'today' : undefined}
                     >
-                      <span className="gt-wd">{weekdayShort(isoWeekday(day))}</span>
-                      <span className="gt-date">{format(day, 'd')}</span>
+                      {/* 表头日期也能点进那一天 —— 时间轴那排能点，这里不能，
+                          用起来会以为是自己点歪了 */}
+                      <button
+                        className="gt-dayhead"
+                        onClick={() => onOpenDay?.(day)}
+                        disabled={!onOpenDay}
+                        title={tr('打开这天')}
+                      >
+                        <span className="gt-wd">{weekdayShort(isoWeekday(day))}</span>
+                        <span className="gt-date">{format(day, 'd')}</span>
+                      </button>
                     </th>
                   ))}
                 </tr>

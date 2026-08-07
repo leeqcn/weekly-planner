@@ -62,6 +62,11 @@ export default function Planner({ repo, onSignOut }) {
             planner={planner}
             date={view.date}
             onBack={() => setView({ name: 'week' })}
+            // 换天要连着把周也切过去，否则跨周之后 planner 手里还是上一周的数据
+            onGoDay={(next) => {
+              planner.goToDate(next)
+              setView({ name: 'day', date: next })
+            }}
           />
         )}
         {view.name === 'settings' && (

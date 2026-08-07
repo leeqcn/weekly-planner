@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { format, isSameDay } from 'date-fns'
-import { dateKey, minutesOfDay, weekdayLabel } from '../lib/dates'
+import { dateKey, minutesOfDay, weekdayLabel, addDays } from '../lib/dates'
 import { layoutBlocks } from '../lib/layout'
 import { blockState, describeRange, habitsOfDay, isScheduled, todosOfDay } from '../lib/schedule'
 import { anchorFor, capacityOf, findSlot, minutesToIso, placementMinutes } from '../lib/place'
@@ -20,7 +20,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i)
 /** 块矮于这个高度就只显示标题，不显示时间 —— 内容比时间重要。 */
 const TIME_VISIBLE_PX = 34
 
-export default function DayView({ planner, date, onBack }) {
+export default function DayView({ planner, date, onBack, onGoDay }) {
   const key = dateKey(date)
   // 正在计时的块要一直长到「现在」，所以每 30 秒重画一次
   const [tick, setTick] = useState(0)
@@ -415,9 +415,28 @@ export default function DayView({ planner, date, onBack }) {
       <div className="day-head">
         <div className="row-gap">
           <button className="ghost" onClick={onBack}>{tr('‹ 回到周视图')}</button>
+          {/* 前一天 / 后一天：翻一天不用回周视图再点一次 */}
+          <button
+            className="ghost day-step"
+            onClick={() => onGoDay?.(addDays(date, -1))}
+            disabled={!onGoDay}
+            title={tr('前一天')}
+            aria-label={tr('前一天')}
+          >
+            ‹
+          </button>
           <h1>
             {format(date, dateFmt('monthDay'))} <span className="muted">{weekdayLabel(date)}</span>
           </h1>
+          <button
+            className="ghost day-step"
+            onClick={() => onGoDay?.(addDays(date, 1))}
+            disabled={!onGoDay}
+            title={tr('后一天')}
+            aria-label={tr('后一天')}
+          >
+            ›
+          </button>
           {/* 只显示，不在这里编辑 —— 标记特殊日一个月用不到一次，
               却在日视图顶上独占一行。设置页里有完整的增删 */}
           {special && <span className="special-badge">{special.label}</span>}

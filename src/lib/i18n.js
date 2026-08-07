@@ -359,7 +359,8 @@ const EN = {
   '显示「怎么用」那类说明。数据说明（日均怎么算之类）不受影响，一直都在。':
     'Show the how-to notes. Explanations of what the numbers mean are unaffected — those always stay.',
   '开': 'On',
-  '关': 'Off',
+  '关': 'Off',  '前一天': 'Previous day',
+  '后一天': 'Next day',
 }
 
 /** 返回翻译函数。查不到就原样回落 —— 漏翻只是那句是中文，不会炸。 */

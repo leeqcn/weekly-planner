@@ -6,6 +6,7 @@ import WeeklyFocusPanel from './WeeklyFocusPanel'
 import WeekProgressGrid from './WeekProgressGrid'
 import WeekTimeline from './WeekTimeline'
 import { dateFmt, pick, tr } from '../lib/i18n'
+import { dateKey } from '../lib/dates'
 
 export default function WeekView({ planner, onOpenDay }) {
   const {
@@ -13,7 +14,8 @@ export default function WeekView({ planner, onOpenDay }) {
     saveFocus, saveHabitLog, updateEntry, goToDate, shiftWeek, generateWeek, isCurrentWeek,
   } = planner
 
-  const pendingCount = buildEntriesFor(templates, days, entryKeys).length
+  // 和真正生成时用同一条规则，否则按钮会说「还有 N 条」，点了却只补出来几条
+  const pendingCount = buildEntriesFor(templates, days, entryKeys, dateKey(new Date())).length
   const todoRows = buildTodoRows(templates, entries, days, categories)
   const habitRows = buildHabitRows(templates, habitLogs, days)
 
@@ -65,6 +67,7 @@ export default function WeekView({ planner, onOpenDay }) {
         days={days}
         emptyStyle="zero"
         onSetPct={setTodoPct}
+        onOpenDay={onOpenDay}
         hint={tr('点一下在 100 / 50 / 0 之间循环。红色 = 那天有任务还没做。')}
         emptyText={tr('这周没有待办。在「设置」里建一个待办模板，或者在某一天里加一条不填时间的安排。')}
       />
@@ -84,6 +87,7 @@ export default function WeekView({ planner, onOpenDay }) {
         days={days}
         emptyStyle="blank"
         onSetPct={setHabitPct}
+        onOpenDay={onOpenDay}
         hint={tr('点一下在 100 / 50 / 0 之间循环。空白 = 还没打卡。')}
         emptyText={tr('还没有习惯。在「设置」里建一个习惯模板（比如运动、早睡），它会每天重复。')}
       />
