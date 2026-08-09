@@ -78,24 +78,36 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
   /**
-   * 单击选中要**等一下**再生效：双击之前浏览器会先发两次 click，
-   * 不拦的话双击 = 选中再取消选中，白闪一下操作条，而且双击完还留着个
-   * 莫名其妙的选中态。第二下来了就把这次单击撤掉。
+   * 双击**自己判**，不用浏览器的 dblclick。
    *
-   * 220ms 几乎感觉不到，而双击是主操作（完成 / 撤销完成），
-   * 选中只是拖动前的准备，慢一点无所谓。
+   * 原生 dblclick 在手机上很不稳：两下位置差几像素、中间轻微滚一下、
+   * 或者系统正在判断要不要「双击缩放」，它就不发了 —— 表现就是
+   * 「双击有时候不管用，要点好几次」。自己按时间判就没这些讲究，
+   * 而且鼠标和手指走的是同一套逻辑。
+   *
+   * 单击选中同样要等一下再生效：不等的话双击 = 选中又取消选中，
+   * 操作条白闪一下，还留个莫名其妙的选中态。
+   *
+   * 两个阈值**故意设成同一个数**：早于它的第二下算双击，晚于它的算新的一次
+   * 单击。设成两个数的话中间那段会既选中又触发双击，谁都说不清发生了什么。
    */
+  const DOUBLE_MS = 380
   const clickTimer = useRef(null)
+  const lastTap = useRef({ id: null, at: 0 })
   useEffect(() => () => clearTimeout(clickTimer.current), [])
 
-  const onBlockClick = (id) => {
+  const onBlockClick = (id, entry, field) => {
+    const now = Date.now()
+    const twice = lastTap.current.id === id && now - lastTap.current.at < DOUBLE_MS
     clearTimeout(clickTimer.current)
-    clickTimer.current = setTimeout(() => togglePick(id), 220)
-  }
-  const onBlockDoubleClick = (entry, field) => {
-    clearTimeout(clickTimer.current)
-    if (field === 'actual') undoDone(entry)
-    else markDone(entry)
+    if (twice) {
+      lastTap.current = { id: null, at: 0 }
+      if (field === 'actual') undoDone(entry)
+      else markDone(entry)
+      return
+    }
+    lastTap.current = { id, at: now }
+    clickTimer.current = setTimeout(() => togglePick(id), DOUBLE_MS)
   }
 
   /** 松手：一次拖动可能动了好几个块，合成一步撤销。 */
@@ -400,8 +412,7 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
         overlay={drag.overlay(entry.id, field)}
         faded={field === 'planned' && (entry.status === 'done' || entry.status === 'skipped')}
         picked={isPicked(entry.id)}
-        onClick={() => onBlockClick(entry.id)}
-        onDoubleClick={() => onBlockDoubleClick(entry, field)}
+        onClick={() => onBlockClick(entry.id, entry, field)}
         color={resolveColor(entry)}
         onGrip={(event, mode) =>
           drag.begin(event, { mode, members: membersFor(entry, field, mode) })
@@ -663,7 +674,6 @@ function EntryBlock({
   faded,
   picked,
   onClick,
-  onDoubleClick,
   onGrip,
 }) {
   const { entry } = block
@@ -703,7 +713,7 @@ function EntryBlock({
         title={tr('拖我挪时间')}
         onPointerDown={(e) => onGrip(e, 'move')}
       />
-      <button className="block-body" onClick={onClick} onDoubleClick={onDoubleClick}>
+      <button className="block-body" onClick={onClick}>
         <span className="entry-title">{entry.title}</span>
         {/* 放不下就只留标题 —— 内容比时间重要 */}
         {height >= TIME_VISIBLE_PX && (

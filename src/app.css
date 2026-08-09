@@ -860,7 +860,10 @@ th.gt-name.expanded .gt-name-label {
   user-select: none;
 }
 
+/* manipulation：关掉 iOS 的「双击缩放」判定。不关的话系统要先等一会儿
+   看你是不是想缩放，点击慢半拍，双击也常常判不出来 */
 .block-body {
+  touch-action: manipulation;
   flex: 1;
   min-width: 0;
   display: flex;

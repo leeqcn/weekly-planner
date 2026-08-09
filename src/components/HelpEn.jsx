@@ -105,7 +105,10 @@ export default function HelpEn({ onBack }) {
             </tr>
             <tr>
               <th>Single tap</th>
-              <td>Selects. Select several and drag them together.</td>
+              <td>
+                Selects. Select several and drag them together. (Selection waits 0.4s —
+                that is the window for a second tap.)
+              </td>
             </tr>
             <tr>
               <th>Double-tap a block on the left</th>

@@ -91,7 +91,10 @@ export default function HelpZh({ onBack }) {
             </tr>
             <tr>
               <th>单击块</th>
-              <td>选中。可以点好几个，然后一起拖。</td>
+              <td>
+                选中。可以点好几个，然后一起拖。
+                （选中会等 0.4 秒才生效 —— 留出判断第二下的时间。）
+              </td>
             </tr>
             <tr>
               <th>双击左边的块</th>
