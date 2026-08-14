@@ -123,7 +123,13 @@ export default function HelpEn({ onBack }) {
         <p className="muted small">
           On a phone only those two narrow strips are draggable; the rest of the block
           taps and scrolls normally — otherwise a finger landing on a block would stop
-          you scrolling a 24-hour timeline.
+          you scrolling a 24-hour timeline. Tapping a strip without dragging counts as
+          tapping the block, so nothing is wasted.
+        </p>
+        <p className="muted small">
+          A half-hour block is only 26 pixels tall, which is hard to hit precisely.
+          <b> Double-tapping is only a shortcut</b>: select the block and the bar at the
+          bottom of the screen has a Done button that does exactly the same thing.
         </p>
         <p className="muted small">
           <b>“Shift later blocks too”</b> at the top of the timeline is on by

@@ -73,6 +73,8 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
   const special = planner.specialDays.find((s) => s.date === key)
   const resolveColor = makeColorResolver(planner.templates, planner.categories)
 
+  const onlyPicked = picked.length === 1 ? dayEntries.find((e) => e.id === picked[0]) : null
+
   const isPicked = (id) => picked.includes(id)
   const togglePick = (id) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
@@ -153,6 +155,11 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
         entry: dayEntries.find((e) => e.id === id),
         focus: field === 'actual' ? 'actual' : 'plan',
       }),
+    // 把手上点一下 = 点在块上，走同一套单击/双击
+    onTap: (id, field) => {
+      const entry = dayEntries.find((e) => e.id === id)
+      if (entry) onBlockClick(id, entry, field)
+    },
   })
 
   /** 一次拖动要带动哪些块。 */
@@ -469,19 +476,23 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
       {picked.length > 0 && (
         <div className="action-bar">
           <span className="selected-title">
-            {picked.length === 1
-              ? dayEntries.find((e) => e.id === picked[0])?.title
+            {onlyPicked
+              ? onlyPicked.title
               : pick(() => `选中 ${picked.length} 项`, () => `${picked.length} selected`)}
           </span>
           {/* 「拖把手可以一起挪」那句话搬走了：浮条要一行放得下，
               手机上一换行就摞成四层，挡住半个时间轴。这句在时间轴下面的说明里有 */}
-          {picked.length === 1 && (
+          {onlyPicked && (
             <>
-              <button onClick={() => setEditing({ entry: dayEntries.find((e) => e.id === picked[0]) })}>{tr('编辑')}</button>
-              <button
-                className="danger"
-                onClick={() => removeEntry(dayEntries.find((e) => e.id === picked[0]))}
-              >{tr('删除')}</button>
+              {/* 双击标完成是快捷方式，不是唯一的路。手指点不准的时候
+                  （块只有 26px 高），选中之后这里总有一个按钮可以按 */}
+              {onlyPicked.status === 'done' ? (
+                <button onClick={() => undoDone(onlyPicked)}>{tr('未完成')}</button>
+              ) : (
+                <button onClick={() => markDone(onlyPicked)}>{tr('完成')}</button>
+              )}
+              <button onClick={() => setEditing({ entry: onlyPicked })}>{tr('编辑')}</button>
+              <button className="danger" onClick={() => removeEntry(onlyPicked)}>{tr('删除')}</button>
             </>
           )}
           <button className="ghost" onClick={() => setPicked([])} title={tr('取消选中')} aria-label={tr('取消选中')}>
@@ -601,7 +612,7 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
           </div>
         </div>
         <Hint>
-          <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</Hint>
+          <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销； 选中之后底下那条也有「完成」，点不准时用它。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</Hint>
       </section>
 
       <ProgressTable

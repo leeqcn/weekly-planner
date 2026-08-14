@@ -79,6 +79,8 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '编辑': 'Edit',
+  '完成': 'Done',
+  '未完成': 'Not done',
   '新增': 'Add',
   '+ 新增': '+ Add',
 
@@ -315,8 +317,8 @@ const EN = {
   '（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。':
     ' (or tap the + in the column header) to add an entry at that time: pick something still unscheduled today, or write a new one. Either column works — on the right it means “did it”, on the left “plan to”. Drag the strip on a block’s left edge to move it, drag the bottom edge to resize. ',
   '长按块': 'Long-press a block',
-  '打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销。':
-    ' to edit it. Whichever column you press from, the editor puts that set of times on top (plan is orange, actual is green); when logging actual times, tap the start or end field to fill in “now”. A single tap selects (you can select several and drag them together); double-tap a plan block to complete it, double-tap a block on the right to undo. ',
+  '打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销； 选中之后底下那条也有「完成」，点不准时用它。':
+    ' to edit it. Whichever column you press from, the editor puts that set of times on top (plan is orange, actual is green); when logging actual times, tap the start or end field to fill in “now”. A single tap selects (you can select several and drag them together); double-tap a plan block to complete it, double-tap a block on the right to undo — or just select it and use the Done button on the bar at the bottom. ',
   '半透明': 'Semi-transparent',
   '是时长还没定死，': ' means the duration is not settled yet; ',
   '红色': 'red',

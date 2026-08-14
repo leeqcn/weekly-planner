@@ -23,7 +23,7 @@ const snap = (m) => Math.round(m / SNAP) * SNAP
  *  - 只拖一个而且开着「顺延」-> 它后面的块跟着挪同样的量
  * 拖动过程中只算本地位移，松手才写库。
  */
-export function useDragBlock({ hourPx, onCommit, onLongPress }) {
+export function useDragBlock({ hourPx, onCommit, onLongPress, onTap }) {
   const [drag, setDrag] = useState(null) // { ids:Map<id,{startMin,endMin}>, mode }
   const origin = useRef(null)
   const timer = useRef(null)
@@ -93,14 +93,29 @@ export function useDragBlock({ hourPx, onCommit, onLongPress }) {
     origin.current = null
     clearTimer()
     setDrag(null)
-    if (!from || !current || !from.moved) return
+    if (!from) return
+
+    /**
+     * 按下把手又马上松开 —— 没拖动，也没按住不放。那就是「点了这个块」。
+     *
+     * 不这么做的话，把手和底边那两条是**点不动的死区**：pointerdown 里
+     * preventDefault 了，浏览器不会再补一个 click，块身上的单击/双击
+     * 一概收不到。半小时的块只有 26px 高，底边那条就占 8px —— 三成的
+     * 面积按下去毫无反应。手指两下里有一下落进死区，看到的就是
+     * 「双击第一次不行，第二次才成功」。
+     */
+    if (!from.moved) {
+      onTap?.(from.pressId, from.pressField)
+      return
+    }
+    if (!current) return
 
     const changed = current.members.filter((m, i) => {
       const before = from.members[i]
       return m.startMin !== before.startMin || m.endMin !== before.endMin
     })
     if (changed.length) onCommit(changed, from.mode)
-  }, [drag, onCommit])
+  }, [drag, onCommit, onTap])
 
   /**
    * 拖动中的块用这个覆盖它的时间，其它块原样。
