@@ -6,6 +6,18 @@ const SNAP = 5
 const LONG_PRESS_MS = 480
 /** 手指抖这么多像素之内还算长按，超过就当成拖动。 */
 const LONG_PRESS_SLOP = 8
+/**
+ * 松手时回头看：整个过程没超出这么多像素的，算「点了一下」，不算拖动。
+ *
+ * 和上面那个 8px 是两件事。8px 决定**块什么时候开始跟着手指走**（要跟手，
+ * 所以小）；这个 12px 决定**松手之后算不算数**。把手才 13px 宽、底边那条
+ * 才 8px 高，拇指点上去晃个十来像素是常事 —— 只按 8px 判的话，你只是想
+ * 点一下，块被悄悄挪了 10 分钟，看起来就像「点了没反应」。
+ *
+ * 两边判错的代价不对等：误判成点击最多是多选中一下，误判成拖动是**改了数据
+ * 而且没人告诉你**。所以这个值取得比 8 宽松。
+ */
+const TAP_SLOP = 12
 
 const snap = (m) => Math.round(m / SNAP) * SNAP
 
@@ -45,6 +57,7 @@ export function useDragBlock({ hourPx, onCommit, onLongPress, onTap }) {
       mode,
       members,
       moved: false,
+      maxDy: 0,
       pressId: members[0]?.id,
       pressField: members[0]?.field,
     }
@@ -68,6 +81,7 @@ export function useDragBlock({ hourPx, onCommit, onLongPress, onTap }) {
       const from = origin.current
       if (!from) return
       const dy = event.clientY - from.y
+      from.maxDy = Math.max(from.maxDy, Math.abs(dy))
       if (!from.moved && Math.abs(dy) > LONG_PRESS_SLOP) {
         from.moved = true
         clearTimer()
@@ -96,15 +110,20 @@ export function useDragBlock({ hourPx, onCommit, onLongPress, onTap }) {
     if (!from) return
 
     /**
-     * 按下把手又马上松开 —— 没拖动，也没按住不放。那就是「点了这个块」。
+     * 按下把手，没走远就松开了 —— 那就是「点了这个块」，不是拖动。
      *
-     * 不这么做的话，把手和底边那两条是**点不动的死区**：pointerdown 里
+     * 不这么判的话，把手和底边那两条是**点不动的死区**：pointerdown 里
      * preventDefault 了，浏览器不会再补一个 click，块身上的单击/双击
      * 一概收不到。半小时的块只有 26px 高，底边那条就占 8px —— 三成的
-     * 面积按下去毫无反应。手指两下里有一下落进死区，看到的就是
-     * 「双击第一次不行，第二次才成功」。
+     * 面积按下去毫无反应。
+     *
+     * 而且只看「有没有超过 8px」也不够：把手才 13px 宽，拇指点上去晃个
+     * 十来像素很正常，判成拖动就把块悄悄挪了 10 分钟 —— 用起来同样是
+     * 「点了没反应」，只是这回还改了数据。所以按 TAP_SLOP 回头再判一次。
      */
-    if (!from.moved) {
+    if (from.maxDy <= TAP_SLOP) {
+      // 中途可能已经跟着手指挪了几像素，这里直接丢掉不写库 —— setDrag(null)
+      // 上面已经做了，块自己弹回原位
       onTap?.(from.pressId, from.pressField)
       return
     }
