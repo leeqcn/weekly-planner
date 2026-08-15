@@ -77,7 +77,8 @@
 
 .error-bar {
   display: flex;
-  align-items: center;
+  /* 展开「详情」之后这条会变高，✕ 要留在第一行，不能跟着跑到中间 */
+  align-items: flex-start;
   gap: 0.5rem;
   background: var(--bad-bg);
   border: 1px solid var(--bad);
@@ -86,6 +87,29 @@
   padding: 0.5rem 0.75rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;
+}
+
+.error-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-detail summary {
+  cursor: pointer;
+  margin-top: 0.3rem;
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
+
+.error-detail code {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  /* uuid 一长串，窄屏上必须能断，不然把整条撑出屏幕 */
+  overflow-wrap: anywhere;
+  /* 让人能长按选中复制 —— 截图之外的另一条路 */
+  user-select: all;
 }
 
 .boot {

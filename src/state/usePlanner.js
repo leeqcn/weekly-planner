@@ -27,11 +27,27 @@ const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? n
  * PostgREST 在 .single() 一行都没匹配上时的原始代码，同一件事，只是从别的
  * 路径漏过来的。这两种都不该把 “Cannot coerce the result to a single JSON
  * object” 原样甩给人看 —— 那句话既看不懂，也不说该怎么办。
+ *
+ * detail 是给我看的：出错的时候手机上看不了 console（安卓要开发者模式加
+ * 一根线，iPhone 要一台 Mac），指望不上。所以把技术细节收在错误条里的
+ * 「详情」后面，截个图就能发过来。
  */
-const describeWriteError = (e) =>
-  e?.code === 'ROW_GONE' || e?.code === 'PGRST116'
-    ? tr('这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。')
-    : (e?.message ?? String(e))
+function describeWriteError(e) {
+  const gone = e?.code === 'ROW_GONE' || e?.code === 'PGRST116'
+  return {
+    message: gone
+      ? tr('这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。')
+      : (e?.message ?? String(e)),
+    detail: [
+      e?.code ?? 'ERR',
+      e?.table && e?.rowId ? `${e.table} id=${e.rowId}` : null,
+      gone ? null : e?.message,
+      new Date().toLocaleString(),
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  }
+}
 
 /**
  * 全部数据加载 / 写入都收在这里，组件只管渲染。
@@ -49,7 +65,17 @@ export function usePlanner(repo) {
   const [focus, setFocus] = useState([])
   const [specialDays, setSpecialDays] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setErrorText] = useState(null)
+  const [errorDetail, setErrorDetail] = useState(null)
+  /**
+   * setError(消息) 照旧；出错时另外能带一段技术细节，给错误条里的「详情」用。
+   * 不带细节就等于把上一条的细节清掉 —— 不然新错误下面挂着旧错误的 id，
+   * 比没有还糟。
+   */
+  const setError = useCallback((msg, detail = null) => {
+    setErrorText(msg)
+    setErrorDetail(msg ? detail : null)
+  }, [])
   const [undoLabel, setUndoLabel] = useState(null)
 
   const days = weekDays(monday)
@@ -84,7 +110,7 @@ export function usePlanner(repo) {
     } finally {
       setLoading(false)
     }
-  }, [repo, fromKey, toKey])
+  }, [repo, fromKey, toKey, setError])
 
   /**
    * App 挂载时跑一次，三件事**必须按这个顺序**：
@@ -161,7 +187,7 @@ export function usePlanner(repo) {
       setError(`生成日程失败：${e.message ?? e}`)
       return 0
     }
-  }, [repo, templates, entryKeys, days, load])
+  }, [repo, templates, entryKeys, days, load, setError])
 
   /**
    * 所有写操作都走这里：动手之前先把「怎么撤回」记下来。
@@ -188,25 +214,28 @@ export function usePlanner(repo) {
          *
          * 顺序不能反：load() 一进去就 setError(null)，先设消息会被它抹掉。
          */
-        const msg = describeWriteError(e)
+        const { message, detail } = describeWriteError(e)
         await load().catch(() => {})
-        setError(msg)
+        setError(message, detail)
       }
     },
-    [load],
+    [load, setError],
   )
 
   const undo = useCallback(async () => {
     const op = undoStack.current.pop()
     setUndoLabel(undoStack.current.at(-1)?.label ?? null)
     if (!op) return
+    let failed = null
     try {
       await op.inverse()
     } catch (e) {
-      setError(`撤销失败：${e.message ?? e}`)
+      failed = describeWriteError(e)
     }
+    // 和 act 里一样：load() 一进去就清 error，消息只能放在它后面
     await load()
-  }, [load])
+    if (failed) setError(`${tr('撤销失败')}：${failed.message}`, failed.detail)
+  }, [load, setError])
 
   const findEntry = (id) => entries.find((e) => e.id === id)
 
@@ -214,6 +243,7 @@ export function usePlanner(repo) {
     mode: repo.mode,
     loading,
     error,
+    errorDetail,
     clearError: () => setError(null),
     undo,
     undoLabel,

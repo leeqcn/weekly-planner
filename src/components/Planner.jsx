@@ -43,8 +43,18 @@ export default function Planner({ repo, onSignOut }) {
 
       {planner.error && (
         <div className="error-bar">
-          <span>{planner.error}</span>
-          <button className="ghost" onClick={planner.clearError}>
+          <div className="error-text">
+            <span>{planner.error}</span>
+            {/* 手机上看不了 console：安卓要开发者模式加一根线，iPhone 要一台 Mac。
+                所以技术细节收在这里，出问题截个图就能发过来 */}
+            {planner.errorDetail && (
+              <details className="error-detail">
+                <summary>{tr('详情')}</summary>
+                <code>{planner.errorDetail}</code>
+              </details>
+            )}
+          </div>
+          <button className="ghost" onClick={planner.clearError} aria-label={tr('关闭')}>
             ✕
           </button>
         </div>

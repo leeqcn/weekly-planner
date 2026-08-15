@@ -12,5 +12,8 @@ export function rowGone(table, id) {
   console.warn(`[weekly-planner] ${table} id=${id} 没匹配到任何行 —— 界面数据和数据库对不上`)
   const e = new Error(`${table} ${id} not found`)
   e.code = 'ROW_GONE'
+  // 界面上那个「详情」要显示这两个 —— 手机上看 console 得接线，指望不上
+  e.table = table
+  e.rowId = id
   return e
 }
