@@ -9,6 +9,7 @@ import Uncategorized from './Uncategorized'
 import { colorOf } from '../lib/colors'
 import { sortCategories } from '../lib/categories'
 import { pick, tr, weekNameList, weekdayWord } from '../lib/i18n'
+import Hint from './Hint'
 
 
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
@@ -108,13 +109,17 @@ export default function Settings({ planner, onBack }) {
             <tbody>
               {planner.templates.map((t) => (
                 <tr key={t.id} className={t.is_active ? '' : 'inactive'}>
+                  {/* 点标题就是编辑。「编辑」按钮在最后一列，手机上这张表
+                      要横着滚到底才够得着 —— 而改模板时间是这一页最常做的事 */}
                   <td>
                     <span
                       className="row-dot"
                       style={{ background: colorOf(t.color).dot }}
                       aria-hidden="true"
                     />
-                    {t.title}
+                    <button className="link-btn" onClick={() => startEdit(t)} title={tr('点标题改这条')}>
+                      {t.title}
+                    </button>
                   </td>
                   <td>
                     {tr(TYPE_LABELS[t.type])}
@@ -151,6 +156,7 @@ export default function Settings({ planner, onBack }) {
           </div>
         )}
         <p className="muted small">{tr('停用只是不再生成新日程，历史记录会保留。')}</p>
+        <Hint>{tr('点标题就能改这条模板，不用横着滚到最后去找「编辑」。')}</Hint>
       </section>
 
       <Categories planner={planner} />
@@ -404,7 +410,9 @@ function Categories({ planner }) {
                       style={{ background: colorOf(c.color).dot }}
                       aria-hidden="true"
                     />
-                    {c.name}
+                    <button className="link-btn" onClick={() => setDraft({ ...c })} title={tr('点名字改这条')}>
+                      {c.name}
+                    </button>
                   </td>
                   <td className="small">{c.sort_order}</td>
                   <td className="small">{c.is_active ? tr('启用') : tr('停用')}</td>

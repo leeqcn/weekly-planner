@@ -79,6 +79,10 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '详情': 'Details',
+  '点标题改这条': 'Tap the title to edit',
+  '点名字改这条': 'Tap the name to edit',
+  '点标题就能改这条模板，不用横着滚到最后去找「编辑」。':
+    'Tap a title to edit that template — no need to scroll right for the Edit button.',
   '撤销失败': 'Undo failed',
   '这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。':
     'That one no longer exists on the server. The page has just been reloaded — try again.',
