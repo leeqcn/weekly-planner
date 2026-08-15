@@ -78,6 +78,8 @@ const EN = {
   '取消': 'Cancel',
   '删除': 'Delete',
   '关闭': 'Close',
+  '这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。':
+    'That one no longer exists on the server. The page has just been reloaded — try again.',
   '编辑': 'Edit',
   '完成': 'Done',
   '未完成': 'Not done',

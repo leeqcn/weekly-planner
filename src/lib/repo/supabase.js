@@ -1,7 +1,25 @@
 import { supabase } from '../supabaseClient'
+import { rowGone } from './errors'
 
 function unwrap({ data, error }) {
   if (error) throw error
+  return data
+}
+
+/**
+ * 「按 id 改一行，然后把改完的读回来」。
+ *
+ * 用 maybeSingle 而不是 single：一行都没匹配上时 single 抛的是 PostgREST 的
+ * 原文 “Cannot coerce the result to a single JSON object” —— 屏幕顶上弹这么
+ * 一句，既看不懂，也不知道该怎么办（实际的办法是刷新页面）。
+ *
+ * 一行都没匹配上意味着**界面上的这条在服务器上已经不在了**，
+ * 也就是内存里那份数据过期了 —— 换成一个上层认得的错误交给它去恢复。
+ */
+async function updateOne(query, table, id) {
+  const { data, error } = await query.maybeSingle()
+  if (error) throw error
+  if (!data) throw rowGone(table, id)
   return data
 }
 
@@ -27,9 +45,7 @@ export function createSupabaseRepo(userId) {
     },
 
     async updateTemplate(id, patch) {
-      return unwrap(
-        await from('templates').update(patch).eq('id', id).select().single(),
-      )
+      return updateOne(from('templates').update(patch).eq('id', id).select(), 'templates', id)
     },
 
     // 删模板之前得先把「会被连带带走的东西」捞出来，撤销时才放得回去。
@@ -135,8 +151,10 @@ export function createSupabaseRepo(userId) {
     },
 
     async updateEntry(id, patch) {
-      return unwrap(
-        await from('schedule_entries').update(patch).eq('id', id).select().single(),
+      return updateOne(
+        from('schedule_entries').update(patch).eq('id', id).select(),
+        'schedule_entries',
+        id,
       )
     },
 
@@ -234,9 +252,7 @@ export function createSupabaseRepo(userId) {
     },
 
     async updateCategory(id, patch) {
-      return unwrap(
-        await from('categories').update(patch).eq('id', id).select().single(),
-      )
+      return updateOne(from('categories').update(patch).eq('id', id).select(), 'categories', id)
     },
 
     async listRollups(fromDate, toDate) {

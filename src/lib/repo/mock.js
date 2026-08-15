@@ -1,6 +1,9 @@
+import { rowGone } from './errors'
+
 /**
  * 本地 mock 仓库：数据存 localStorage，不需要 Supabase 也能把 UI 跑起来。
- * 接口与 supabase.js 完全一致，App 层感知不到差别。
+ * 接口与 supabase.js 完全一致，App 层感知不到差别 —— 包括「要改的那一行
+ * 不在了」这种出错的样子，不然本地跑不出线上才有的那类毛病。
  */
 const KEY = 'weekly-planner:mock'
 
@@ -59,6 +62,7 @@ export function createMockRepo(seed) {
     async updateTemplate(id, patch) {
       return mutate((db) => {
         const row = db.templates.find((t) => t.id === id)
+        if (!row) throw rowGone('templates', id)
         Object.assign(row, patch)
         return row
       })
@@ -157,6 +161,7 @@ export function createMockRepo(seed) {
     async updateEntry(id, patch) {
       return mutate((db) => {
         const row = db.schedule_entries.find((e) => e.id === id)
+        if (!row) throw rowGone('schedule_entries', id)
         Object.assign(row, patch)
         return row
       })
@@ -262,6 +267,7 @@ export function createMockRepo(seed) {
     async updateCategory(id, patch) {
       return mutate((db) => {
         const row = db.categories.find((c) => c.id === id)
+        if (!row) throw rowGone('categories', id)
         Object.assign(row, patch)
         return row
       })

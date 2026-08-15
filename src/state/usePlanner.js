@@ -21,6 +21,19 @@ const ROLLUP_LOOKBACK_DAYS = 400
 const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? null]))
 
 /**
+ * 写失败时屏幕顶上该显示什么。
+ *
+ * ROW_GONE 是仓库层判出来的「这条在服务器上已经不在了」；PGRST116 是
+ * PostgREST 在 .single() 一行都没匹配上时的原始代码，同一件事，只是从别的
+ * 路径漏过来的。这两种都不该把 “Cannot coerce the result to a single JSON
+ * object” 原样甩给人看 —— 那句话既看不懂，也不说该怎么办。
+ */
+const describeWriteError = (e) =>
+  e?.code === 'ROW_GONE' || e?.code === 'PGRST116'
+    ? tr('这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。')
+    : (e?.message ?? String(e))
+
+/**
  * 全部数据加载 / 写入都收在这里，组件只管渲染。
  * 一次只加载当前显示这一周的流水数据，页面轻量。
  */
@@ -166,7 +179,18 @@ export function usePlanner(repo) {
         await load()
         return out
       } catch (e) {
-        setError(e.message ?? String(e))
+        /**
+         * 写失败之后**必须重新读一次**。
+         *
+         * 写失败最常见的原因就是内存里那份数据和服务器对不上了（比如这条在
+         * 别处已经没了）。不重读的话，屏幕上还是那份过时的数据，再点一次还是
+         * 同一个错 —— 只能自己去刷新页面。这里替他刷。
+         *
+         * 顺序不能反：load() 一进去就 setError(null)，先设消息会被它抹掉。
+         */
+        const msg = describeWriteError(e)
+        await load().catch(() => {})
+        setError(msg)
       }
     },
     [load],
