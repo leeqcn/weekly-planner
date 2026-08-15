@@ -82,6 +82,8 @@ const EN = {
   '撤销失败': 'Undo failed',
   '这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。':
     'That one no longer exists on the server. The page has just been reloaded — try again.',
+  '登录状态过期了（页面在后台挂太久）。刷新一下页面重新登录，这次的改动没有保存。':
+    'Your session expired (the page sat in the background too long). Reload the page to sign in again — this change was not saved.',
   '编辑': 'Edit',
   '完成': 'Done',
   '未完成': 'Not done',

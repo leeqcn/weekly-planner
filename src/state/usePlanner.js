@@ -34,14 +34,17 @@ const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? n
  */
 function describeWriteError(e) {
   const gone = e?.code === 'ROW_GONE' || e?.code === 'PGRST116'
+  const noSession = e?.code === 'NO_SESSION' || e?.code === 'PGRST301'
   return {
-    message: gone
-      ? tr('这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。')
-      : (e?.message ?? String(e)),
+    message: noSession
+      ? tr('登录状态过期了（页面在后台挂太久）。刷新一下页面重新登录，这次的改动没有保存。')
+      : gone
+        ? tr('这条在服务器上已经没有了。页面刚刚重新读过，再试一次就好。')
+        : (e?.message ?? String(e)),
     detail: [
       e?.code ?? 'ERR',
       e?.table && e?.rowId ? `${e.table} id=${e.rowId}` : null,
-      gone ? null : e?.message,
+      gone || noSession ? null : e?.message,
       new Date().toLocaleString(),
     ]
       .filter(Boolean)
@@ -176,6 +179,67 @@ export function usePlanner(repo) {
     // days 每次渲染都是新数组，用 fromKey/toKey 作为真实依赖。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load, repo, fromKey, toKey])
+
+  /**
+   * 切回前台时把这个页面「重新对一遍表」。
+   *
+   * 手机上很少有人真去关标签页，都是切到别的程序、过几个小时甚至隔夜再回来。
+   * 而这个 app 只在打开时读一次、也没有实时订阅 —— 挂久了三样东西同时变旧：
+   *
+   *   1. **登录状态**：access token 默认一小时过期。回来后手一点就发请求，
+   *      带着过期身份的写会被 RLS 挡成「影响 0 行」，报出来是一句看不懂的
+   *      “Cannot coerce the result to a single JSON object”，
+   *      看起来像「这条数据没了」，其实是「这次请求不算你」。
+   *   2. **内存里的数据**：期间在别处（另一台设备、Supabase 后台）改过的，
+   *      这边完全不知道，手里还攥着已经不存在的 id。
+   *   3. **「今天是几号」**：monday 是挂载时算一次的。挂过一夜，界面上的
+   *      「本周」可能已经是上周了。
+   *
+   * 所以顺序是：先确认登录 -> 跨天的话把周挪回来 -> 重新读。
+   *
+   * 只在**离开超过 30 秒**时才做：下拉一下通知栏、瞄一眼别的 app 就回来，
+   * 这种一天几十次，每次都重来一遍纯属浪费。
+   */
+  const hiddenAt = useRef(null)
+  const lastSeen = useRef(new Date())
+  useEffect(() => {
+    const RESYNC_AFTER_MS = 30_000
+
+    const resync = async () => {
+      const away = hiddenAt.current ? Date.now() - hiddenAt.current : 0
+      hiddenAt.current = null
+      if (away < RESYNC_AFTER_MS) return
+
+      await repo.ensureSession?.().catch(() => {})
+
+      // 跨过午夜了。本来就在看「本周」的，跟着翻到新的本周；
+      // 特意翻到别的周去看的，不动他 —— 他正看着的东西不该被系统挪走。
+      const now = new Date()
+      const next = weekStart(now)
+      const weekMoved =
+        dateKey(now) !== dateKey(lastSeen.current) &&
+        dateKey(monday) === dateKey(weekStart(lastSeen.current)) &&
+        dateKey(monday) !== dateKey(next)
+      if (weekMoved) setMonday(next)
+      lastSeen.current = now
+
+      // 换了周就别在这儿再读一次：换周本身会触发加载，
+      // 两个并发的读回来的是不同周的数据，谁后到谁说了算
+      if (!weekMoved) await load()
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') hiddenAt.current = Date.now()
+      else resync()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    // iOS 从后台回来有时只发 focus 不发 visibilitychange，两个都听
+    window.addEventListener('focus', resync)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('focus', resync)
+    }
+  }, [load, repo, monday])
 
   const generateWeek = useCallback(async () => {
     try {

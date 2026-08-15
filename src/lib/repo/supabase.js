@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient'
-import { rowGone } from './errors'
+import { notSignedIn, rowGone } from './errors'
 
 function unwrap({ data, error }) {
   if (error) throw error
@@ -19,7 +19,14 @@ function unwrap({ data, error }) {
 async function updateOne(query, table, id) {
   const { data, error } = await query.maybeSingle()
   if (error) throw error
-  if (!data) throw rowGone(table, id)
+  if (!data) {
+    // 「一行都没匹配上」有两种完全不同的原因，报错前先分清楚：
+    // 真的没这一行，还是这次请求根本不算「你」（登录过期了，RLS 把所有行
+    // 都挡在外面）。后者报「这条没了」会把人带偏 —— 数据好好的。
+    const { data: s } = await supabase.auth.getSession()
+    if (!s.session) throw notSignedIn()
+    throw rowGone(table, id)
+  }
   return data
 }
 
@@ -33,6 +40,22 @@ export function createSupabaseRepo(userId) {
 
   return {
     mode: 'supabase',
+
+    /**
+     * 「确认现在还是登录着的」。切回前台第一件事就干这个。
+     *
+     * access token 默认一小时过期。页面挂在后台一夜，回来之后手一点就发请求，
+     * 那个请求带的可能是一个已经过期的身份 —— RLS 的 `user_id = auth.uid()`
+     * 一行都匹配不上，UPDATE 影响 0 行，报出来就是那句
+     * “Cannot coerce the result to a single JSON object”。不是数据没了，
+     * 是这次请求根本不算「你」。
+     *
+     * getSession 会在 token 过期时顺手刷新，所以放在读写之前挡一道。
+     */
+    async ensureSession() {
+      const { data } = await supabase.auth.getSession()
+      return Boolean(data.session)
+    },
 
     async listTemplates() {
       return unwrap(

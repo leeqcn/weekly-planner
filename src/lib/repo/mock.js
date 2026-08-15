@@ -46,6 +46,11 @@ export function createMockRepo(seed) {
   return {
     mode: 'mock',
 
+    /** 本地模式没有登录这回事，永远算「还登录着」。 */
+    async ensureSession() {
+      return true
+    },
+
     async listTemplates() {
       return load().templates
     },
