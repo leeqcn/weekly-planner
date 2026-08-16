@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { colorOf } from '../lib/colors'
 import { describeRange } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
@@ -79,9 +79,23 @@ export default function QuickAdd({
     setPicking(false)
   }
 
+  const titleRef = useRef(null)
+
+  /**
+   * 标题空着时**不禁用**「加上」，而是把光标送回标题框。
+   *
+   * 禁用的按钮按下去毫无反应，也不说为什么 —— 而中文输入法还没上屏时
+   * React 这边读到的 title 可能就是空的，于是按钮正好是灰的。结果就是
+   * 「点了一下没成，再点一下就成了」，人只能怀疑自己没点准。
+   * 有反应比没反应强，哪怕反应是「你还没写标题」。
+   */
   const submit = (event) => {
     event.preventDefault()
-    if (title.trim()) onCreate(title.trim(), dur, start, categoryId)
+    if (!title.trim()) {
+      titleRef.current?.focus()
+      return
+    }
+    onCreate(title.trim(), dur, start, categoryId)
   }
 
   return (
@@ -161,6 +175,7 @@ export default function QuickAdd({
             <div className="quick-title-cell">
               <input
                 id="quick-title"
+                ref={titleRef}
                 value={title}
                 // 有候选列表时不抢焦点：手机上键盘一弹就把列表盖住了
                 autoFocus={candidates.length === 0}
@@ -200,7 +215,7 @@ export default function QuickAdd({
               onChange={(e) => setMinutes(e.target.value)}
             />
             <span className="muted small">{tr('分钟')}</span>
-            <button type="submit" className="primary" disabled={!title.trim()}>{tr('加上')}</button>
+            <button type="submit" className="primary">{tr('加上')}</button>
           </div>
           <CategoryPicker
             value={categoryId}

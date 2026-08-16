@@ -94,6 +94,35 @@
   min-width: 0;
 }
 
+/* 刚加上的那条闪一下。
+   不是装饰：以前「加成功」和「根本没点上」看起来一模一样，这是唯一的信号 */
+@keyframes flash-in {
+  0% {
+    background: var(--accent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.flash > td,
+.entry-block.flash {
+  animation: flash-in 1.5s ease-out;
+}
+
+.entry-block.flash {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 不闪，但仍然看得出是哪条 —— 信号不能因为关了动画就没了 */
+  .flash > td,
+  .entry-block.flash {
+    animation: none;
+    background: var(--accent-soft);
+  }
+}
+
 .error-detail summary {
   cursor: pointer;
   margin-top: 0.3rem;

@@ -8,6 +8,7 @@ import Stats from './Stats'
 import { LANGS, tr } from '../lib/i18n'
 import { useLang } from '../state/LangContext'
 import { getHints, setHints, subscribeHints } from '../lib/prefs'
+import { dateKey } from '../lib/dates'
 
 export default function Planner({ repo, onSignOut }) {
   const planner = usePlanner(repo)
@@ -24,6 +25,25 @@ export default function Planner({ repo, onSignOut }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [planner])
+
+  /**
+   * 日视图停在的那一天，必须落在 planner 装着的那一周里。
+   *
+   * 会对不上是因为 planner 自己会挪周：页面挂一夜再切回来，跨过周日的话
+   * 它会跟着翻到新的一周（见 usePlanner 的 resync）。日视图不跟着走的话，
+   * entries 里全是新那一周的，`e.date === key` 一条都对不上 —— 屏幕上
+   * **一片空白，而且不报错**。这时候加一条待办，加是真加上了，只是不在你
+   * 正看着的那一天，看起来就像「没加上」。
+   *
+   * 跟着回到「今天」而不是硬把周挪回去：早上打开 app 想看的本来就是今天。
+   */
+  useEffect(() => {
+    if (view.name !== 'day') return
+    if (planner.days.some((d) => dateKey(d) === dateKey(view.date))) return
+    setView({ name: 'day', date: new Date() })
+    // days 每次渲染都是新数组，用 monday 作为真实依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planner.monday, view])
 
   return (
     <div className="app">

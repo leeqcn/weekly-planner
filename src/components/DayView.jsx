@@ -324,8 +324,8 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
     return [...seen.values()].sort((a, b) => b.count - a.count || b.last.localeCompare(a.last))
   }
 
-  function quickCreate(title, minutes, at, categoryId = null) {
-    planner.addEntry({
+  async function quickCreate(title, minutes, at, categoryId = null) {
+    const created = planner.addEntry({
       template_id: null,
       date: key,
       title,
@@ -345,6 +345,7 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
       ...quickTimes(quick.field, at, minutes),
     })
     setQuick(null)
+    flashNew(await created)
   }
 
   /** 待办排进时间轴：自动找第一个装得下的空档，装不下也照排、标红。 */
@@ -361,9 +362,31 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
     )
   }
 
+  /**
+   * 新加的那一条，加完滚过去并且闪一下。
+   *
+   * 加成功和根本没点上，以前**看起来一模一样**：没有确认，也没有出错。
+   * 新加的待办落在页面顶上的 To do 卡里，人却常常正看着下面的时间轴 ——
+   * 屏幕上什么都没变，只能再点一次。这里让它自己现身，一眼就知道成没成。
+   */
+  const [flashId, setFlashId] = useState(null)
+  useEffect(() => {
+    if (!flashId) return
+    const el = document.querySelector(`[data-entry-id="${flashId}"]`)
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    const t = setTimeout(() => setFlashId(null), 1600)
+    return () => clearTimeout(t)
+  }, [flashId])
+
+  /** 新建返回的是刚插进去的那几行；改已有的不用闪，改的就是你正看着的那条。 */
+  const flashNew = (created) => {
+    const id = Array.isArray(created) ? created[0]?.id : created?.id
+    if (id) setFlashId(id)
+  }
+
   async function saveEditor(payload) {
     if (editing?.entry) await planner.updateEntry(editing.entry.id, payload)
-    else await planner.addEntry(payload)
+    else flashNew(await planner.addEntry(payload))
     setEditing(null)
   }
 
@@ -419,6 +442,7 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
         overlay={drag.overlay(entry.id, field)}
         faded={field === 'planned' && (entry.status === 'done' || entry.status === 'skipped')}
         picked={isPicked(entry.id)}
+        flash={entry.id === flashId}
         onClick={() => onBlockClick(entry.id, entry, field)}
         color={resolveColor(entry)}
         onGrip={(event, mode) =>
@@ -524,6 +548,7 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
         onStart={(id) => startTimer(todos.find((e) => e.id === id))}
         onStop={(id) => stopTimer(todos.find((e) => e.id === id))}
         runningId={running?.id}
+        flashId={flashId}
         footer={capacity.count > 0 ? <Capacity capacity={capacity} /> : null}
         emptyText={tr('今天没有待办。')}
       />
@@ -684,6 +709,7 @@ function EntryBlock({
   overlay,
   faded,
   picked,
+  flash,
   onClick,
   onGrip,
 }) {
@@ -700,6 +726,7 @@ function EntryBlock({
 
   return (
     <div
+      data-entry-id={entry.id}
       className={[
         'entry-block',
         `state-${state}`,
@@ -707,6 +734,7 @@ function EntryBlock({
         faded ? 'faded' : '',
         picked ? 'picked' : '',
         overlay ? 'dragging' : '',
+        flash ? 'flash' : '',
       ]
         .filter(Boolean)
         .join(' ')}

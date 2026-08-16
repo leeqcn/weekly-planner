@@ -24,6 +24,7 @@ export default function ProgressTable({
   footer,
   emptyText,
   onAdd,
+  flashId,
 }) {
   const [draft, setDraft] = useState({})
 
@@ -97,7 +98,8 @@ export default function ProgressTable({
               const row = draft[r.id] ?? { pct: 0, note: '' }
               const status = row.unlogged ? null : habitStatus(row.pct)
               return (
-                <tr key={r.id}>
+                // data-entry-id：刚加完的那条要能被找到，滚过去闪一下
+                <tr key={r.id} data-entry-id={r.id} className={r.id === flashId ? 'flash' : ''}>
                   {onToggleKeep && (
                     <td className="keep-col">
                       <input
