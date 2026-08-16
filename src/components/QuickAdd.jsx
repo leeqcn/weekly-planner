@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { colorOf } from '../lib/colors'
 import { describeRange } from '../lib/schedule'
 import { formatClock, parseClock } from '../lib/time'
@@ -6,6 +6,7 @@ import { placementMinutes } from '../lib/place'
 import CategoryPicker from './CategoryPicker'
 import { pick, tr } from '../lib/i18n'
 import Hint from './Hint'
+import ModalBackdrop from './ModalBackdrop'
 
 const DEFAULT_MINUTES = 60
 /** 自动补全最多给几条。给多了就成了另一个要读的列表。 */
@@ -46,13 +47,6 @@ export default function QuickAdd({
   const [minutes, setMinutes] = useState(String(DEFAULT_MINUTES))
   const [categoryId, setCategoryId] = useState(null)
   const [picking, setPicking] = useState(false)
-  // 长按开出来的浮层：手指抬起那一下的 click 会落在背景上，
-  // 不挡一下的话刚开就被自己关掉了
-  const [armed, setArmed] = useState(false)
-  useEffect(() => {
-    const t = setTimeout(() => setArmed(true), 350)
-    return () => clearTimeout(t)
-  }, [])
 
   const isActual = field === 'actual'
   const dur = Math.max(5, Number(minutes) || DEFAULT_MINUTES)
@@ -99,8 +93,8 @@ export default function QuickAdd({
   }
 
   return (
-    <div className="modal-backdrop" onClick={() => armed && onClose()}>
-      <div className="card modal quick-add" onClick={(e) => e.stopPropagation()}>
+    <ModalBackdrop onClose={onClose}>
+      <div className="card modal quick-add">
         <h2>{pick(() => `加到「${isActual ? '实际' : '计划'}」`, () => `Add to ${isActual ? 'Actually' : 'Plan'}`)}</h2>
 
         {/* 开始时间做成可以打的输入框。手指在手机上根本点不准，
@@ -230,6 +224,6 @@ export default function QuickAdd({
           <button type="button" className="ghost" onClick={onClose}>{tr('取消')}</button>
         </div>
       </div>
-    </div>
+    </ModalBackdrop>
   )
 }

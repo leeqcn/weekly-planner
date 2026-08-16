@@ -8,6 +8,7 @@ import CategoryPicker from './CategoryPicker'
 import { colorOf } from '../lib/colors'
 import { pick, tr } from '../lib/i18n'
 import Hint from './Hint'
+import ModalBackdrop from './ModalBackdrop'
 
 const empty = { start: null, end: null, duration: null }
 
@@ -129,7 +130,7 @@ export default function EntryEditor({
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <ModalBackdrop onClose={onClose}>
       <form className="card modal wide" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{actualOnly ? tr('记录实际做了什么') : isNew ? tr('新增一条安排') : tr('修改安排')}</h2>
         {actualOnly && (
@@ -288,6 +289,6 @@ export default function EntryEditor({
           <button type="submit" className="primary">{tr('保存')}</button>
         </div>
       </form>
-    </div>
+    </ModalBackdrop>
   )
 }

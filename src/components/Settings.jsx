@@ -10,6 +10,7 @@ import { colorOf } from '../lib/colors'
 import { sortCategories } from '../lib/categories'
 import { pick, tr, weekNameList, weekdayWord } from '../lib/i18n'
 import Hint from './Hint'
+import ModalBackdrop from './ModalBackdrop'
 
 
 const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
@@ -166,7 +167,7 @@ export default function Settings({ planner, onBack }) {
       <SpecialDays planner={planner} />
 
       {draft && (
-        <div className="modal-backdrop" onClick={() => setDraft(null)}>
+        <ModalBackdrop onClose={() => setDraft(null)}>
           <form
             className="card modal wide"
             onClick={(e) => e.stopPropagation()}
@@ -351,7 +352,7 @@ export default function Settings({ planner, onBack }) {
               <button type="submit" className="primary">{tr('保存')}</button>
             </div>
           </form>
-        </div>
+        </ModalBackdrop>
       )}
     </div>
   )
@@ -437,7 +438,7 @@ function Categories({ planner }) {
       <p className="muted small">{tr('统计按分类汇总，不按标题 ——「地铁上班」和「打车回家」是两个标题、同一类。 分类的颜色会被模板和条目继承（自己另外选了就以自己的为准）。')}<b>{tr('只能停用不能删')}</b>{tr('：删掉会让那段历史无处可归。')}</p>
 
       {draft && (
-        <div className="modal-backdrop" onClick={() => setDraft(null)}>
+        <ModalBackdrop onClose={() => setDraft(null)}>
           <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
             <h2>{draft.id ? tr('修改分类') : tr('新建分类')}</h2>
             <label htmlFor="cat-name">{tr('名称')}</label>
@@ -465,7 +466,7 @@ function Categories({ planner }) {
               <button type="submit" className="primary">{tr('保存')}</button>
             </div>
           </form>
-        </div>
+        </ModalBackdrop>
       )}
     </section>
   )
