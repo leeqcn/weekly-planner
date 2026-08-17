@@ -419,7 +419,21 @@ function StartPicker({ start, setStart }) {
 function TodoHabitStats({ planner }) {
   const { entries, habitLogs, templates, days } = planner
   const habits = templates.filter((t) => t.type === 'habit' && t.is_active)
-  const todos = entries.filter((e) => !e.planned_start && !e.actual_start)
+
+  /**
+   * 只数到**今天**为止，后面几天不进分母。
+   *
+   * 这里的待办大多是每天重复的记录项（三餐这类），周一一早模板就把整周
+   * 七天的都生成好了。全周进分母的话，周一看永远是 0/47 —— 那不是「没做」，
+   * 是「还没到」。一个每周一都必然显示 0% 的数字，看一次就不会再看第二次。
+   *
+   * 看过去的周时 today 落在这一周之后，`<= today` 自然把整周都放进来，
+   * 不用另写一套。
+   */
+  const today = dateKey(new Date())
+  const pending = entries.filter((e) => !e.planned_start && !e.actual_start)
+  const todos = pending.filter((e) => e.date <= today)
+  const upcoming = pending.length - todos.length
 
   const habitRows = habits.map((h) => {
     const logs = habitLogs.filter((l) => l.template_id === h.id)
@@ -437,16 +451,25 @@ function TodoHabitStats({ planner }) {
       <h2>{tr('待办 / 习惯（本周）')}</h2>
       <p className="muted small">
         {pick(
-          () => `这两块没有时间信息，只看完成度，和上面的时间统计分开。这里看的是当前这一周（${days.length} 天）。`,
+          () => `这两块没有时间信息，只看完成度，和上面的时间统计分开。这一周（${days.length} 天）只算到今天为止 —— 后面还没到的那几天不进分母。`,
           () =>
-            `These two have no times attached — only completion — so they are kept apart from the hours above. This is the current week (${days.length} days).`,
+            `These two have no times attached — only completion — so they are kept apart from the hours above. This week (${days.length} days), counted up to today — days that have not arrived yet stay out of the denominator.`,
         )}
       </p>
       <div className="stat-cards">
         <StatCard
           label={tr('待办完成')}
           value={`${todoDone}/${todos.length}`}
-          hint={todos.length ? `${Math.round((todoDone / todos.length) * 100)}%` : tr('本周没有待办')}
+          hint={
+            todos.length
+              ? pick(
+                  () => `${Math.round((todoDone / todos.length) * 100)}%${upcoming ? `，后面还有 ${upcoming} 条` : ''}`,
+                  () => `${Math.round((todoDone / todos.length) * 100)}%${upcoming ? `, ${upcoming} still to come` : ''}`,
+                )
+              : upcoming
+                ? pick(() => `本周还有 ${upcoming} 条没到`, () => `${upcoming} coming later this week`)
+                : tr('本周没有待办')
+          }
         />
         {habitRows.map((h) => (
           <StatCard
