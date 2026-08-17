@@ -269,8 +269,8 @@ export default function HelpEn({ onBack }) {
         <ul>
           <li>
             To do and Habits are n×8 grids: one row per thing, one column per day.{' '}
-            <b>Tap a cell to cycle 100 / 50 / 0</b>. For a number like 80, open the day
-            view — the percentage there can be typed.
+            <b>Tap a cell to cycle 100 / 50 / 0</b> — the same gesture as in the day
+            view.
           </li>
           <li>
             An unscored to-do counts as <b>0 and shows red</b>, so you can see at a glance
@@ -447,16 +447,30 @@ export default function HelpEn({ onBack }) {
         <h2>Entering a completion figure</h2>
         <ul>
           <li>
-            Each row in the day view has a <b>bar and a number box</b>. Drag the bar for a
-            rough estimate, or <b>type the number</b> when you want it exact — 80 means 80,
-            with no fighting a slider. The box does not look like a field until you tap it;
-            seven or eight visible boxes in a column would be noise.
+            A tap cycles <b>100 / 50 / 0</b> — the same gesture in the day view and the
+            week view. The colour behind the number is the status (green / amber / red),
+            so there is no second column to read.
           </li>
           <li>
-            In the week view a tap cycles <b>100 / 50 / 0</b> — fast, but only three
-            steps. Anything in between goes in from the day view.
+            Three steps is deliberate: logging only ever distinguishes “done”, “half
+            done” and “not done”. A figure like 70% is neither trustworthy nor ever
+            looked at again, and it means fighting a slider on a phone.
           </li>
         </ul>
+
+        <h2>Where the day went</h2>
+        <p>
+          Below the timeline is a <b>horizontal stacked bar</b>: actual time added up per
+          activity, one segment each, labelled with its length. <b>Segments under an hour
+          carry colour only</b> — a label there would be unreadable — so read their names
+          and times from the list underneath.
+        </p>
+        <p className="muted small">
+          The denominator is not 24 hours but <b>the part of the day that has passed</b> —
+          at 3pm that is 15 hours. Against a 24-hour denominator everything looks tiny in
+          the morning. The hatched segment is <b>unlogged</b> time; drawing it is what
+          makes the shares add up to 100%.
+        </p>
 
         <h2>The gear in the top-right</h2>
         <p className="muted small">

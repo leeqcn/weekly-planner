@@ -160,13 +160,13 @@ A fresh project only needs [`db/schema.sql`](db/schema.sql) — seven tables, in
 constraints and RLS, safe to run more than once.
 
 > It is not hand-maintained guesswork: it was diffed item by item against the result of
-> running `db/0001`–`0009` in order on an empty database — 134 structural items
+> running `db/0001`–`0010` in order on an empty database — 134 structural items
 > (columns, constraints, indexes, RLS flags, policies) match exactly. The policies were
 > also exercised on a real Postgres: another user reads none of your rows, writing under
 > someone else’s `user_id` is rejected by the policy, and the anonymous role reads
 > nothing at all.
 
-An **existing** database should apply whichever of `db/0001`–`0009` it is missing, in
+An **existing** database should apply whichever of `db/0001`–`0010` it is missing, in
 order. Each is idempotent; see the Chinese README for what each one does.
 
 ### About the anon key

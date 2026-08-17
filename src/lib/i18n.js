@@ -79,6 +79,15 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '详情': 'Details',
+  '固定': 'fixed',
+  '占全天': 'of the whole day',
+  '占自由时间': 'of free time',
+  '固定开销，不算进自由时间': 'Fixed — not counted as free time',
+  '固定开销（睡眠、工作这类改不动的）': 'Fixed commitment (sleep, work — the ones you cannot move)',
+  '勾上之后，统计的「明细」里可以切换成「占自由时间」—— 分母只算没勾的那几类。':
+    'Once ticked, the stats table can switch to “of free time” — only the unticked categories count toward the total.',
+  '时间去哪了': 'Where the time went',
+  '没记录': 'unlogged',
   '点标题改这条': 'Tap the title to edit',
   '点名字改这条': 'Tap the name to edit',
   '点标题就能改这条模板，不用横着滚到最后去找「编辑」。':

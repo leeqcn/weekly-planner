@@ -372,7 +372,12 @@ function Categories({ planner }) {
     e.preventDefault()
     const name = draft.name.trim()
     if (!name) return
-    const payload = { name, color: draft.color ?? null, sort_order: Number(draft.sort_order) || 0 }
+    const payload = {
+      name,
+      color: draft.color ?? null,
+      sort_order: Number(draft.sort_order) || 0,
+      is_fixed: Boolean(draft.is_fixed),
+    }
     if (draft.id) await planner.updateCategory(draft.id, payload)
     else await planner.createCategory({ ...payload, is_active: true })
     setDraft(null)
@@ -416,7 +421,10 @@ function Categories({ planner }) {
                     </button>
                   </td>
                   <td className="small">{c.sort_order}</td>
-                  <td className="small">{c.is_active ? tr('启用') : tr('停用')}</td>
+                  <td className="small">
+                    {c.is_active ? tr('启用') : tr('停用')}
+                    {c.is_fixed && <span className="muted"> · {tr('固定')}</span>}
+                  </td>
                   <td className="row-gap">
                     <button className="ghost" onClick={() => setDraft({ ...c })}>{tr('编辑')}</button>
                     <button
@@ -460,6 +468,15 @@ function Categories({ planner }) {
               value={draft.color}
               onChange={(color) => setDraft({ ...draft, color })}
             />
+            {/* 睡觉、上班这些改不动的勾上，统计页就能换成「占自由时间多少」。
+                不按名字猜：同样叫「学习」，对学生是固定开销，对上班族不是 */}
+            <label className="inline-check">
+              <input
+                type="checkbox"
+                checked={Boolean(draft.is_fixed)}
+                onChange={(e) => setDraft({ ...draft, is_fixed: e.target.checked })}
+              />{tr('固定开销（睡眠、工作这类改不动的）')}</label>
+            <p className="muted small">{tr('勾上之后，统计的「明细」里可以切换成「占自由时间」—— 分母只算没勾的那几类。')}</p>
             <div className="modal-actions">
               <span className="spacer" />
               <button type="button" className="ghost" onClick={() => setDraft(null)}>{tr('取消')}</button>

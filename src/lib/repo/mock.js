@@ -261,6 +261,7 @@ export function createMockRepo(seed) {
           color: null,
           sort_order: 0,
           is_active: true,
+          is_fixed: false,
           ...data,
           id: data.id ?? uid(),
         }

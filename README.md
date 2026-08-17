@@ -149,14 +149,14 @@ npm run build
 新建的库跑一次 [`db/schema.sql`](db/schema.sql) 即可 —— 7 张表、索引、约束、RLS 全在里面，
 可重复执行。
 
-> 它不是手写凑出来的：跟「从零按顺序跑完 `db/0001`–`0009`」的结果做过逐项比对，
+> 它不是手写凑出来的：跟「从零按顺序跑完 `db/0001`–`0010`」的结果做过逐项比对，
 > 134 项结构（列 / 约束 / 索引 / RLS / 策略）完全一致；RLS 在真 Postgres 上验过 ——
 > 换个用户读不到别人的行、冒名写入被策略拒绝、匿名角色一行都读不到。
 
 **已经在用的老库**按顺序补跑缺的迁移：
 
 <details>
-<summary>db/0001–0009 迁移清单（老库用）</summary>
+<summary>db/0001–0010 迁移清单（老库用）</summary>
 
 - `0001_init.sql` — 建 5 张表并打开 RLS
 - `0002_entry_unique_constraint.sql` — 唯一约束修正（可选）
@@ -174,6 +174,9 @@ npm run build
   （新建的库不用跑）。会覆盖当前颜色，跑一次就够。
 - `0009_soft_delete.sql` — **必须跑**。加 `deleted_at`，删除改成打墓碑。
   不跑的话，Day View 里删掉的模板条目一刷新又会长回来。
+- `0010_fixed_categories.sql` — 可选。给 `categories` 加 `is_fixed`，
+  统计里就能把占比换成「占自由时间」（分母剔掉睡眠、工作这些改不动的）。
+  不跑的话统计照常，只是没有那个切换。
 
 </details>
 
@@ -208,6 +211,7 @@ db/0006_color_and_keep.sql          配色 + 排入后保留在待办（必须�
 db/0007_categories_and_rollup.sql   分类 + 每日汇总，统计的地基（必须跑）
 db/0008_category_colors.sql         六个默认分类的配色（只改数据，可选）
 db/0009_soft_delete.sql             删除改成打墓碑（必须跑）
+db/0010_fixed_categories.sql        分类加「固定开销」，统计能按自由时间算（可选）
 src/lib/
   dates.js        日期 / 周 / 时间换算，date-fns 封装
   habits.js       打卡颜色规则（>=100 绿 / >=50 黄 / 其余红）

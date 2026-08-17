@@ -75,6 +75,27 @@ export default function Stats({ planner, onBack }) {
 
   const nameOf = (key) => lookup(key).name
   const colorFor = (key) => lookup(key).color
+  const isFixed = (key) => Boolean(lookup(key).is_fixed)
+
+  /**
+   * 占比的分母可以换：全天，或者「自由时间」。
+   *
+   * 睡觉、上班、家务这些改不动 —— 看它们占全天百分之多少没什么用，
+   * 真正想问的是**剩下那些自己说了算的时间里**，各项各占多少。
+   * 睡 8 小时上班 9 小时的话，全天口径下所有爱好加起来也不到 20%，
+   * 看着像「什么都没干」；按自由时间算才知道这 7 小时是怎么分掉的。
+   *
+   * 哪些算固定在设置里勾（分类上的 is_fixed），不按名字猜 —— 同样叫「学习」，
+   * 对学生是固定开销，对上班族是自由时间。
+   */
+  const [freeMode, setFreeMode] = useState(false)
+  const hasFixed = planner.categories.some((c) => c.is_fixed)
+  const freeTotal = stats
+    ? stats.categories.filter((c) => !isFixed(c.key)).reduce((s, c) => s + c.actual, 0)
+    : 0
+  // 固定分类在自由时间口径下没有占比可言，显示「—」而不是一个算得出来的假数
+  const shareOf = (c) =>
+    freeMode ? (isFixed(c.key) ? null : freeTotal ? c.actual / freeTotal : 0) : c.share
 
   function exportCsv() {
     const rows = rollups.filter((r) => r.date >= start && r.date <= today)
@@ -226,7 +247,29 @@ export default function Stats({ planner, onBack }) {
           )}
 
           <section className="card">
-            <h2>{tr('明细')}</h2>
+            <div className="card-head">
+              <h2>{tr('明细')}</h2>
+              {hasFixed && (
+                <span className="row-gap">
+                  <button
+                    className={`chip${freeMode ? '' : ' selected'}`}
+                    onClick={() => setFreeMode(false)}
+                  >{tr('占全天')}</button>
+                  <button
+                    className={`chip${freeMode ? ' selected' : ''}`}
+                    onClick={() => setFreeMode(true)}
+                  >{tr('占自由时间')}</button>
+                </span>
+              )}
+            </div>
+            {freeMode && (
+              <p className="muted small">
+                {pick(
+                  () => `自由时间 = 记录下来的时间里，去掉「固定」那几类之后剩的 ${fmtHours(freeTotal)}h。 固定的那几行占比显示「—」。`,
+                  () => `Free time = ${fmtHours(freeTotal)}h — what is left after the categories marked fixed. Those rows show “—”.`,
+                )}
+              </p>
+            )}
             <div className="table-scroll">
               <table className="habits-table stats-table">
                 <thead>
@@ -259,7 +302,13 @@ export default function Stats({ planner, onBack }) {
                       <td>{fmtHm(c.avgPerDay)}</td>
                       <td>{fmtHm(c.min)}</td>
                       <td>{fmtHm(c.max)}</td>
-                      <td>{(c.share * 100).toFixed(1)}%</td>
+                      <td>
+                        {shareOf(c) == null ? (
+                          <span className="muted" title={tr('固定开销，不算进自由时间')}>—</span>
+                        ) : (
+                          `${(shareOf(c) * 100).toFixed(1)}%`
+                        )}
+                      </td>
                       <td>{fmtHours(c.planned)}h</td>
                       <td className={c.diff < 0 ? 'neg' : ''}>
                         {c.diff >= 0 ? '+' : ''}
@@ -273,7 +322,9 @@ export default function Stats({ planner, onBack }) {
                     <td>—</td>
                     <td>{fmtHours(stats.unrecorded)}h</td>
                     <td colSpan="3">—</td>
-                    <td>{((stats.unrecorded / stats.capacity) * 100).toFixed(1)}%</td>
+                    <td>
+                      {freeMode ? '—' : `${((stats.unrecorded / stats.capacity) * 100).toFixed(1)}%`}
+                    </td>
                     <td colSpan="3">—</td>
                   </tr>
                 </tbody>

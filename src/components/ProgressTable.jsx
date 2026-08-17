@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { habitStatus } from '../lib/habits'
 import { colorOf } from '../lib/colors'
-import { tr } from '../lib/i18n'
+import { nextPct } from '../lib/schedule'
+import { pick, tr } from '../lib/i18n'
 import Hint from './Hint'
 
 /**
  * Day View 里 To do 和 Habits 共用的表格：一行一件事，
- * 完成度滑杆 + 状态色 + 备注。两块长得一样，不用记两套操作。
+ * 完成度（点一下 100 / 50 / 0 循环，底色就是状态）+ 备注。
+ * 两块长得一样，不用记两套操作。
  *
  * rows: [{ id, title, pct, note }]
  * onOpen: 传了的话，标题可以点开去编辑（待办用）
@@ -31,8 +33,8 @@ export default function ProgressTable({
   useEffect(() => {
     setDraft(
       Object.fromEntries(
-        // pct 为 null = 还没打过卡。滑杆得有个数值，所以显示 0，
-        // 但状态列留「—」而不是红色的 keep going —— 没打卡不等于没做好。
+        // pct 为 null = 还没打过卡。显示「—」而不是红色的 0 ——
+        // 没打卡不等于没做好，一屏红字只会让人不想看。
         rows.map((r) => [
           r.id,
           { pct: r.pct ?? 0, note: r.note ?? '', unlogged: r.pct === null },
@@ -64,6 +66,13 @@ export default function ProgressTable({
   const set = (id, patch) =>
     setDraft((d) => ({ ...d, [id]: { ...d[id], ...patch, unlogged: false } }))
 
+  /** 点一下：没打过卡的从 100 开始，打过的按 100 -> 50 -> 0 转。 */
+  const bump = (id, pct, unlogged) => {
+    const next = nextPct(unlogged ? null : Number(pct))
+    setDraft((d) => ({ ...d, [id]: { ...d[id], pct: next, unlogged: false } }))
+    onSave(id, { pct: next, note: draft[id]?.note?.trim() || null })
+  }
+
   const commit = (id) => {
     const row = draft[id]
     if (!row) return
@@ -88,8 +97,8 @@ export default function ProgressTable({
                   窄屏上这张表要横向滚到底才够得着，每次都得先划一下 */}
               {onPlace && <th>{tr('时长')}</th>}
               {(onPlace || onStart) && <th />}
+              {/* 「完成度」和「状态」合成一列：数字上的底色说的就是状态 */}
               <th>{tr('完成度')}</th>
-              <th>{tr('状态')}</th>
               <th>{tr('备注')}</th>
             </tr>
           </thead>
@@ -157,57 +166,27 @@ export default function ProgressTable({
                     </td>
                   )}
                   <td>
-                    {/* 拖动负责「随手估个大概」，输入框负责「就是 80」。
-                        两个都要：只有滑杆时手机上很难拖准，只有数字时
-                        一行扫过去看不出哪个满哪个空 */}
-                    <div className="pct-cell">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="10"
-                        value={row.pct}
-                        onChange={(e) => set(r.id, { pct: e.target.value })}
-                        onMouseUp={() => commit(r.id)}
-                        onKeyUp={() => commit(r.id)}
-                        onTouchEnd={() => commit(r.id)}
-                      />
-                      <span className="pct-box">
-                        <input
-                          className="pct-input"
-                          // 用 text + inputMode 而不是 type=number：手机上照样出数字键盘，
-                          // 但没有那对没人点的小箭头，也不会因为「删空了」被浏览器塞回旧值
-                          type="text"
-                          inputMode="numeric"
-                          value={row.pct}
-                          onChange={(e) => {
-                            const n = e.target.value.replace(/\D/g, '').slice(0, 3)
-                            set(r.id, { pct: n === '' ? '' : Math.min(100, Number(n)) })
-                          }}
-                          onFocus={(e) => e.target.select()}
-                          onBlur={() => commit(r.id)}
-                          onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-                          aria-label={tr('完成度')}
-                        />
-                        <span className="pct-pct">%</span>
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    {status ? (
-                      <span
-                        className="status-pill"
-                        style={{
-                          background: status.bg,
-                          color: status.ink,
-                          borderColor: status.edge,
-                        }}
-                      >
-                        {status.label}
-                      </span>
-                    ) : (
-                      <span className="muted">—</span>
-                    )}
+                    {/* 点一下在 100 / 50 / 0 之间循环，和周视图一格一个道理。
+                        原来是滑杆 + 数字框：手机上要拖准很费劲，而记录本来就
+                        只分「做完了 / 做了一半 / 没做」三档，精确到 70% 既拿不准
+                        也没人回头看。顺带把「状态」那一列并进来 —— 数字上的
+                        底色说的就是状态，两列讲同一件事，窄屏上却要多滚一截 */}
+                    <button
+                      className="pct-cycle"
+                      onClick={() => bump(r.id, row.pct, row.unlogged)}
+                      style={
+                        status
+                          ? { background: status.bg, color: status.ink, borderColor: status.edge }
+                          : undefined
+                      }
+                      title={
+                        row.unlogged
+                          ? pick(() => `${r.title} 还没打卡（点一下标记完成）`, () => `${r.title} — not logged (tap to mark done)`)
+                          : pick(() => `${r.title} ${row.pct}% · ${status.label}（点一下切换）`, () => `${r.title} ${row.pct}% · ${status.label} (tap to change)`)
+                      }
+                    >
+                      {row.unlogged ? '—' : row.pct}
+                    </button>
                   </td>
                   <td>
                     <input

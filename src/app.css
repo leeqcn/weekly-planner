@@ -1237,54 +1237,18 @@ th.gt-name.expanded .gt-name-label {
   }
 }
 
-.pct-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.pct-cell input[type='range'] {
-  width: 120px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  accent-color: var(--accent);
-}
-
-/* 数字这一格能打字了：滑杆管「大概」，输入框管「就是 80」 */
-.pct-box {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 1px;
-}
-
-.pct-input {
-  width: 2.1rem;
-  padding: 0.1rem 0.2rem;
-  font-size: 0.78rem;
-  text-align: right;
+/* 完成度：点一下在 100 / 50 / 0 之间转，底色就是状态。
+   原来是滑杆 + 数字框 —— 手机上拖不准，而记录本来就只分「做完 / 一半 / 没做」 */
+.pct-cycle {
+  width: 2.6rem;
+  padding: 0.2rem 0;
+  text-align: center;
   font-variant-numeric: tabular-nums;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 4px;
-  color: var(--ink-soft);
-}
-
-/* 平时看不出是输入框（不然一行七八个框太吵），点进去才显形 */
-.pct-input:hover {
-  border-color: var(--rule);
-}
-
-.pct-input:focus {
-  border-color: var(--accent);
+  font-size: 0.82rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
   background: var(--paper-2);
-  color: var(--ink);
-  outline: none;
-}
-
-.pct-pct {
-  font-size: 0.78rem;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
 }
 
 .status-pill {
@@ -1443,10 +1407,6 @@ th.gt-name.expanded .gt-name-label {
 
   .special-input {
     width: 100%;
-  }
-
-  .pct-cell input[type='range'] {
-    width: 80px;
   }
 }
 
@@ -2399,4 +2359,80 @@ th.gt-name.expanded .gt-name-label {
   padding: 0.2rem 0.5rem;
   font-size: 1.1rem;
   line-height: 1;
+}
+
+/* ------------------------------------------------- Day View：时间去哪了 */
+/* 一条横的堆叠条。不用饼图：手机是竖的，横条吃满宽度；而且要在段上标时间，
+   横着排就行，饼图得画引线，几个小块一挤就乱 */
+.db-bar {
+  display: flex;
+  height: 30px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+
+.db-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2px;
+  overflow: hidden;
+}
+
+.db-seg + .db-seg {
+  border-left: 1px solid var(--paper-2);
+}
+
+.db-seg-label {
+  font-size: 0.66rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.db-unlogged {
+  /* 斜纹而不是纯灰：一眼看出这段「不是某件事」，是压根没记 */
+  background: repeating-linear-gradient(
+    45deg,
+    var(--rule) 0 4px,
+    transparent 4px 8px
+  );
+}
+
+.db-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.db-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.db-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.db-share {
+  width: 2.6rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.db-dot-unlogged {
+  background: var(--rule-strong);
 }

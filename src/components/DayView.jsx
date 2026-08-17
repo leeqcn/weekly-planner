@@ -9,6 +9,7 @@ import { colorOf, makeColorResolver } from '../lib/colors'
 import EntryEditor from './EntryEditor'
 import ProgressTable from './ProgressTable'
 import QuickAdd from './QuickAdd'
+import DayBreakdown from './DayBreakdown'
 import { useDragBlock } from './useDragBlock'
 import { useEmptyPress } from './useEmptyPress'
 import { dateFmt, pick, tr } from '../lib/i18n'
@@ -639,6 +640,14 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
         <Hint>
           <b>{tr('长按空白处')}</b>{tr('（或点栏头的 ＋）在那个时间加一条：从今天还没安排的事里挑一件， 或者直接写一件新的。两栏都行 —— 加到右边就是「做了」，加到左边是「打算做」。 拖块左边的竖条挪时间，拖底边改时长。')}<b>{tr('长按块')}</b>{tr('打开编辑 —— 从哪一栏长按，编辑器就把哪一组时间放在最上面（计划是橙的、实际是绿的）， 记实际时间时点开始/结束那一格可以一下填「现在」。单击选中 （可以点好几个一起拖），双击计划块 = 完成、双击右边的块 = 撤销； 选中之后底下那条也有「完成」，点不准时用它。')}<b>{tr('半透明')}</b>{tr('是时长还没定死，')}<b>{tr('红色')}</b>{tr('是撞车。')}</Hint>
       </section>
+
+      {/* 时间轴看的是「什么时候」，这里看的是「一共多久」 —— 同一份数据的
+          另一个问题，紧挨着放，滚一下就从时刻表变成总账 */}
+      <DayBreakdown
+        entries={dayEntries}
+        resolveColor={resolveColor}
+        elapsedMinutes={nowMinutes}
+      />
 
       <ProgressTable
         title="Habits"

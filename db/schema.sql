@@ -26,6 +26,10 @@ create table if not exists public.categories (
   -- 分类删掉会让历史数据无处可归，所以界面上只给「停用」。
   -- 停用的不出现在选择器里，但已有条目照常解析、统计照常算。
   is_active boolean not null default true,
+  -- 固定开销（睡眠/工作这类改不动的）。统计页算「自由时间占比」时先剔掉 ——
+  -- 看它们占全天多少没什么用，能动的本来就只有剩下那部分。
+  -- 哪些算固定只有本人知道，所以是个开关，不按名字猜。
+  is_fixed boolean not null default false,
   created_at timestamptz not null default now(),
   constraint categories_user_name_unique unique (user_id, name)
 );
