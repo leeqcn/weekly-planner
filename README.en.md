@@ -35,6 +35,11 @@ Settings.
 - **Works on a phone**: add it to your home screen and it behaves like an app —
   full screen, its own icon.
 
+What it deliberately **does not** do: no notifications, no due-date reminders, no
+priority sorting. Things you would forget without a nudge — filing taxes, a certificate
+expiring — belong in a calendar or a notes app. This one answers “did I do these today,
+and where did the time go”. It records; it does not remind.
+
 ## Is there something I can just download and run?
 
 No — it is a **web app**, not a program you install, so there is no `.exe` and nothing
