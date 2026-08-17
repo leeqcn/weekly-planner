@@ -88,6 +88,7 @@ const EN = {
     'Once ticked, the stats table can switch to “of free time” — only the unticked categories count toward the total.',
   '时间去哪了': 'Where the time went',
   '没记录': 'unlogged',
+  '不到一小时的': 'under an hour',
   '点标题改这条': 'Tap the title to edit',
   '点名字改这条': 'Tap the name to edit',
   '点标题就能改这条模板，不用横着滚到最后去找「编辑」。':
@@ -276,8 +277,8 @@ const EN = {
   '达成率': 'Hit rate',
   '日均 = 总时间 ÷ 执行天数': 'Daily avg = total ÷ days you did it',
   '（不是除以日历天数）。 日最少/最多也只在做过的那些天里取 —— 不然只要有一天没做， 最少永远是 0，这个数就废了。':
-    ' (not calendar days). Min/max only count days you did it — otherwise one skipped day pins the minimum at 0 forever and the number is useless.',
-  '对从来没排过计划的显示「—」。': 'Shows “—” for things you never planned.',
+    ' (not calendar days). Min/max only count days you did it — otherwise one skipped day pins the minimum at 0 forever and the number is useless. ',
+  '对从来没排过计划的显示「—」。': ' shows “—” for things you never planned.',
   '统计起点': 'Stats start',
   '待办 / 习惯（本周）': 'To-dos and habits (this week)',
   '待办完成': 'To-dos done',

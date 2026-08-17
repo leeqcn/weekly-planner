@@ -2436,3 +2436,39 @@ th.gt-name.expanded .gt-name-label {
 .db-dot-unlogged {
   background: var(--rule-strong);
 }
+
+.db-dot-rest {
+  background: var(--rule-strong);
+  opacity: 0.6;
+}
+
+/* ------------------------------------------- 横滚时第一列钉住
+   统计明细有十列，手机上必须横着滚。滚过去之后每一行只剩一串数字，
+   不知道哪行是哪类 —— 得滚回来看一眼、记住、再滚过去。把分类那一列钉住，
+   数字滚，标签不动。
+
+   box-shadow 而不是 border-right：这张表是 border-collapse: collapse，
+   边框归表格所有，钉住的单元格会把自己那条弄丢。阴影是画在单元格上的，
+   跟着一起走。 */
+.stats-table th:first-child,
+.stats-table td:first-child,
+.tpl-table th:first-child,
+.tpl-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  /* 必须是不透明底色，否则下面滚过去的数字会透上来 */
+  background: var(--paper-2);
+  box-shadow: 1px 0 0 var(--rule);
+}
+
+/* 表头那一格同时被行和列钉住，得压在两者之上 */
+.stats-table thead th:first-child,
+.tpl-table thead th:first-child {
+  z-index: 2;
+}
+
+/* 停用的模板整行变淡，钉住那一格是自己的背景，得跟着一起淡 */
+.tpl-table tr.inactive td:first-child {
+  opacity: 0.5;
+}

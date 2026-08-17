@@ -460,10 +460,12 @@ export default function HelpEn({ onBack }) {
 
         <h2>Where the day went</h2>
         <p>
-          Below the timeline is a <b>horizontal stacked bar</b>: actual time added up per
-          activity, one segment each, labelled with its length. <b>Segments under an hour
-          carry colour only</b> — a label there would be unreadable — so read their names
-          and times from the list underneath.
+          Below the timeline is a <b>horizontal stacked bar</b>: actual time added up{' '}
+          <b>per category</b>, one segment each, labelled with its length. Segments under
+          an hour carry colour only and are collapsed into a single “under an hour” row in
+          the list — this card answers “where did the bulk of it go”, not “how many
+          minutes did each small thing take”. For the individual entries, the timeline
+          above already shows them.
         </p>
         <p className="muted small">
           The denominator is not 24 hours but <b>the part of the day that has passed</b> —

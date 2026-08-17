@@ -645,7 +645,8 @@ export default function DayView({ planner, date, onBack, onGoDay }) {
           另一个问题，紧挨着放，滚一下就从时刻表变成总账 */}
       <DayBreakdown
         entries={dayEntries}
-        resolveColor={resolveColor}
+        templates={planner.templates}
+        categories={planner.categories}
         elapsedMinutes={nowMinutes}
       />
 
