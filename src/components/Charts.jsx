@@ -149,14 +149,14 @@ export function TrendLine({ series, smooth, color, labels }) {
           正好是看不出差别的那一档。 */}
       <div className="trend-legend">
         <span className="trend-key">
-          <svg width="22" height="8" aria-hidden="true">
-            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.dot} strokeWidth="2" />
+          <svg width="22" height="10" aria-hidden="true">
+            <line x1="0" y1="5" x2="22" y2="5" stroke={tint.dot} strokeWidth="3" />
           </svg>
           {tr('每周实际')}
         </span>
         <span className="trend-key">
-          <svg width="22" height="8" aria-hidden="true">
-            <line x1="0" y1="4" x2="22" y2="4" stroke="var(--ink)" strokeWidth="2.5" />
+          <svg width="22" height="10" aria-hidden="true">
+            <line x1="0" y1="5" x2="22" y2="5" stroke="var(--ink)" strokeWidth="4" />
           </svg>
           {tr('EWMA（平滑）')}
         </span>
@@ -181,7 +181,7 @@ export function TrendLine({ series, smooth, color, labels }) {
               d={path(series)}
               fill="none"
               stroke={tint.dot}
-              strokeWidth="2"
+              strokeWidth="3"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
             />
@@ -189,7 +189,7 @@ export function TrendLine({ series, smooth, color, labels }) {
               d={path(smooth)}
               fill="none"
               stroke="var(--ink)"
-              strokeWidth="2.5"
+              strokeWidth="4"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
             />
