@@ -2472,3 +2472,77 @@ th.gt-name.expanded .gt-name-label {
 .tpl-table tr.inactive td:first-child {
   opacity: 0.5;
 }
+
+/* ------------------------------------------------------------ 趋势图 */
+.trend-legend {
+  display: flex;
+  gap: 0.9rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.trend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* 左右各一条窄栏放刻度，中间才是图。叠在图上画过一版：最后一周那个数
+   正好压在下界那个数上，两串数字糊成一团 */
+.trend-chart {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) 2.9rem;
+  align-items: start;
+}
+
+.trend-yaxis {
+  position: relative;
+  /* 和 .trend .chart 一样高，上下界才对得上线 */
+  height: 110px;
+}
+
+.trend-plot {
+  position: relative;
+}
+
+.trend-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.trend-y {
+  position: absolute;
+  right: 0.35rem;
+  font-size: 0.62rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+.trend-y-top {
+  top: -2px;
+}
+
+.trend-y-bottom {
+  bottom: -2px;
+}
+
+/* 最后一周那个数：这张图最常被问的就是它 */
+.trend-now {
+  position: absolute;
+  left: 0.3rem;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+}

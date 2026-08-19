@@ -124,7 +124,7 @@ export function TrendLine({ series, smooth, color, labels }) {
   const W = 100
   const H = 60
   // 纵轴不从 0 起：每周睡 50 小时上下的曲线，从 0 起会贴着顶端拉成一条直线，
-  // 什么都看不出来。代价是波动被放大，所以下面把范围明写出来。
+  // 什么都看不出来。代价是波动被放大，所以把上下界直接标在图上。
   const all = [...series, ...smooth]
   const lo = Math.min(...all)
   const hi = Math.max(...all)
@@ -137,41 +137,93 @@ export function TrendLine({ series, smooth, color, labels }) {
   const path = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i)} ${y(v)}`).join(' ')
   const tint = colorOf(color)
   const band = W / series.length
+  const hours = (v) => (v / 60).toFixed(1)
 
   return (
     <div className="trend">
-      <div className="chart-wrap">
-        <svg className="chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-          <path
-            d={path(series)}
-            fill="none"
-            stroke={tint.edge}
-            strokeWidth="1"
-            opacity="0.5"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d={path(smooth)}
-            fill="none"
-            stroke={tint.dot}
-            strokeWidth="2.5"
-            vectorEffect="non-scaling-stroke"
-            strokeLinejoin="round"
-          />
-          {/* 透明的感应条，鼠标悬停看那一周的数。圆点会被拉成椭圆，所以不画点 */}
+      {/* 图例用画出来的线，不靠文字描述「细线」「粗线」——
+          两条线在图上只差一点点粗细，光看说明对不上号 */}
+      <div className="trend-legend">
+        <span className="trend-key">
+          <svg width="22" height="8" aria-hidden="true">
+            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.edge} strokeWidth="1" opacity="0.55" />
+          </svg>
+          {tr('每周实际')}
+        </span>
+        <span className="trend-key">
+          <svg width="22" height="8" aria-hidden="true">
+            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.dot} strokeWidth="2.5" />
+          </svg>
+          {tr('EWMA（平滑）')}
+        </span>
+      </div>
+
+      {/* 刻度**不压在图上**：叠着画的话，最后一周那个数正好落在下界那个数上，
+          两串数字糊成一团。左右各留一条窄栏，谁也碰不到谁 */}
+      <div className="trend-chart">
+        <div className="trend-yaxis">
+          <span className="trend-y trend-y-top">{hours(top)}h</span>
+          <span className="trend-y trend-y-bottom">{hours(bottom)}h</span>
+        </div>
+        <div className="trend-mid">
+        <div className="trend-plot">
+          <svg className="chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+            {/* 上下两条参考线，对应右边标的那两个数 */}
+            <line x1="0" y1="0.5" x2={W} y2="0.5" stroke="var(--rule)" strokeWidth="1"
+              strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+            <line x1="0" y1={H - 0.5} x2={W} y2={H - 0.5} stroke="var(--rule)" strokeWidth="1"
+              strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+            <path
+              d={path(series)}
+              fill="none"
+              stroke={tint.edge}
+              strokeWidth="1"
+              opacity="0.5"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path
+              d={path(smooth)}
+              fill="none"
+              stroke={tint.dot}
+              strokeWidth="2.5"
+              vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
+            />
+            {/* 透明的感应条，鼠标悬停看那一周的数 */}
+            {series.map((v, i) => (
+              <rect key={i} x={x(i) - band / 2} y={0} width={band} height={H} fill="transparent">
+                <title>{`${labels[i]} ${hours(v)}h`}</title>
+              </rect>
+            ))}
+          </svg>
+
+          {/* 数据点用 HTML 画不用 SVG：preserveAspectRatio="none" 会把圆拉成椭圆
+              （这个项目里已经栽过一次，见 README 的「圆点变椭圆」）。
+              绝对定位的方块自己不变形，摆在百分比位置上正好对齐。 */}
           {series.map((v, i) => (
-            <rect key={i} x={x(i) - band / 2} y={0} width={band} height={H} fill="transparent">
-              <title>{`${labels[i]} ${(v / 60).toFixed(1)}h`}</title>
-            </rect>
+            <span
+              key={i}
+              className="trend-dot"
+              style={{ left: `${x(i)}%`, top: `${(y(v) / H) * 100}%`, background: tint.dot }}
+              title={`${labels[i]} ${hours(v)}h`}
+            />
           ))}
-        </svg>
+
+        </div>
         <div className="chart-axis ends">
           <span>{shortWeek(labels[0])}</span>
           <span>{shortWeek(labels.at(-1))}</span>
         </div>
+        </div>
+        {/* 最后一周的数单独占一栏 —— 这张图最常被问的就是它 */}
+        <div className="trend-yaxis">
+          <span className="trend-now" style={{ top: `${(y(series.at(-1)) / H) * 100}%` }}>
+            {hours(series.at(-1))}h
+          </span>
+        </div>
       </div>
-      <p className="muted small">{tr('细线是每周实际，粗线是 EWMA（平滑掉单周的意外）。 纵轴是')}<b>{(bottom / 60).toFixed(1)}–{(top / 60).toFixed(1)}h</b>，
-        <b>{tr('不是从 0 开始')}</b>{tr('—— 这样才看得出变化，但也会把波动画得比实际大。')}</p>
+
+      <p className="muted small">{tr('一周一个点。')}<b>{tr('纵轴不是从 0 开始')}</b>{tr('（这里是')} <b>{hours(bottom)}–{hours(top)}h</b>{tr('）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。')}</p>
     </div>
   )
 }

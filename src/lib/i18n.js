@@ -79,6 +79,13 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '详情': 'Details',
+  '每周实际': 'Weekly actual',
+  'EWMA（平滑）': 'EWMA (smoothed)',
+  '一周一个点。': 'One dot per week. ',
+  '纵轴不是从 0 开始': 'The y-axis does not start at 0',
+  '（这里是': ' (here ',
+  '）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。':
+    ') — from zero the line would sit flat against the top and show nothing; the cost is that the wobble looks bigger than it is.',
   '固定': 'fixed',
   '占全天': 'of the whole day',
   '占自由时间': 'of free time',

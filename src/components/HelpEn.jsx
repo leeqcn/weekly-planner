@@ -398,12 +398,22 @@ export default function HelpEn({ onBack }) {
           </li>
         </ul>
         <details>
-          <summary>Two things to keep in mind when reading the charts</summary>
+          <summary>How to read the trend chart</summary>
           <ul>
             <li>
-              The trend chart’s <b>y-axis does not start at zero</b> — otherwise a line
-              that barely changes would be pinned flat against the top. The range is
-              printed under the chart, and the wobble looks bigger than it is.
+              <b>One dot = one week</b>, running from the earliest week to the latest.
+              The <b>thin line</b> is each week’s actual figure and the <b>thick line</b>{' '}
+              is the EWMA — the smoothed level. Keeping them apart is what tells you
+              whether a given week was a fluke: thin line jumps, thick line barely moves.
+            </li>
+            <li>
+              The two numbers on the left are the <b>top and bottom of the y-axis</b>; the
+              one on the right is the <b>most recent week</b>.
+            </li>
+            <li>
+              The <b>y-axis does not start at zero</b> — otherwise a line that barely
+              changes would be pinned flat against the top. The cost is that the wobble
+              looks bigger than it is, so read the direction, not the steepness.
             </li>
             <li>
               A week you never opened the app <b>does not count towards averages</b>. That

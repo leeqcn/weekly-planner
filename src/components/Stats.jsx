@@ -238,9 +238,9 @@ export default function Stats({ planner, onBack }) {
               <p className="muted small">
                 {pick(
                   () =>
-                    `${nameOf(focus.key)}：n 周平均 ${fmtHours(focus.weekAvg)}h/周，EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。`,
+                    `${nameOf(focus.key)}：${focus.weekSeries.length} 周平均 ${fmtHours(focus.weekAvg)}h/周，最近 EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。`,
                   () =>
-                    `${nameOf(focus.key)}: ${fmtHours(focus.weekAvg)}h/week over n weeks, EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/week`}.`,
+                    `${nameOf(focus.key)}: ${fmtHours(focus.weekAvg)}h/week over ${focus.weekSeries.length} weeks, latest EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/week`}.`,
                 )}
               </p>
             </section>
