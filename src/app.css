@@ -68,7 +68,7 @@
 }
 
 .small {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
 }
 
 .error-text {
@@ -1182,7 +1182,7 @@ th.gt-name.expanded .gt-name-label {
 .habits-table th,
 .tpl-table th {
   text-align: left;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-faint);
@@ -2050,7 +2050,7 @@ th.gt-name.expanded .gt-name-label {
   align-items: center;
   gap: 0.3rem;
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   letter-spacing: 0.04em;
   color: var(--ink-soft);
 }
@@ -2132,7 +2132,7 @@ th.gt-name.expanded .gt-name-label {
 .chart-axis {
   display: flex;
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -2478,7 +2478,7 @@ th.gt-name.expanded .gt-name-label {
   display: flex;
   gap: 0.9rem;
   margin-bottom: 0.4rem;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--ink-soft);
 }
 
@@ -2518,7 +2518,7 @@ th.gt-name.expanded .gt-name-label {
 .trend-y {
   position: absolute;
   right: 0.35rem;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-family: system-ui, -apple-system, sans-serif;
   font-variant-numeric: tabular-nums;
   color: var(--ink-faint);
@@ -2538,7 +2538,7 @@ th.gt-name.expanded .gt-name-label {
   position: absolute;
   left: 0.3rem;
   transform: translateY(-50%);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-family: system-ui, -apple-system, sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -2551,4 +2551,33 @@ th.gt-name.expanded .gt-name-label {
 .chart-axis > span.partial {
   color: var(--ink-faint);
   font-style: italic;
+}
+
+/* 「怎么算的」：长说明收进折叠。统计页原来有四段 60–90 字的小字，
+   每次进来都得从它们中间跳过去找数字 —— 而这一页是来看数的 */
+.stat-note {
+  margin-top: 0.5rem;
+}
+
+.stat-note > summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  list-style: none;
+}
+
+.stat-note > summary::-webkit-details-marker {
+  display: none;
+}
+
+.stat-note > summary::before {
+  content: '▸ ';
+}
+
+.stat-note[open] > summary::before {
+  content: '▾ ';
+}
+
+.stat-note > p {
+  margin-top: 0.35rem;
 }

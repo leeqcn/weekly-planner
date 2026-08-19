@@ -243,7 +243,7 @@ export function TrendLine({ series, smooth, color, labels }) {
         </div>
       </div>
 
-      <p className="muted small">{tr('一周一个点，两条线两个颜色：分类色是每周实际，深色是 EWMA。')}<b>{tr('纵轴不是从 0 开始')}</b>{tr('（这里是')} <b>{hours(bottom)}–{hours(top)}h</b>{tr('）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。')}</p>
+      <p className="muted small">{tr('一周一个点。纵轴')} <b>{hours(bottom)}–{hours(top)}h</b>{tr('，不从 0 开始 —— 看方向，别看斜率。')}</p>
     </div>
   )
 }

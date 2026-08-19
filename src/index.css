@@ -6,8 +6,11 @@
   --paper: #faf8f5;
   --paper-2: #fffefc;
   --ink: #3c3733;
-  --ink-soft: #7b736b;
-  --ink-faint: #aca49c;
+  /* 两档次要文字都压深过：原来 --ink-soft 对比度 4.4、--ink-faint 只有 2.3，
+     后者远在 WCAG 的 4.5 底线之下，而它管着图表刻度那些**要读的数字**。
+     现在 5.6 / 4.5，两档之间还留着看得出的差别。 */
+  --ink-soft: #6a635b;
+  --ink-faint: #776f68;
   --rule: #ebe5de;
   --rule-strong: #d7cdc2;
 

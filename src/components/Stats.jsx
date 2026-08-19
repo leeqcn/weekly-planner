@@ -143,11 +143,11 @@ export default function Stats({ planner, onBack }) {
             </div>
             <p className="muted small">
               {stats.fromKey} → {stats.toKey}
-              {pick(
-                () => `，共 ${stats.dayCount} 天。日均、占比这些照常全算；按周比的（趋势、EWMA）只用完整的周。`,
-                () => `, ${stats.dayCount} days. Per-day figures use everything; anything compared week-to-week (trend, EWMA) uses complete weeks only.`,
-              )}
+              {pick(() => `，共 ${stats.dayCount} 天`, () => `, ${stats.dayCount} days`)}
             </p>
+            <Note>
+              {tr('日均、占比按天算，全都算进来；趋势和 EWMA 按周算，只用完整的周。')}
+            </Note>
 
             <div className="stat-cards">
               <StatCard
@@ -174,7 +174,7 @@ export default function Stats({ planner, onBack }) {
               })}
             </div>
             {stats.recordRate < 0.5 && (
-              <p className="muted small">{tr('记录率低于一半时，下面所有数字都要打折看 —— 没记下来的时间不知道去哪了。')}</p>
+              <p className="muted small">{tr('记录率不到一半，下面的数都要打折看。')}</p>
             )}
           </section>
 
@@ -193,19 +193,23 @@ export default function Stats({ planner, onBack }) {
             {/* 说明得照着眼睛看到的说。原来写「粗条 / 细框」——
                 可你看到的是「实心 / 虚线」，对不上就只能靠猜 */}
             <p className="muted small">
-              <b>{tr('实心色块 = 实际')}</b>{tr('做了多少，')}<b>{tr('虚线框 = 当初计划')}</b>{tr('多少。 虚线框比色块长 = 排了没做完；短 = 做得比计划多。')}</p>
+              <b>{tr('实心 = 实际')}</b>{tr('，')}<b>{tr('虚线 = 计划')}</b>{tr('。虚线更长 = 排了没做完。')}</p>
           </section>
 
           <section className="card">
             <h2>{tr('每周的时间去哪了')}</h2>
             <StackedWeeks weeks={stats.weeks} colorFor={colorFor} nameFor={nameOf} />
-            <p className="muted small">{tr('灰色是')}<b>{tr('未记录')}</b>{tr('。画出来占比才加得到 100%， 而「一天到底记下了多少」本身就是所有数字可信度的前提。')}{' '}
+            <p className="muted small">
+              {tr('灰色是')}<b>{tr('未记录')}</b>{tr('。')}
               {stats.partialWeeks > 0 &&
                 pick(
-                  () => `最后一根是本周，只过了 ${stats.daysThisWeek} 天（标了斜线），每根柱子都按自己那几天算比例，所以照样能比。`,
-                  () => `The last bar is the current week, ${stats.daysThisWeek} days in (marked with a stripe). Every bar is scaled to its own days, so they are still comparable.`,
+                  () => `带 * 的那根是本周，只过了 ${stats.daysThisWeek} 天。`,
+                  () => `The bar marked * is this week, ${stats.daysThisWeek} days in.`,
                 )}
             </p>
+            <Note>
+              {tr('画出未记录，占比才加得到 100% —— 一天记下了多少，是别的数可信不可信的前提。每根柱子按自己那几天算比例，所以长短能比。')}
+            </Note>
           </section>
 
           {focus && (
@@ -336,8 +340,8 @@ export default function Stats({ planner, onBack }) {
                 </tbody>
               </table>
             </div>
-            <p className="muted small">
-              <b>{tr('日均 = 总时间 ÷ 执行天数')}</b>{tr('（不是除以日历天数）。 日最少/最多也只在做过的那些天里取 —— 不然只要有一天没做， 最少永远是 0，这个数就废了。')}<b>{tr('达成率')}</b>{tr('对从来没排过计划的显示「—」。')}</p>
+            <Note>
+              <b>{tr('日均 = 总时间 ÷ 执行天数')}</b>{tr('（不是除以日历天数）。 日最少/最多也只在做过的那些天里取 —— 不然只要有一天没做， 最少永远是 0，这个数就废了。')}<b>{tr('达成率')}</b>{tr('对从来没排过计划的显示「—」。')}</Note>
           </section>
 
           <TodoHabitStats planner={planner} />
@@ -362,6 +366,22 @@ function smoothOf(cat, halfLife) {
     out.push(s)
   }
   return out
+}
+
+/**
+ * 「为什么这么算」这类说明一律收进折叠。
+ *
+ * 统计页原来有四段 60–90 字的小字，每张卡下面挂一段。第一次看有用，
+ * 之后每次进来都得从它们中间跳过去找数字 —— 而这一页是来看数的。
+ * 默认收起，点一下展开。
+ */
+function Note({ children }) {
+  return (
+    <details className="stat-note">
+      <summary>{tr('怎么算的')}</summary>
+      <p className="muted small">{children}</p>
+    </details>
+  )
 }
 
 function StatCard({ label, value, hint, color, warn }) {
@@ -455,13 +475,13 @@ function TodoHabitStats({ planner }) {
   return (
     <section className="card">
       <h2>{tr('待办 / 习惯（本周）')}</h2>
-      <p className="muted small">
+      <Note>
         {pick(
-          () => `这两块没有时间信息，只看完成度，和上面的时间统计分开。这一周（${days.length} 天）只算到今天为止 —— 后面还没到的那几天不进分母。`,
+          () => `这两块只看完成度、没有时间，所以和上面的时间统计分开。本周（${days.length} 天）只算到今天为止，后面没到的那几天不进分母。`,
           () =>
-            `These two have no times attached — only completion — so they are kept apart from the hours above. This week (${days.length} days), counted up to today — days that have not arrived yet stay out of the denominator.`,
+            `These two only track completion, with no times, so they are kept apart from the hours above. This week (${days.length} days), counted up to today — days that have not arrived stay out of the denominator.`,
         )}
-      </p>
+      </Note>
       <div className="stat-cards">
         <StatCard
           label={tr('待办完成')}

@@ -79,6 +79,19 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '详情': 'Details',
+  '怎么算的': 'How this is worked out',
+  '日均、占比按天算，全都算进来；趋势和 EWMA 按周算，只用完整的周。':
+    'Per-day figures (daily average, share) count every day; week-based ones (trend, EWMA) use complete weeks only.',
+  '记录率不到一半，下面的数都要打折看。':
+    'Under half the time is logged — take everything below with a pinch of salt.',
+  '实心 = 实际': 'Solid = actual',
+  '虚线 = 计划': 'Dashed = plan',
+  '。虚线更长 = 排了没做完。': '. A longer dashed outline means you planned more than you did.',
+  '画出未记录，占比才加得到 100% —— 一天记下了多少，是别的数可信不可信的前提。每根柱子按自己那几天算比例，所以长短能比。':
+    'Drawing the unlogged part is what makes the shares add up to 100% — how much of a day you logged is what every other number rests on. Each bar is scaled to its own days, so their heights are comparable.',
+  '一周一个点。纵轴': 'One dot per week. Y-axis',
+  '，不从 0 开始 —— 看方向，别看斜率。':
+    ', not starting at 0 — read the direction, not the steepness.',
   '天': 'days',
   '每周实际': 'Weekly actual',
   'EWMA（平滑）': 'EWMA (smoothed)',
