@@ -141,18 +141,22 @@ export function TrendLine({ series, smooth, color, labels }) {
 
   return (
     <div className="trend">
-      {/* 图例用画出来的线，不靠文字描述「细线」「粗线」——
-          两条线在图上只差一点点粗细，光看说明对不上号 */}
+      {/* 两条线**用两个颜色**，不靠粗细区分。
+          原来是同一个色系一粗一细、细的还压到 0.5 透明度 —— 淡到要眯着眼找。
+          现在：每周实际 = 分类色，EWMA = 深墨色。
+          深墨色是量过的：和七个分类色的 CIEDE2000 最小 30.7（灰那一类），
+          远高于「一眼分得开」的 10。用 --ink-soft 的话灰那一类只有 9.0，
+          正好是看不出差别的那一档。 */}
       <div className="trend-legend">
         <span className="trend-key">
           <svg width="22" height="8" aria-hidden="true">
-            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.edge} strokeWidth="1" opacity="0.55" />
+            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.dot} strokeWidth="2" />
           </svg>
           {tr('每周实际')}
         </span>
         <span className="trend-key">
           <svg width="22" height="8" aria-hidden="true">
-            <line x1="0" y1="4" x2="22" y2="4" stroke={tint.dot} strokeWidth="2.5" />
+            <line x1="0" y1="4" x2="22" y2="4" stroke="var(--ink)" strokeWidth="2.5" />
           </svg>
           {tr('EWMA（平滑）')}
         </span>
@@ -176,15 +180,15 @@ export function TrendLine({ series, smooth, color, labels }) {
             <path
               d={path(series)}
               fill="none"
-              stroke={tint.edge}
-              strokeWidth="1"
-              opacity="0.5"
+              stroke={tint.dot}
+              strokeWidth="2"
               vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
             />
             <path
               d={path(smooth)}
               fill="none"
-              stroke={tint.dot}
+              stroke="var(--ink)"
               strokeWidth="2.5"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
@@ -223,7 +227,7 @@ export function TrendLine({ series, smooth, color, labels }) {
         </div>
       </div>
 
-      <p className="muted small">{tr('一周一个点。')}<b>{tr('纵轴不是从 0 开始')}</b>{tr('（这里是')} <b>{hours(bottom)}–{hours(top)}h</b>{tr('）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。')}</p>
+      <p className="muted small">{tr('一周一个点，两条线两个颜色：分类色是每周实际，深色是 EWMA。')}<b>{tr('纵轴不是从 0 开始')}</b>{tr('（这里是')} <b>{hours(bottom)}–{hours(top)}h</b>{tr('）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。')}</p>
     </div>
   )
 }

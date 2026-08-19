@@ -81,7 +81,8 @@ const EN = {
   '详情': 'Details',
   '每周实际': 'Weekly actual',
   'EWMA（平滑）': 'EWMA (smoothed)',
-  '一周一个点。': 'One dot per week. ',
+  '一周一个点，两条线两个颜色：分类色是每周实际，深色是 EWMA。':
+    'One dot per week; the two lines have two colours — the category colour is each week’s actual, the dark one is the EWMA. ',
   '纵轴不是从 0 开始': 'The y-axis does not start at 0',
   '（这里是': ' (here ',
   '）—— 从 0 起的话线会贴着顶端拉平，什么都看不出来；代价是波动被画得比实际大。':
