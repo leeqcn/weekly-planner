@@ -61,6 +61,27 @@ export function summarize(rollups, { fromKey, toKey, halfLifeWeeks = 4 } = {}) {
   // 不能当成「那周睡了 0 小时」—— 那是没记录，不是没发生。
   const recordedWeeks = [...new Set(rows.map((r) => weekKeyOf(r.date)))].sort()
 
+  /**
+   * 「按周比」的数只用**完整的周**（7 天全在窗口里）。
+   *
+   * 周三打开统计，本周只有 3 天。拿这 3 天的总和去和整周比，趋势线永远
+   * 在最后一格掉下去、EWMA 跟着被拽低、「本周 vs 均值」永远是负的 ——
+   * 那不是「这周做少了」，是这周还没过完。每周一都会重演一次。
+   *
+   * 同一条规则也管住窗口开头：统计起点落在周三的话，那半周同样不算。
+   *
+   * 注意**不外推**（不拿 3 天 ÷ 3 × 7 折算成一周）：一周里各天差别很大，
+   * 周末和工作日根本不是一回事，按前三天推整周只会造出一个看着精确的假数。
+   * 宁可少一个点。
+   *
+   * 只影响按周算的东西。日均、日最少/最多、占比这些都是除以「做过的天数」，
+   * 半周不影响它们，照常全算。
+   */
+  const daysPerWeek = new Map()
+  for (const d of days) daysPerWeek.set(weekKeyOf(d), (daysPerWeek.get(weekKeyOf(d)) ?? 0) + 1)
+  const isFullWeek = (w) => daysPerWeek.get(w) === 7
+  const fullWeeks = recordedWeeks.filter(isFullWeek)
+
   const byCat = new Map()
   const perDay = new Map() // catKey -> Map(date -> minutes)
   for (const r of rows) {
@@ -84,7 +105,7 @@ export function summarize(rollups, { fromKey, toKey, halfLifeWeeks = 4 } = {}) {
     // 「执行天数」只数真的做了的天。min 也只在这些天里取 ——
     // 不然只要有一天没做，min 永远是 0，这个数就废了。
     const dayValues = [...(perDay.get(c.key)?.values() ?? [])].filter((v) => v > 0)
-    const weekSeries = recordedWeeks.map((w) => c.weeks.get(w) ?? 0)
+    const weekSeries = fullWeeks.map((w) => c.weeks.get(w) ?? 0)
     return {
       key: c.key,
       actual: c.actual,
@@ -124,6 +145,7 @@ export function summarize(rollups, { fromKey, toKey, halfLifeWeeks = 4 } = {}) {
     return {
       week: w,
       days: daysInWeek,
+      full: isFullWeek(w),
       parts,
       actual,
       capacity: daysInWeek * DAY_MINUTES,
@@ -137,6 +159,11 @@ export function summarize(rollups, { fromKey, toKey, halfLifeWeeks = 4 } = {}) {
     dayCount: days.length,
     categories,
     weeks,
+    // 趋势 / EWMA / 周均值用的是这几周（横轴标签也得跟着用它，不然对不齐）
+    fullWeekKeys: fullWeeks,
+    partialWeeks: recordedWeeks.filter((w) => !isFullWeek(w)).length,
+    // 本周过了几天 —— 界面上要说清「还没过完」
+    daysThisWeek: daysPerWeek.get(weekKeyOf(toKey)) ?? 0,
     totalActual,
     totalPlanned,
     capacity,
@@ -147,6 +174,10 @@ export function summarize(rollups, { fromKey, toKey, halfLifeWeeks = 4 } = {}) {
 }
 
 /** 「本周 vs 前面几周的平均」—— 卡片上那个 ↑↓ 用的。 */
+/**
+ * 最近**一整周** vs 之前那些整周的平均。
+ * weekSeries 里已经没有半截的周了（见 summarize），所以这里比的两边同长。
+ */
 export function compareLatestWeek(cat) {
   const s = cat.weekSeries
   if (s.length < 2) return null

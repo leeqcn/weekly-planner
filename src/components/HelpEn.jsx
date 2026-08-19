@@ -419,6 +419,19 @@ export default function HelpEn({ onBack }) {
               A week you never opened the app <b>does not count towards averages</b>. That
               is a week with no records, not a week where you did nothing.
             </li>
+            <li>
+              <b>Nor does a week that is not over yet.</b> On a Wednesday the current week
+              holds three days; compared against whole weeks the trend line would always
+              dive at the end and drag the EWMA with it — that is not doing less, it is
+              not finished. It is <b>not scaled up</b> either: weekends and weekdays are
+              nothing alike, so extrapolating three days into a week only invents a
+              precise-looking wrong number.
+            </li>
+            <li>
+              Only <b>week-to-week</b> figures are affected (trend, EWMA, weekly average).
+              Daily averages, min/max and shares divide by the days you actually did
+              something, so a part-week is counted in full there.
+            </li>
           </ul>
         </details>
       </section>

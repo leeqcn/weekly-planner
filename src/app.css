@@ -2546,3 +2546,9 @@ th.gt-name.expanded .gt-name-label {
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* 还没过完的那一周：横轴上带个星号，颜色也压淡一点 */
+.chart-axis > span.partial {
+  color: var(--ink-faint);
+  font-style: italic;
+}

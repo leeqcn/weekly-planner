@@ -79,6 +79,7 @@ const EN = {
   '删除': 'Delete',
   '关闭': 'Close',
   '详情': 'Details',
+  '天': 'days',
   '每周实际': 'Weekly actual',
   'EWMA（平滑）': 'EWMA (smoothed)',
   '一周一个点，两条线两个颜色：分类色是每周实际，深色是 EWMA。':

@@ -100,13 +100,29 @@ export function StackedWeeks({ weeks, colorFor, nameFor }) {
               >
                 <title>{`${wk.week} ${tr('未记录')} ${(wk.unrecorded / 60).toFixed(1)}h`}</title>
               </rect>
+              {/* 还没过完的那一周：柱子照画（比例是按它自己那几天算的，能比），
+                  但顶上压一道横杠说明「这根只有 N 天」，免得当成完整的一周读 */}
+              {!wk.full && (
+                <rect
+                  x={i * w + pad}
+                  y={0}
+                  width={w - pad * 2}
+                  height="2"
+                  fill="var(--ink-faint)"
+                >
+                  <title>{`${wk.week} — ${wk.days}/7 ${tr('天')}`}</title>
+                </rect>
+              )}
             </g>
           )
         })}
       </svg>
       <div className="chart-axis">
         {weeks.map((wk) => (
-          <span key={wk.week}>{shortWeek(wk.week)}</span>
+          <span key={wk.week} className={wk.full ? '' : 'partial'}>
+            {shortWeek(wk.week)}
+            {!wk.full && '*'}
+          </span>
         ))}
       </div>
     </div>

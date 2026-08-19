@@ -144,8 +144,8 @@ export default function Stats({ planner, onBack }) {
             <p className="muted small">
               {stats.fromKey} → {stats.toKey}
               {pick(
-                () => `，共 ${stats.dayCount} 天。本周还没过完，最后一根柱子天生短一截。`,
-                () => `, ${stats.dayCount} days. This week is not over yet, so the last bar is short by nature.`,
+                () => `，共 ${stats.dayCount} 天。日均、占比这些照常全算；按周比的（趋势、EWMA）只用完整的周。`,
+                () => `, ${stats.dayCount} days. Per-day figures use everything; anything compared week-to-week (trend, EWMA) uses complete weeks only.`,
               )}
             </p>
 
@@ -166,7 +166,7 @@ export default function Stats({ planner, onBack }) {
                     color={colorFor(c.key)}
                     hint={
                       cmp
-                        ? pick(() => `本周 ${fmtHours(cmp.latest)}h，${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs 均值`, () => `${fmtHours(cmp.latest)}h this week, ${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs average`)
+                        ? pick(() => `最近一整周 ${fmtHours(cmp.latest)}h，${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs 均值`, () => `${fmtHours(cmp.latest)}h last full week, ${cmp.diff >= 0 ? '↑' : '↓'} ${fmtHours(Math.abs(cmp.diff))}h vs average`)
                         : pick(() => `${c.days} 天做过`, () => `${c.days} days done`)
                     }
                   />
@@ -199,7 +199,13 @@ export default function Stats({ planner, onBack }) {
           <section className="card">
             <h2>{tr('每周的时间去哪了')}</h2>
             <StackedWeeks weeks={stats.weeks} colorFor={colorFor} nameFor={nameOf} />
-            <p className="muted small">{tr('灰色是')}<b>{tr('未记录')}</b>{tr('。画出来占比才加得到 100%， 而「一天到底记下了多少」本身就是所有数字可信度的前提。')}</p>
+            <p className="muted small">{tr('灰色是')}<b>{tr('未记录')}</b>{tr('。画出来占比才加得到 100%， 而「一天到底记下了多少」本身就是所有数字可信度的前提。')}{' '}
+              {stats.partialWeeks > 0 &&
+                pick(
+                  () => `最后一根是本周，只过了 ${stats.daysThisWeek} 天（标了斜线），每根柱子都按自己那几天算比例，所以照样能比。`,
+                  () => `The last bar is the current week, ${stats.daysThisWeek} days in (marked with a stripe). Every bar is scaled to its own days, so they are still comparable.`,
+                )}
+            </p>
           </section>
 
           {focus && (
@@ -233,14 +239,14 @@ export default function Stats({ planner, onBack }) {
                 series={focus.weekSeries}
                 smooth={smoothOf(focus, halfLife)}
                 color={colorFor(focus.key)}
-                labels={stats.weeks.map((w) => w.week)}
+                labels={stats.fullWeekKeys}
               />
               <p className="muted small">
                 {pick(
                   () =>
-                    `${nameOf(focus.key)}：${focus.weekSeries.length} 周平均 ${fmtHours(focus.weekAvg)}h/周，最近 EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。`,
+                    `${nameOf(focus.key)}：${focus.weekSeries.length} 个完整周平均 ${fmtHours(focus.weekAvg)}h/周，最近 EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/周`}。${stats.partialWeeks ? '本周还没过完，不进这张图。' : ''}`,
                   () =>
-                    `${nameOf(focus.key)}: ${fmtHours(focus.weekAvg)}h/week over ${focus.weekSeries.length} weeks, latest EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/week`}.`,
+                    `${nameOf(focus.key)}: ${fmtHours(focus.weekAvg)}h/week across ${focus.weekSeries.length} complete weeks, latest EWMA ${focus.ewma == null ? '—' : `${fmtHours(focus.ewma)}h/week`}.${stats.partialWeeks ? ' This week is not over, so it is left out.' : ''}`,
                 )}
               </p>
             </section>
